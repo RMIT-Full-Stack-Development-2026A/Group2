@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { MARK_KEYS } from "configs/config/gameCatalog.js";
+import { MARK_KEYS } from "../../../../config/gameCatalog.js";
 
 const { Schema, model } = mongoose;
 

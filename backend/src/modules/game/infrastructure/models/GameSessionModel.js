@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { AI_LEVELS, BOARD_SIZES, BOARD_STYLES, MARK_KEYS } from "configs/config/gameCatalog.js";
+import { AI_LEVELS, BOARD_SIZES, BOARD_STYLES, MARK_KEYS } from "../../../../config/gameCatalog.js";
 
 const { Schema, model } = mongoose;
 

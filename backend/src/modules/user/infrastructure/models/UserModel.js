@@ -3,7 +3,7 @@ import {
   USER_ROLES,
   ACCOUNT_STATUSES,
   PREMIUM_STATUSES,
-} from "configs/config/gameCatalog.js";
+} from "../../../../config/gameCatalog.js";
 
 const { Schema, model } = mongoose;
 
