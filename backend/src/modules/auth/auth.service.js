@@ -1,55 +1,56 @@
 const bcrypt = require("bcrypt");
-const tokenUtils = require("../../shared/utils/token.utils");
-const userRepository = require("./auth.repository");
+const tokenUtils = require("../../shared/utils/token.utils"); 
 
 async function signUp(username, email, password, country) {
-  const existingUser = await userRepository.findByEmail(email);
+    // Check if email exists
+    const existingUser = await userRepository.findByEmail(email);
 
-  if (existingUser) {
-    throw new Error("Email already exists");
-  }
+    if (existingUser) {
+        throw new Error("Email already exists");
+    }
 
-  const passwordHash = await bcrypt.hash(password, 10);
+    // hash password
+    const passwordHash = await bcrypt.hash(password, 10);
 
-  const user = await userRepository.createUser({
-    username,
-    email,
-    passwordHash,
-    country,
-  });
+    const user = await userRepository.createUser({
+        username,
+        email,
+        passwordHash,
+        country,
+    });
 
-  return {
-    id: user._id,
-    username: user.username,
-    email: user.email,
-    country: user.country,
-    role: user.role,
-  };
+    return {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+    };
 }
 
 async function logIn(email, password) {
-  const user = await userRepository.findByEmail(email);
+    // Get user for hashed password comparison
+    const user = await userRepository.findByEmail(email);
 
-  if (!user) {
-    throw new Error("User doesn't exist");
-  }
+    if (!user) {
+        throw new Error("User doesn't exists");
+    }
 
-  const correctPassword = await bcrypt.compare(password, user.passwordHash);
+    const correctPassword = await bcrypt.compare(password, user.passwordHash);
 
-  if (!correctPassword) {
-    throw new Error("Password incorrect");
-  }
+    if (!correctPassword) {
+        throw new Error("Password incorrect");
+    }
 
-  const accessToken = tokenUtils.generateAccessToken(user._id);
-  const refreshToken = tokenUtils.generateRefreshToken(user._id);
+    // Correct password, generate JWT refresh and access token 
+    const accessToken = tokenUtils.generateAccessToken(user._id);
+    const refreshToken = tokenUtils.generateRefreshToken(user._id);
 
-  return {
-    accessToken,
-    refreshToken,
-  };
+    return {
+        accessToken,
+        refreshToken,
+    };
 }
 
 module.exports = {
-  signUp,
-  logIn,
+    signUp,
+    logIn,
 };
