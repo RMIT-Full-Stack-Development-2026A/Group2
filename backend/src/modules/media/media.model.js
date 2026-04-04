@@ -1,0 +1,1 @@
+// upload handling for avatar/marker/board images
