@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const userRepository = require("../modules/auth/auth.repository");
 
 async function validateToken(req, res, next) {
     try {
@@ -22,7 +23,7 @@ async function validateToken(req, res, next) {
 
                 
                 // Find user by ID from decoded token
-                const user = await user.findById(decoded.id);
+                const user = await userRepository.findById(decoded.id);
 
                 if (!user) {
                     return res.status(401).json({ message: "User not found" });
@@ -38,3 +39,5 @@ async function validateToken(req, res, next) {
         return res.status(401).json({ message: "Fail to validate" });
     }
 }
+
+module.exports = validateToken;
