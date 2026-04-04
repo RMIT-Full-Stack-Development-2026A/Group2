@@ -1,9 +1,11 @@
 import mongoose from "mongoose";
 
+const { Schema, model, Types } = mongoose;
+
 const USER_ROLES = ["player", "admin"];
 const ACCOUNT_STATUSES = ["active", "inactive", "suspended", "deactivated"];
 
-const userSchema = new mongoose.Schema(
+const userSchema = new Schema(
   {
     role: {
       type: String,
@@ -50,9 +52,7 @@ const userSchema = new mongoose.Schema(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
-const User = mongoose.model("User", userSchema);
-
-export default User;
+export default model("User", userSchema);

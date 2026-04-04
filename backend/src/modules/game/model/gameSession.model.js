@@ -1,13 +1,20 @@
 import mongoose from "mongoose";
+const { Schema, model, Types } = mongoose;
 
 const GAME_MODES = ["single_player", "two_player", "online_match"];
 const GAME_STATUSES = ["waiting", "ongoing", "finished", "aborted"];
-const GAME_RESULTS = ["player1_win", "player2_win", "draw", "aborted", "pending"];
+const GAME_RESULTS = [
+  "player1_win",
+  "player2_win",
+  "draw",
+  "aborted",
+  "pending",
+];
 
-const gameSessionSchema = new mongoose.Schema(
+const gameSessionSchema = new Schema(
   {
     boardStyleID: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Types.ObjectId,
       ref: "BoardStyle",
       default: null,
     },
@@ -42,16 +49,14 @@ const gameSessionSchema = new mongoose.Schema(
       required: true,
     },
     currentTurn: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Types.ObjectId,
       ref: "GameParticipant",
       default: null,
     },
   },
   {
     versionKey: false,
-  }
+  },
 );
 
-const GameSession = mongoose.model("GameSession", gameSessionSchema);
-
-export default GameSession;
+export default model("GameSession", gameSessionSchema);

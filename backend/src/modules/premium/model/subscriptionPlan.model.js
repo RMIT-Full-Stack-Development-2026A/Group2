@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 
-const subscriptionPlanSchema = new mongoose.Schema(
+const { Schema, model, Types } = mongoose;
+
+const subscriptionPlanSchema = new Schema(
   {
     planName: {
       type: String,
@@ -34,6 +36,5 @@ const subscriptionPlanSchema = new mongoose.Schema(
   }
 );
 
-const SubscriptionPlan = mongoose.model("SubscriptionPlan", subscriptionPlanSchema);
+export default model("SubscriptionPlan", subscriptionPlanSchema);
 
-export default SubscriptionPlan;

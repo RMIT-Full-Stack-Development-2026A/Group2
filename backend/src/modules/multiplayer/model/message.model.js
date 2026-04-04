@@ -2,38 +2,34 @@ import mongoose from "mongoose";
 
 const { Schema, model, Types } = mongoose;
 
-const moveSchema = new Schema(
+const messageSchema = new Schema(
   {
-    sessionID: {
+    roomId: {
       type: Types.ObjectId,
-      ref: "GameSession",
+      ref: "OnlineGameRoom",
       required: true,
       index: true,
     },
-    participantID: {
+    senderId: {
       type: Types.ObjectId,
-      ref: "GameParticipant",
+      ref: "User",
       required: true,
       index: true,
     },
-    moveNumber: {
-      type: Number,
+    content: {
+      type: String,
       required: true,
-      min: 1,
+      trim: true,
+      maxlength: 2000,
     },
-    rowIndex: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-    playedAt: {
+    sentAt: {
       type: Date,
       default: Date.now,
     },
   },
   {
     versionKey: false,
-  },
+  }
 );
 
-export default model("Move", moveSchema);
+export default model("Message", messageSchema);

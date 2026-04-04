@@ -1,22 +1,24 @@
 import mongoose from "mongoose";
 
+const { Schema, model, Types } = mongoose;
+
 const PARTICIPANT_TYPES = ["player", "ai", "guest"];
 
-const gameParticipantSchema = new mongoose.Schema(
+const gameParticipantSchema = new Schema(
   {
     sessionID: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Types.ObjectId,
       ref: "GameSession",
       required: true,
       index: true,
     },
     userID: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Types.ObjectId,
       ref: "User",
       default: null,
     },
     markerID: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Types.ObjectId,
       ref: "Marker",
       default: null,
     },
@@ -40,6 +42,4 @@ const gameParticipantSchema = new mongoose.Schema(
   }
 );
 
-const GameParticipant = mongoose.model("GameParticipant", gameParticipantSchema);
-
-export default GameParticipant;
+export default model("GameParticipant", gameParticipantSchema);
