@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
 import useLoginForm from "./LoginForm.hook";
+import FormErrorAlert from "../FormErrorAlert/FormErrorAlert";
 
 export default function LoginForm() {
-  const { formData, error, handleChange, handleSubmit } = useLoginForm();
+  const { formData, error, errorIssues, handleChange, handleSubmit } =
+    useLoginForm();
 
   return (
     <div className="card shadow-sm border-0 rounded-4 p-4" style={{ width: "100%", maxWidth: "470px" }}>
@@ -16,12 +18,13 @@ export default function LoginForm() {
         <div className="mb-3">
           <label className="form-label fw-semibold">Username or Email</label>
           <input
-            type="email"
-            name="email"
+            type="text"
+            name="identifier"
             className="form-control form-control-lg"
             placeholder="Enter username or email"
-            value={formData.email}
+            value={formData.identifier}
             onChange={handleChange}
+            autoComplete="username"
             required
           />
         </div>
@@ -35,25 +38,26 @@ export default function LoginForm() {
             placeholder="Enter password"
             value={formData.password}
             onChange={handleChange}
+            autoComplete="current-password"
             required
           />
         </div>
 
-        {error ? <div className="alert alert-danger py-2">{error}</div> : null}
+        <FormErrorAlert issues={errorIssues} message={error} />
 
         <button type="submit" className="btn btn-primary btn-lg w-100">
           Sign In
         </button>
 
         <p className="text-center mt-4 mb-2 text-secondary">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link to="/register" className="text-decoration-none fw-semibold">
             Register
           </Link>
         </p>
 
         <p className="text-center small text-secondary mb-0">
-          Demo accounts: <strong>player1 / Player1!</strong> or <strong>admin / Admin1!</strong>
+          Sign in with the <strong>username</strong> or <strong>email</strong> you used when you registered.
         </p>
       </form>
     </div>

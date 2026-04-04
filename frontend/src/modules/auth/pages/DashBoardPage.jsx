@@ -1,12 +1,16 @@
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
-  function handleLogout() {
-    localStorage.removeItem("accessToken");
-    navigate("/login");
+  async function handleLogout() {
+    await logout();
+    navigate("/login", { replace: true });
   }
+
+  const displayName = user?.username ?? "player";
 
   return (
     <div className="min-vh-100 bg-light">
@@ -15,9 +19,11 @@ export default function DashboardPage() {
           <span className="navbar-brand fw-bold text-primary mb-0">TicTacToang</span>
 
           <div className="ms-auto d-flex align-items-center gap-3">
-            <span className="badge text-bg-warning rounded-pill px-3 py-2">PREMIUM</span>
-            <span className="text-secondary">player1</span>
-            <button className="btn btn-outline-dark btn-sm" onClick={handleLogout}>
+            <span className="badge text-bg-secondary rounded-pill px-3 py-2">
+              {user?.role ?? "player"}
+            </span>
+            <span className="text-secondary">{displayName}</span>
+            <button type="button" className="btn btn-outline-dark btn-sm" onClick={handleLogout}>
               Logout
             </button>
           </div>
@@ -26,7 +32,7 @@ export default function DashboardPage() {
 
       <div className="container py-5">
         <div className="text-center mb-5">
-          <h1 className="fw-bold">Welcome, player1!</h1>
+          <h1 className="fw-bold">Welcome, {displayName}!</h1>
           <p className="text-secondary fs-5">Choose a game mode to start playing</p>
         </div>
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { registerUser } from "../../services/auth.service";
+import { validateRegisterForm } from "../../utils/auth.validation";
 
 const initialForm = {
   username: "",
@@ -14,6 +15,7 @@ export default function useRegisterForm() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState(initialForm);
   const [error, setError] = useState("");
+  const [errorIssues, setErrorIssues] = useState(null);
   const [success, setSuccess] = useState("");
 
   function handleChange(event) {
@@ -28,18 +30,21 @@ export default function useRegisterForm() {
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
+    setErrorIssues(null);
     setSuccess("");
 
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
+    const clientErrors = validateRegisterForm(formData);
+    if (clientErrors.length) {
+      setErrorIssues(clientErrors);
       return;
     }
 
     try {
       await registerUser({
-        username: formData.username,
-        email: formData.email,
+        username: formData.username.trim(),
+        email: formData.email.trim(),
         password: formData.password,
+        confirmPassword: formData.confirmPassword,
         country: formData.country,
       });
 
@@ -48,13 +53,20 @@ export default function useRegisterForm() {
         navigate("/login");
       }, 800);
     } catch (err) {
-      setError(err.message);
+      if (err.validationErrors?.length) {
+        setErrorIssues(err.validationErrors);
+        setError("");
+      } else {
+        setErrorIssues(null);
+        setError(err.message);
+      }
     }
   }
 
   return {
     formData,
     error,
+    errorIssues,
     success,
     handleChange,
     handleSubmit,

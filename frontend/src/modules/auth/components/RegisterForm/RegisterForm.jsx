@@ -1,11 +1,17 @@
 import { Link } from "react-router-dom";
 import useRegisterForm from "./RegisterForm.hook";
-
-const countryOptions = ["Vietnam", "Australia", "USA"];
+import FormErrorAlert from "../FormErrorAlert/FormErrorAlert";
+import {
+  ALLOWED_COUNTRIES,
+  getPasswordRulesStatus,
+  PASSWORD_HINT,
+} from "../../utils/auth.validation";
 
 export default function RegisterForm() {
-  const { formData, error, success, handleChange, handleSubmit } =
+  const { formData, error, errorIssues, success, handleChange, handleSubmit } =
     useRegisterForm();
+
+  const passwordRules = getPasswordRulesStatus(formData.password);
 
   return (
     <div className="card shadow-sm border-0 rounded-4 p-4" style={{ width: "100%", maxWidth: "470px" }}>
@@ -55,11 +61,17 @@ export default function RegisterForm() {
           />
         </div>
 
-        <div className="small text-secondary mb-3">
-          <div>× At least 8 characters</div>
-          <div>× At least 1 number</div>
-          <div>× At least 1 special character</div>
-          <div>× At least 1 uppercase letter</div>
+        <div className="small mb-3">
+          {passwordRules.map((rule) => (
+            <div
+              key={rule.label}
+              className={rule.ok ? "text-success" : "text-secondary"}
+            >
+              <span className="me-1">{rule.ok ? "✓" : "○"}</span>
+              {rule.label}
+            </div>
+          ))}
+          <div className="text-muted mt-2 fst-italic">{PASSWORD_HINT}</div>
         </div>
 
         <div className="mb-3">
@@ -85,7 +97,7 @@ export default function RegisterForm() {
             required
           >
             <option value="">Select country</option>
-            {countryOptions.map((country) => (
+            {ALLOWED_COUNTRIES.map((country) => (
               <option key={country} value={country}>
                 {country}
               </option>
@@ -93,7 +105,7 @@ export default function RegisterForm() {
           </select>
         </div>
 
-        {error ? <div className="alert alert-danger py-2">{error}</div> : null}
+        <FormErrorAlert issues={errorIssues} message={error} />
         {success ? <div className="alert alert-success py-2">{success}</div> : null}
 
         <button type="submit" className="btn btn-primary btn-lg w-100">

@@ -5,7 +5,13 @@ const routes = require("./routes");
 
 const app = express();
 
-app.use(cors());
+const clientOrigin = process.env.CLIENT_URL || "http://localhost:5173";
+app.use(
+  cors({
+    origin: clientOrigin,
+    credentials: true,
+  }),
+);
 app.use(cookieParser());
 app.use(express.json());
 

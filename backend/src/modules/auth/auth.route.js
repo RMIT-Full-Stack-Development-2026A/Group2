@@ -11,6 +11,6 @@ router.get("/testMiddleware", authMiddleware, (req, res) => {
 });
 
 router.post("/logout", authController.logOut);
-
+router.post("/refresh", authController.refresh);
 
 module.exports = router;
