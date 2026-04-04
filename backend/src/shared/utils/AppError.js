@@ -1,3 +1,4 @@
+// API error: message + HTTP code + optional field list.
 class AppError extends Error {
   constructor(message, options = {}) {
     super(message);

@@ -1,7 +1,4 @@
-/**
- * @param {Array<{ message?: string }>|null|undefined} issues
- * @param {string} message — plain fallback (network, single-line API errors)
- */
+// Error alert: bullet list or one message.
 export default function FormErrorAlert({ issues, message }) {
   if (issues?.length) {
     return (

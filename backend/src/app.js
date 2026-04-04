@@ -5,6 +5,7 @@ const routes = require("./routes");
 
 const app = express();
 
+// CORS + cookies: frontend origin (default Vite port).
 const clientOrigin = process.env.CLIENT_URL || "http://localhost:5173";
 app.use(
   cors({

@@ -1,5 +1,6 @@
 import { parseApiErrorPayload } from "../utils/auth.validation";
 
+// Auth API URL. Dev uses /api/... (Vite proxy to backend).
 function resolveAuthBase() {
   const explicit = import.meta.env.VITE_API_AUTH_BASE?.replace(/\/$/, "");
   if (explicit) {
@@ -13,6 +14,7 @@ function resolveAuthBase() {
 
 const API_BASE_URL = resolveAuthBase();
 
+// Extra detail when fetch fails (not only "Failed to fetch").
 function networkErrorMessage(url, err) {
   const msg = err?.message ?? "";
   const isNetwork =
@@ -38,6 +40,7 @@ function networkErrorMessage(url, err) {
     .join(" ");
 }
 
+// Read body as text first; parse JSON when possible.
 async function parseResponseBody(response) {
   const text = await response.text();
   if (!text.trim()) {
@@ -59,6 +62,7 @@ async function authFetch(path, init) {
   }
 }
 
+// Attach field errors to the Error for bullet UI.
 function throwHttpError(data, response) {
   if (data?.errors?.length) {
     const err = new Error("Please review the issues below and try again.");

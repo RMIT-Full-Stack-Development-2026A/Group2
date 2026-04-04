@@ -1,7 +1,4 @@
-/**
- * Keep rule text in sync with backend: backend/src/modules/auth/auth.validation.js
- */
-/** Keep in sync with backend/src/modules/auth/auth.validation.js */
+// Sign-up checks. Country list must match backend auth.validation.js.
 export const ALLOWED_COUNTRIES = [
   "Argentina",
   "Australia",
@@ -60,9 +57,8 @@ export const ALLOWED_COUNTRIES = [
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_-]+$/;
 
-/** SRS 1.2.2(c): total length must be less than 255 characters */
+// Email rules match backend auth.validation.js.
 const EMAIL_MAX_LENGTH = 255;
-/** SRS 1.2.2(d): no spaces or prohibited characters ( ) ; : */
 const EMAIL_FORBIDDEN_CHARS = /[\s();:]/;
 const TLD_TYPO_BASES = ["com", "net", "org", "edu", "gov"];
 
@@ -73,7 +69,6 @@ function isLikelyTldTypo(tld) {
   );
 }
 
-/** SRS 1.2.2 — keep in sync with backend/src/modules/auth/auth.validation.js */
 function getStrictEmailViolations(trimmed) {
   const out = [];
   if (trimmed.length >= EMAIL_MAX_LENGTH) {
@@ -246,10 +241,11 @@ export function validateRegisterForm(form) {
   return errors;
 }
 
-/** Single password hint shown once when multiple password rules fail */
+// Password hint under the field.
 export const PASSWORD_HINT =
   "MyP@ssw0rd — 8+ characters, at least one uppercase letter, one number, and one symbol (!@#$…).";
 
+// Field errors as one string (fallback when not using the list UI).
 export function formatValidationErrors(errors) {
   if (!errors?.length) return "";
   const items = errors.map((e) => e.message.trim());
@@ -268,6 +264,7 @@ export function getPasswordRulesStatus(password) {
   ];
 }
 
+// Human-readable text from an API error response.
 export function parseApiErrorPayload(data, response) {
   const statusSuffix = response
     ? ` (HTTP ${response.status}${response.statusText ? ` ${response.statusText}` : ""})`

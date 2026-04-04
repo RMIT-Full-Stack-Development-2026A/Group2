@@ -1,3 +1,4 @@
+// JSON error body: status, code, message, optional errors.
 function sendError(res, statusCode, code, message, errors) {
   const body = {
     status: "error",

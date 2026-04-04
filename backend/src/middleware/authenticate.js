@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const userRepository = require("../modules/auth/auth.repository");
 
+// Safe user object for req.user (no password hash).
 function toAuthUserDto(userDoc) {
   if (!userDoc) return null;
   return {
@@ -12,6 +13,7 @@ function toAuthUserDto(userDoc) {
   };
 }
 
+// Bearer JWT -> req.user; rejects inactive accounts.
 async function validateToken(req, res, next) {
   try {
     const authHeader = req.headers.authorization;

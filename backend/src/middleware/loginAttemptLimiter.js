@@ -1,3 +1,4 @@
+// Lock out IP + login id after 5 bad passwords in 60s.
 const WINDOW_MS = 60_000;
 const MAX_ATTEMPTS = 5;
 

@@ -1,6 +1,4 @@
-/**
- * Keep rule text in sync with frontend: frontend/src/modules/auth/utils/auth.validation.js
- */
+// Sign-up and sign-in field checks (same rules as the frontend).
 const ALLOWED_COUNTRIES = [
   "Argentina",
   "Australia",
@@ -59,11 +57,11 @@ const ALLOWED_COUNTRIES = [
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_-]+$/;
 
-/** SRS 1.2.2(c): total length must be less than 255 characters */
+// Max email length.
 const EMAIL_MAX_LENGTH = 255;
-/** SRS 1.2.2(d): no spaces or prohibited characters ( ) ; : */
+// Email cannot contain spaces or ( ) ; :
 const EMAIL_FORBIDDEN_CHARS = /[\s();:]/;
-/** Common TLDs — if domain ends with base + one extra char (e.g. .coma), reject as likely typo */
+// Likely typos: .coma vs .com, etc.
 const TLD_TYPO_BASES = ["com", "net", "org", "edu", "gov"];
 
 function isLikelyTldTypo(tld) {
@@ -73,10 +71,7 @@ function isLikelyTldTypo(tld) {
   );
 }
 
-/**
- * SRS 1.2.2 email rules (Medium) — keep in sync with frontend auth.validation.js
- * Returns human-readable violation messages (may be multiple).
- */
+// Email issues to show (zero or more).
 function getStrictEmailViolations(trimmed) {
   const out = [];
   if (trimmed.length >= EMAIL_MAX_LENGTH) {

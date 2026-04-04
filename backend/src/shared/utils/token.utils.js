@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 
+// Access + refresh JWT; payload has user id and role.
 const ACCESS_TOKEN_TTL = "15m";
 const REFRESH_TOKEN_TTL = "7d";
 

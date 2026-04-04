@@ -1,3 +1,4 @@
+// After JWT: require role in allowed list.
 function authorizeRole(...allowedRoles) {
   const set = new Set(allowedRoles.flat());
   return function roleMiddleware(req, res, next) {

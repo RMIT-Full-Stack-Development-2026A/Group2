@@ -7,6 +7,7 @@ import {
 } from "react";
 import { logoutUser } from "../services/auth.service";
 
+// Logged-in user + token; persisted in localStorage.
 const AuthContext = createContext(null);
 
 const STORAGE_TOKEN = "accessToken";
@@ -54,7 +55,7 @@ export function AuthProvider({ children }) {
     try {
       await logoutUser();
     } catch {
-      /* still clear client session */
+      // Clear local session even when logout request fails.
     }
     persistSession("", null);
   }, [persistSession]);
