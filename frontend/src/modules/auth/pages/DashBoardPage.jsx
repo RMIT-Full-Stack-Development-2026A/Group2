@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function DashboardPage() {
@@ -63,6 +63,8 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
+          
+          <Link to="/profile" className="col-md-4 text-decoration-none">View Profile</Link>
         </div>
       </div>
     </div>

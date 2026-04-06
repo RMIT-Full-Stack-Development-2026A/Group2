@@ -1,85 +1,101 @@
 import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
+    createContext,
+    useCallback,
+    useContext,
+    useMemo,
+    useRef,
+    useState,
+    useEffect,
 } from "react";
-import { logoutUser } from "../services/auth.service";
+import { logoutUser, refreshToken } from "../services/auth.service";
+import { initHttpClient } from "../../../lib/httpClient";
 
-// Logged-in user + token; persisted in localStorage.
+// All auth state kept in React state only (tokens in HTTP-only cookies).
 const AuthContext = createContext(null);
 
-const STORAGE_TOKEN = "accessToken";
-const STORAGE_USER = "authUser";
-
-function readStoredUser() {
-  try {
-    const raw = localStorage.getItem(STORAGE_USER);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
-}
-
 export function AuthProvider({ children }) {
-  const [accessToken, setAccessToken] = useState(
-    () => localStorage.getItem(STORAGE_TOKEN) ?? "",
-  );
-  const [user, setUser] = useState(readStoredUser);
+    const [accessToken, setAccessToken] = useState("");
+    const [user, setUser] = useState(null);
+    const [isLoadingAuth, setIsLoadingAuth] = useState(true);
+    const accessTokenRef = useRef("");
 
-  const persistSession = useCallback((token, nextUser) => {
-    if (token) {
-      localStorage.setItem(STORAGE_TOKEN, token);
-    } else {
-      localStorage.removeItem(STORAGE_TOKEN);
-    }
-    if (nextUser) {
-      localStorage.setItem(STORAGE_USER, JSON.stringify(nextUser));
-    } else {
-      localStorage.removeItem(STORAGE_USER);
-    }
-    setAccessToken(token ?? "");
-    setUser(nextUser ?? null);
-  }, []);
+    useEffect(() => {
+        accessTokenRef.current = accessToken;
+    }, [accessToken]);
 
-  const login = useCallback(
-    (token, nextUser) => {
-      persistSession(token, nextUser);
-    },
-    [persistSession],
-  );
+    // On app mount, try to restore session using refresh token (in HTTP-only cookie)
+    useEffect(() => {
+        const restoreSession = async () => {
+            try {
+                const data = await refreshToken();
+                if (data?.accessToken && data?.user) {
+                    accessTokenRef.current = data.accessToken;
+                    setAccessToken(data.accessToken);
+                    setUser(data.user);
+                }
+            } catch {
+                // No valid refresh token or session expired
+                accessTokenRef.current = "";
+                setAccessToken("");
+                setUser(null);
+            } finally {
+                setIsLoadingAuth(false);
+            }
+        };
 
-  const logout = useCallback(async () => {
-    try {
-      await logoutUser();
-    } catch {
-      // Clear local session even when logout request fails.
-    }
-    persistSession("", null);
-  }, [persistSession]);
+        // Initialize HTTP client with token refresh callbacks
+        initHttpClient(
+            refreshToken,
+            () => accessTokenRef.current,
+            setAccessToken,
+        );
 
-  const value = useMemo(
-    () => ({
-      accessToken,
-      user,
-      isAuthenticated: Boolean(accessToken),
-      login,
-      logout,
-    }),
-    [accessToken, user, login, logout],
-  );
+        restoreSession();
+    }, []);
 
-  return (
-    <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-  );
+    const persistSession = useCallback((token, nextUser) => {
+        accessTokenRef.current = token ?? "";
+        setAccessToken(token ?? "");
+        setUser(nextUser ?? null);
+    }, []);
+
+    const login = useCallback(
+        (token, nextUser) => {
+            persistSession(token, nextUser);
+        },
+        [persistSession],
+    );
+
+    const logout = useCallback(async () => {
+        try {
+            await logoutUser();
+        } catch {
+            // Clear local session even when logout request fails.
+        }
+        persistSession("", null);
+    }, [persistSession]);
+
+    const value = useMemo(
+        () => ({
+            accessToken,
+            user,
+            isAuthenticated: Boolean(accessToken),
+            isLoadingAuth,
+            login,
+            logout,
+        }),
+        [accessToken, user, isLoadingAuth, login, logout],
+    );
+
+    return (
+        <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+    );
 }
 
 export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) {
-    throw new Error("useAuth must be used within AuthProvider");
-  }
-  return ctx;
+    const ctx = useContext(AuthContext);
+    if (!ctx) {
+        throw new Error("useAuth must be used within AuthProvider");
+    }
+    return ctx;
 }
