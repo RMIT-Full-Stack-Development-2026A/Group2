@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import useLoginForm from "./LoginForm.hook";
+import useLoginForm from "../../hooks/useLoginForm";
 import FormErrorAlert from "../FormErrorAlert/FormErrorAlert";
 
 export default function LoginForm() {

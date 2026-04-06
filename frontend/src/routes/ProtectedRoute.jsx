@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "../modules/auth/context/AuthContext";
+import { useAuth } from "../modules/auth/hooks/useAuth";
 
 // Requires login; saves return path for after login.
 export default function ProtectedRoute({ children }) {

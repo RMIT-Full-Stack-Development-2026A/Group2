@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { registerUser } from "../../services/auth.service";
-import { validateRegisterForm } from "../../utils/auth.validation";
+import { registerUser } from "../services/auth.service";
+import { validateRegisterForm } from "../utils/auth.validation";
 
 const initialForm = {
   username: "",

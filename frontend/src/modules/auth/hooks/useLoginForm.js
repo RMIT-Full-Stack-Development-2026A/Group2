@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { loginUser } from "../../services/auth.service";
-import { useAuth } from "../../context/AuthContext";
-import { validateEmail } from "../../utils/auth.validation";
+import { loginUser } from "../services/auth.service";
+import { useAuth } from "./useAuth";
+import { validateEmail } from "../utils/auth.validation";
 
 export default function useLoginForm() {
   const navigate = useNavigate();

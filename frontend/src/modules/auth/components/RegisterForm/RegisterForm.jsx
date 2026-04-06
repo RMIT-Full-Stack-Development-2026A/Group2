@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import useRegisterForm from "./RegisterForm.hook";
+import useRegisterForm from "../../hooks/useRegisterForm";
 import FormErrorAlert from "../FormErrorAlert/FormErrorAlert";
 import {
   ALLOWED_COUNTRIES,

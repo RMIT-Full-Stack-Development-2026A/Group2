@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../modules/auth/context/AuthContext";
+import { useAuth } from "../modules/auth/hooks/useAuth";
 
 // Requires login + allowed role.
 export default function RoleRoute({ allowedRoles, children }) {

@@ -1,14 +1,13 @@
 import {
   createContext,
   useCallback,
-  useContext,
   useMemo,
   useState,
 } from "react";
 import { logoutUser } from "../services/auth.service";
 
 // Logged-in user + token; persisted in localStorage.
-const AuthContext = createContext(null);
+export const AuthContext = createContext(null);
 
 const STORAGE_TOKEN = "accessToken";
 const STORAGE_USER = "authUser";
@@ -74,12 +73,4 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) {
-    throw new Error("useAuth must be used within AuthProvider");
-  }
-  return ctx;
 }
