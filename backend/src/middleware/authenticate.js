@@ -1,13 +1,31 @@
-import jwt from "jsonwebtoken";
-import { UserModel } from "../modules/auth/auth.model.js";
+const jwt = require("jsonwebtoken");
+const userRepository = require("../modules/auth/auth.repository");
 
+// Safe user object for req.user (no password hash).
+function toAuthUserDto(userDoc) {
+  if (!userDoc) return null;
+  return {
+    id: userDoc._id,
+    username: userDoc.username,
+    email: userDoc.email,
+    role: userDoc.role,
+    accountStatus: userDoc.accountStatus,
+  };
+}
+
+// Bearer JWT -> req.user; rejects inactive accounts.
 async function validateToken(req, res, next) {
   try {
-    const authHeader = req.headers["authorization"];
+    const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(" ")[1];
 
     if (!token) {
-      return res.status(401).json({ message: "No token provided" });
+      return res.status(401).json({
+        status: "error",
+        code: "NO_TOKEN",
+        message:
+          "No access token was sent. Example: send Authorization: Bearer <your_jwt>.",
+      });
     }
 
     jwt.verify(
@@ -15,24 +33,45 @@ async function validateToken(req, res, next) {
       process.env.ACCESS_TOKEN_SECRET,
       async (err, decoded) => {
         if (err) {
-          console.error("Token verification error:", err);
-          return res.status(401).json({ message: "Invalid token" });
+          return res.status(401).json({
+            status: "error",
+            code: "INVALID_TOKEN",
+            message:
+              "Your session token is invalid or expired. Example: sign in again to get a new token.",
+          });
         }
 
-        const user = await UserModel.findById(decoded.id);
+        const user = await userRepository.findById(decoded.id);
 
         if (!user) {
-          return res.status(401).json({ message: "User not found" });
+          return res.status(401).json({
+            status: "error",
+            code: "USER_NOT_FOUND",
+            message:
+              "No user matches this token. Example: register a new account or sign in again.",
+          });
         }
 
-        req.user = user;
+        if (user.accountStatus !== "active") {
+          return res.status(403).json({
+            status: "error",
+            code: "ACCOUNT_INACTIVE",
+            message:
+              "This account is deactivated. Example: contact an administrator to restore access.",
+          });
+        }
+
+        req.user = toAuthUserDto(user);
         next();
       },
     );
   } catch (err) {
-    console.error("Error validating token:", err);
-    return res.status(401).json({ message: "Fail to validate" });
+    return res.status(401).json({
+      status: "error",
+      code: "AUTH_ERROR",
+      message: "Authentication failed.",
+    });
   }
 }
 
-export { validateToken };
+module.exports = validateToken;
