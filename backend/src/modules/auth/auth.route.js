@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post("/register", authController.signUp);
 router.post("/login", authController.logIn);
-router.get("/testMiddleware", authMiddleware, (req, res) => {
+router.get("/profile", authMiddleware, (req, res) => {
     res.json({status: "success", user: req.user});
 });
 

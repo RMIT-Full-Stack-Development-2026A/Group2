@@ -3,12 +3,17 @@ import { useAuth } from "../modules/auth/hooks/useAuth";
 
 // Requires login; saves return path for after login.
 export default function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useAuth();
-  const location = useLocation();
+    const { isAuthenticated, isLoadingAuth } = useAuth();
+    const location = useLocation();
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
-  }
+    // Wait for initial refresh attempt before deciding auth redirect.
+    if (isLoadingAuth) {
+        return null;
+    }
 
-  return children;
+    if (!isAuthenticated) {
+        return <Navigate to="/login" replace state={{ from: location }} />;
+    }
+
+    return children;
 }

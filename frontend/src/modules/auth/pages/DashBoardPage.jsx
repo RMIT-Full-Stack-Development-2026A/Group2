@@ -63,6 +63,8 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
+          
+          <Link to="/profile" className="col-md-4 text-decoration-none">View Profile</Link>
         </div>
       </div>
     </div>

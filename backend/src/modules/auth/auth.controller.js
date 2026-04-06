@@ -128,10 +128,11 @@ async function refresh(req, res) {
   }
 
   try {
-    const newAccessToken = await authService.refresh(cookies.jwt);
+    const { accessToken , user } = await authService.refresh(cookies.jwt);
     res.json({
       status: "success",
-      accessToken: newAccessToken,
+      accessToken,
+      user,
     });
   } catch (err) {
     handleControllerError(res, err);
