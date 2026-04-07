@@ -119,6 +119,17 @@ async function logIn(identifier, password) {
         );
     }
 
+    if (!user.passwordHash) {
+        throw new AppError(
+            "Invalid email/username or password. Check spelling and try again.",
+            {
+                code: "INVALID_CREDENTIALS",
+                statusCode: 401,
+                failedLoginAttempt: true,
+            },
+        );
+    }
+
     const correctPassword = await bcrypt.compare(password, user.passwordHash);
 
     if (!correctPassword) {
