@@ -1,5 +1,5 @@
 import { useState } from "react";
-import GameSetupPanel from "../components/GameSetupPanel/GameSetupPanel";
+import LocalGameSetupPanel from "../components/GameSetupPanel/LocalGameSetupPanel";
 
 export default function GamePage() {
   const [started, setStarted] = useState(false);
@@ -12,7 +12,7 @@ export default function GamePage() {
 
   return (
     <div className="text-center">
-      <GameSetupPanel onStart={handleStart} />
+      <LocalGameSetupPanel onStart={handleStart} />
     </div>
   );
 }
