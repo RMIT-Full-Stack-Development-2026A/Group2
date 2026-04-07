@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 const { Schema, model, Types } = mongoose;
 
 const GAME_MODES = ["single_player", "two_player", "online_match"];
@@ -59,4 +59,4 @@ const gameSessionSchema = new Schema(
   },
 );
 
-export default model("GameSession", gameSessionSchema);
+module.exports = model("GameSession", gameSessionSchema);

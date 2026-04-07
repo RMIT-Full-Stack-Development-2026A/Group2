@@ -1,4 +1,4 @@
-const User = require("./auth.model");
+const User = require("./model/user.model");
 
 function escapeRegex(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -14,11 +14,13 @@ async function findByUsernameOrEmail(identifier) {
     return null;
   }
   if (trimmed.includes("@")) {
-    return findByEmail(trimmed);
+    return User.findOne({ email: trimmed.toLowerCase() }).select(
+      "+passwordHash",
+    );
   }
   return User.findOne({
     username: new RegExp(`^${escapeRegex(trimmed)}$`, "i"),
-  });
+  }).select("+passwordHash");
 }
 
 async function createUser(userData) {

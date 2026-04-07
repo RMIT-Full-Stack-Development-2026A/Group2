@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const { Schema, model, Types } = mongoose;
 
@@ -36,5 +36,5 @@ const subscriptionPlanSchema = new Schema(
   }
 );
 
-export default model("SubscriptionPlan", subscriptionPlanSchema);
+module.exports = model("SubscriptionPlan", subscriptionPlanSchema);
 

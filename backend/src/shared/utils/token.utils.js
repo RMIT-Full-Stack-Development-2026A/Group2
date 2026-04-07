@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+const jwt = require("jsonwebtoken");
 
 // Access + refresh JWT; payload has user id and role.
 const ACCESS_TOKEN_TTL = "15m";

@@ -3,21 +3,21 @@
  * Run from backend root: npm run seed
  * Requires MONGO_URI in .env
  */
-import dotenv from "dotenv";
-import mongoose from "mongoose";
+const dotenv = require("dotenv");
+const mongoose = require("mongoose");
 
-import User from "../modules/auth/model/user.model.js";
-import Wallet from "../modules/wallet/model/wallet.model.js";
-import Transaction from "../modules/wallet/model/transaction.model.js";
-import SubscriptionPlan from "../modules/premium/model/subscriptionPlan.model.js";
-import UserSubscription from "../modules/premium/model/userSubscription.model.js";
-import BoardStyle from "../modules/media/model/boardStyle.model.js";
-import Marker from "../modules/media/model/marker.model.js";
-import GameSession from "../modules/game/model/gameSession.model.js";
-import GameParticipant from "../modules/game/model/gameParticipant.model.js";
-import Move from "../modules/game/model/move.model.js";
-import OnlineGameRoom from "../modules/multiplayer/model/onlineGameRoom.model.js";
-import Message from "../modules/multiplayer/model/message.model.js";
+const User = require("../modules/auth/model/user.model");
+const Wallet = require("../modules/wallet/model/wallet.model");
+const Transaction = require("../modules/wallet/model/transaction.model");
+const SubscriptionPlan = require("../modules/premium/model/subscriptionPlan.model");
+const UserSubscription = require("../modules/premium/model/userSubscription.model");
+const BoardStyle = require("../modules/media/model/boardStyle.model");
+const Marker = require("../modules/media/model/marker.model");
+const GameSession = require("../modules/game/model/gameSession.model");
+const GameParticipant = require("../modules/game/model/gameParticipant.model");
+const Move = require("../modules/game/model/move.model");
+const OnlineGameRoom = require("../modules/multiplayer/model/onlineGameRoom.model");
+const Message = require("../modules/multiplayer/model/message.model");
 
 dotenv.config();
 

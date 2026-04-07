@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const markerSchema = new mongoose.Schema(
   {
@@ -25,4 +25,4 @@ const markerSchema = new mongoose.Schema(
 
 const Marker = mongoose.model("Marker", markerSchema);
 
-export default Marker;
+module.exports = Marker;

@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const TRANSACTION_STATUSES = ["pending", "success", "failed", "cancelled", "refunded"];
 
@@ -55,4 +55,4 @@ const transactionSchema = new mongoose.Schema(
 
 const Transaction = mongoose.model("Transaction", transactionSchema);
 
-export default Transaction;
+module.exports = Transaction;

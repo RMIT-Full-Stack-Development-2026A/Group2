@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const { Schema, model, Types } = mongoose;
 
@@ -42,4 +42,4 @@ const gameParticipantSchema = new Schema(
   }
 );
 
-export default model("GameParticipant", gameParticipantSchema);
+module.exports = model("GameParticipant", gameParticipantSchema);

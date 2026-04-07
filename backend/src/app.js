@@ -20,4 +20,6 @@ app.get("/", (_req, res) => {
   res.send("Backend is running");
 });
 
-export default app;
+app.use("/api/auth", routes.authRouter);
+
+module.exports = app;
