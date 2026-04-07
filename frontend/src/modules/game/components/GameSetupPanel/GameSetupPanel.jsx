@@ -133,7 +133,7 @@ export default function GameSetupPanel() {
         <div style={{ flex: 1 }}>
           <label style={{ fontWeight: 600 }}>Player 1 Marker</label>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
-            {markers.map(m => (
+            {markers.filter(m => m !== player2Marker).map(m => (
               <button key={m}
                 onClick={() => handleMarkerChange(1, m)}
                 style={{
@@ -151,7 +151,7 @@ export default function GameSetupPanel() {
         <div style={{ flex: 1 }}>
           <label style={{ fontWeight: 600 }}>Player 2 Marker</label>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
-            {markers.map(m => (
+            {markers.filter(m => m !== player1Marker).map(m => (
               <button key={m}
                 onClick={() => handleMarkerChange(2, m)}
                 style={{
