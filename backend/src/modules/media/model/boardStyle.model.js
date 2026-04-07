@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const boardStyleSchema = new mongoose.Schema(
   {
@@ -47,4 +47,4 @@ const boardStyleSchema = new mongoose.Schema(
 
 const BoardStyle = mongoose.model("BoardStyle", boardStyleSchema);
 
-export default BoardStyle;
+module.exports = BoardStyle;

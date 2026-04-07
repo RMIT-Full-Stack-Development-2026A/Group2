@@ -1,4 +1,4 @@
-const User = require("./auth.model");
+const User = require("./model/user.model");
 
 function escapeRegex(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

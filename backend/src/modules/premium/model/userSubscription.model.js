@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const SUBSCRIPTION_STATUSES = ["active", "expired", "cancelled", "pending"];
 
@@ -42,4 +42,4 @@ const userSubscriptionSchema = new mongoose.Schema(
 
 const UserSubscription = mongoose.model("UserSubscription", userSubscriptionSchema);
 
-export default UserSubscription;
+module.exports = UserSubscription;

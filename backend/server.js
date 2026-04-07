@@ -1,6 +1,6 @@
-import dotenv from "dotenv";
-import mongoose from "mongoose";
-import app from "./src/app.js";
+const dotenv = require("dotenv");
+const mongoose = require("mongoose");
+const app = require("./src/app");
 
 dotenv.config();
 
@@ -17,7 +17,7 @@ async function startServer() {
     console.log("Connected to MongoDB");
 
     app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
+      console.log(`Server is running at http://localhost:${PORT}`);
     });
   } catch (error) {
     console.error("Failed to start server:", error.message);

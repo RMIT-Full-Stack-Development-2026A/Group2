@@ -20,4 +20,4 @@ app.get("/", (_req, res) => {
   res.send("Backend is running");
 });
 
-export default app;
+module.exports = app;
