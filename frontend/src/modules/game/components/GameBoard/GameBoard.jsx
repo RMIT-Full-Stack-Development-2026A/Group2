@@ -2,27 +2,13 @@ import useGameBoard from "../../hooks/useGameBoard";
 import BoardCell from "../GameBoard/sub-components/BoardCell"
 import BoardHeader from "./sub-components/BoardHeader";
 import WinnerBanner from "./sub-components/WinnerBanner";
+import { boardThemes } from "../../utils/board.utils";
 
 
-const boardThemes = {
-  classic: {
-    background: "#ffffff",
-    border: "2px solid #e2e8f0",
-  },
-  dark: {
-    background: "#1e1e2e",
-    border: "2px solid rgba(255,255,255,0.1)",
-  },
-  wood: {
-    background: "#fef9c3",
-    border: "2px solid #d97706",
-  },
-};
-
-export default function GameBoard({player1Marker, player2Marker, boardStyle, player1, player2}) {
+export default function GameBoard({player1Marker, player2Marker, boardStyle, player1, player2, boardSize, firstTurn}) {
     const {
-        board, handleCellClick, currentPlayer, gameStatus, winner, resetGame
-    } = useGameBoard(player1Marker, player2Marker);
+        board,winningCells, timer, currentPlayer, gameStatus, winner, aborted, handleCellClick,  resetGame, abortGame
+    } = useGameBoard(player1Marker, player2Marker, boardSize, firstTurn);
     const themeStyle = boardThemes[boardStyle];
 
     return(
@@ -33,6 +19,10 @@ export default function GameBoard({player1Marker, player2Marker, boardStyle, pla
                 player1={player1}
                 player2={player2}
                 gameStatus={gameStatus}
+                timer={timer}
+                aborted={aborted}
+                abortGame={abortGame}
+                resetGame={resetGame}
             />
             
             <div style={{display: "inline-block",padding: 12,
@@ -46,7 +36,8 @@ export default function GameBoard({player1Marker, player2Marker, boardStyle, pla
                             <BoardCell  key={colIndex} 
                             value = {cell}
                             theme={boardStyle}
-                            onClick={() => handleCellClick(rowIndex, colIndex)}/>
+                            onClick={() => handleCellClick(rowIndex, colIndex)}
+                            isWinning={winningCells.some(([r,c]) => r === rowIndex && c === colIndex)}/>
                     ))}
                     </div>
                 ))}
