@@ -1,7 +1,8 @@
 import { useState } from "react";
 import LocalGameSetupPanel from "../components/GameSetupPanel/LocalGameSetupPanel";
+import GameBoard from "../components/GameBoard/GameBoard";
 
-export default function GamePage() {
+export default function LocalGamePage() {
   const [started, setStarted] = useState(false);
   const [gameConfig, setGameConfig] = useState(null);
 
@@ -12,7 +13,18 @@ export default function GamePage() {
 
   return (
     <div className="text-center">
-      <LocalGameSetupPanel onStart={handleStart} />
+      {!started ? (
+        <LocalGameSetupPanel onStart={handleStart} />
+      ) : (
+        <GameBoard 
+          player1={gameConfig.player1}
+          player2={gameConfig.player2}
+          player1Marker={gameConfig.player1Marker} 
+          player2Marker={gameConfig.player2Marker}
+          boardStyle={gameConfig.boardStyle}
+        />
+      )}
     </div>
   );
+
 }

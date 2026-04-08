@@ -1,6 +1,6 @@
 import { useState } from "react"
 
-export default function useGameSetupPanel() {
+export default function useGameSetupPanel(onStart) {
   const [player1, setPlayer1] = useState("Player1");
   const [player2, setPlayer2] = useState("");
   const [firstTurn, setFirstTurn] = useState(1);
@@ -50,6 +50,15 @@ export default function useGameSetupPanel() {
       setError("Name can only contain letters, numbers, and spaces");
       return;
     }
+    onStart({
+      player1,
+      player2,
+      firstTurn,
+      boardSize,
+      boardStyle,      
+      player1Marker,
+      player2Marker,
+    });
   }
 
   return {

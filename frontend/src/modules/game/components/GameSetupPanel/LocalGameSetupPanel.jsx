@@ -5,7 +5,7 @@ import PlayerCard from "./sub-components/PlayerCard";
 import MarkerPicker from "./sub-components/MarkerPicker";
 
 
-export default function LocalGameSetupPanel() {
+export default function LocalGameSetupPanel({onStart}) {
   const {
     player1, player2, firstTurn,
     boardSize, boardStyle,
@@ -17,7 +17,7 @@ export default function LocalGameSetupPanel() {
     handleBoardStyle,
     handleMarkerChange,
     handleGameStart,
-  } = useGameSetupPanel();
+  } = useGameSetupPanel(onStart);
 
   return (
     <div style={{ maxWidth: 500, margin: "auto", padding: 20}}>
