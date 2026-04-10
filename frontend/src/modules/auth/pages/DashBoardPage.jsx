@@ -37,7 +37,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="row g-4 justify-content-center">
-          <div className="col-md-4">
+          <div className="col-md-4" onClick={() => navigate("/game/local")} style={{ cursor: "pointer" }}>
             <div className="card h-100 shadow-sm border-0 rounded-4">
               <div className="card-body p-4">
                 <h4 className="fw-bold">Local 2-Player</h4>

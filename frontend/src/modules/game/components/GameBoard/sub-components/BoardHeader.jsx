@@ -1,7 +1,10 @@
+import {  useNavigate } from "react-router-dom";
 
-export default function BoardHeader({ player1, player2, currentPlayer, timer, aborted, abortGame, resetGame, gameStatus}) {
+
+export default function BoardHeader({ player1, player2, player1Marker, player2Marker, currentPlayer, timer, aborted, abortGame, resetGame, gameStatus}) {
 
     const formatTime = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+    const navigate = useNavigate();
 
     return (
         <div style={{ display: "flex", alignItems: "center", gap: 24, marginBottom: 12 }}>
@@ -30,6 +33,8 @@ export default function BoardHeader({ player1, player2, currentPlayer, timer, ab
                 <div style={{ fontWeight: 600, fontSize: 14, color: currentPlayer === 1 ? "#3b82f6" : "#999" }}>
                     {player1}
                 </div>
+
+                <div style={{ fontSize: 20 }}>{player1Marker}</div>
                 
                 {currentPlayer === 1 && (
                 <div style={{ fontSize: 11, color: "#3b82f6", fontWeight: 600, letterSpacing: "0.05em" }}>
@@ -65,6 +70,8 @@ export default function BoardHeader({ player1, player2, currentPlayer, timer, ab
                 <div style={{ fontWeight: 600, fontSize: 14, color: currentPlayer === 2 ? "#3b82f6" : "#999" }}>
                     {player2}
                 </div>
+
+                <div style={{ fontSize: 20 }}>{player2Marker}</div>
                 
                 {currentPlayer === 2 && (
                 <div style={{ fontSize: 11, color: "#3b82f6", fontWeight: 600, letterSpacing: "0.05em" }}>
@@ -96,9 +103,25 @@ export default function BoardHeader({ player1, player2, currentPlayer, timer, ab
             </div>
             
             {aborted && (
+                
                 <div style={{ fontSize: 12, color: "#ef4444", fontWeight: 600 }}>
-                GAME ABORTED
+                    GAME ABORTED
+
+                    <div> 
+                        <button
+                        onClick={() => navigate("/dashboard")}
+                        style={{
+                        padding: "6px 14px", background: "#e2e8f0",
+                        color: "#333", border: "none", borderRadius: 6,
+                        fontWeight: 600, cursor: "pointer"
+                        }}>
+                        Back to Menu
+                        </button>
+                    </div>
                 </div>
+
+                
+                
             )}
             
         </div>

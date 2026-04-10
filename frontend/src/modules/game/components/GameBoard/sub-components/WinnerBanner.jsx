@@ -1,5 +1,9 @@
+import { useNavigate } from "react-router-dom";
 
 export default function WinnerBanner({ winner, player1, player2, resetGame }) {
+
+  const navigate = useNavigate();
+
   if (winner === null) return null;
 
   return (
@@ -28,6 +32,17 @@ export default function WinnerBanner({ winner, player1, player2, resetGame }) {
           }}>
           Play Again
         </button>
+
+        <button
+          onClick={() => navigate("/dashboard")}
+          style={{
+            padding: "12px 32px", background: "#e2e8f0",
+            color: "#333", border: "none", borderRadius: 8,
+            fontWeight: 600, fontSize: 16, cursor: "pointer",
+          }}>
+          Back to Menu
+        </button>
+
       </div>
     </div>
   )

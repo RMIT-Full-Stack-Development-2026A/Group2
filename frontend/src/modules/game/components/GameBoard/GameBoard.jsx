@@ -18,6 +18,8 @@ export default function GameBoard({player1Marker, player2Marker, boardStyle, pla
                 currentPlayer={currentPlayer}
                 player1={player1}
                 player2={player2}
+                player1Marker={player1Marker}
+                player2Marker={player2Marker}
                 gameStatus={gameStatus}
                 timer={timer}
                 aborted={aborted}
