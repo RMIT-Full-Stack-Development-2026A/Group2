@@ -1,10 +1,11 @@
+// Online multiplayer: matchmaking + connection
 const mongoose = require("mongoose");
 
 const { Schema, model, Types } = mongoose;
 
-const ROOM_STATUSES = ["waiting", "active", "closed", "finished"];
+const LOBBY_STATUSES = ["waiting", "active", "closed", "finished"];
 
-const onlineGameRoomSchema = new Schema(
+const matchLobbySchema = new Schema(
   {
     sessionId: {
       type: Types.ObjectId,
@@ -18,7 +19,7 @@ const onlineGameRoomSchema = new Schema(
       required: true,
       index: true,
     },
-    roomNumber: {
+    lobbyCode: {
       type: String,
       required: true,
       unique: true,
@@ -27,17 +28,17 @@ const onlineGameRoomSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ROOM_STATUSES,
-      default: ROOM_STATUSES[0],
+      enum: LOBBY_STATUSES,
+      default: LOBBY_STATUSES[0],
       required: true,
     },
     startedAt: Date,
     endedAt: Date,
   },
   {
-    timestamps: { createdAt: true, updatedAt: false }, 
+    timestamps: { createdAt: true, updatedAt: false },
     versionKey: false,
   }
 );
 
-module.exports = model("OnlineGameRoom", onlineGameRoomSchema);
+module.exports = model("MatchLobby", matchLobbySchema);

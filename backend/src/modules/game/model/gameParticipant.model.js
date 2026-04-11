@@ -17,11 +17,6 @@ const gameParticipantSchema = new Schema(
       ref: "User",
       default: null,
     },
-    markerID: {
-      type: Types.ObjectId,
-      ref: "Marker",
-      default: null,
-    },
     participantType: {
       type: String,
       enum: PARTICIPANT_TYPES,

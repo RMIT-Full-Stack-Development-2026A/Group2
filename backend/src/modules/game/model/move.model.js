@@ -26,6 +26,11 @@ const moveSchema = new Schema(
       required: true,
       min: 0,
     },
+    colIndex: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
     playedAt: {
       type: Date,
       default: Date.now,

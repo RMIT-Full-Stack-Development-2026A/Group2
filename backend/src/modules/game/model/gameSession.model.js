@@ -13,11 +13,6 @@ const GAME_RESULTS = [
 
 const gameSessionSchema = new Schema(
   {
-    boardStyleID: {
-      type: Types.ObjectId,
-      ref: "BoardStyle",
-      default: null,
-    },
     gameMode: {
       type: String,
       enum: GAME_MODES,

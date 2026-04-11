@@ -9,8 +9,8 @@ router.post("/login", authController.logIn);
 router.get("/profile", authMiddleware, (req, res) => {
     res.json({status: "success", user: req.user});
 });
-
-router.post("/logout", authController.logOut);
-router.post("/refresh", authController.refresh);
+// logout needs middleware, only user log iun can use refresh token
+// router.post("/logout", authController.logOut);
+// router.post("/refresh", authController.refresh);
 
 module.exports = router;
