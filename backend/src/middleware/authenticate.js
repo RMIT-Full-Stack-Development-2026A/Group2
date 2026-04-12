@@ -10,6 +10,11 @@ function toAuthUserDto(userDoc) {
     email: userDoc.email,
     role: userDoc.role,
     accountStatus: userDoc.accountStatus,
+    country: userDoc.country ?? null,
+    createdAt: userDoc.createdAt
+      ? userDoc.createdAt.toISOString()
+      : null,
+    avatarURL: userDoc.avatarURL ?? null,
   };
 }
 
