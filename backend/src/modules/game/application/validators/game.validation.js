@@ -1,8 +1,10 @@
 const AppError = require("../../../../shared/errors/AppError");
 
+const ALLOWED_AI = ["easy", "medium", "hard"];
+
 function validateCreateLocalGame(body) {
   const errors = [];
-  const { player2Name, boardSize = 10, player1Marker, player2Marker, firstTurn } = body ?? {};
+  const { player2Name, boardSize = 10, firstTurn } = body ?? {};
 
   if (!player2Name || !String(player2Name).trim()) {
     errors.push({
@@ -20,11 +22,34 @@ function validateCreateLocalGame(body) {
     });
   }
 
-  if (!player1Marker || !player2Marker || player1Marker === player2Marker) {
+  if (![1, 2].includes(firstTurn)) {
     errors.push({
-      field: "markers",
-      message: "Players must use distinct markers.",
-      example: "Example: X and O",
+      field: "firstTurn",
+      message: "First turn must be 1 or 2.",
+      example: "Example: 1",
+    });
+  }
+
+  return errors;
+}
+
+function validateCreateSinglePlayerGame(body) {
+  const errors = [];
+  const { boardSize = 10, aiDifficulty, firstTurn } = body ?? {};
+
+  if (![10, 15].includes(boardSize)) {
+    errors.push({
+      field: "boardSize",
+      message: "Board size must be 10 or 15.",
+      example: "Example: 10",
+    });
+  }
+
+  if (!ALLOWED_AI.includes(aiDifficulty)) {
+    errors.push({
+      field: "aiDifficulty",
+      message: "AI difficulty must be easy, medium, or hard.",
+      example: "Example: medium",
     });
   }
 
@@ -64,5 +89,6 @@ function validateMoveInput(body) {
 
 module.exports = {
   validateCreateLocalGame,
+  validateCreateSinglePlayerGame,
   validateMoveInput,
 };

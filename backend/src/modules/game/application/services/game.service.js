@@ -1,7 +1,14 @@
 const AppError = require("../../../../shared/errors/AppError");
 const gameRepository = require("../../infrastructure/repositories/game.repository");
-const { buildBoard } = require("../../utils/board.utils");
+const { buildBoard, getEmptyCells } = require("../../utils/board.utils");
 const { getWinningLine } = require("../../utils/winChecker");
+const { chooseEasyAiMove } = require("../../ai/easy-ai");
+const { chooseMediumAiMove } = require("../../ai/medium-ai");
+const { chooseHardAiMove } = require("../../ai/hard-ai");
+
+function getParticipantToken(participant) {
+  return participant.turnOrder === 1 ? "P1" : "P2";
+}
 
 function toGameStateDto(session, participants, moves, board) {
   return {
@@ -11,6 +18,7 @@ function toGameStateDto(session, participants, moves, board) {
       status: session.status,
       result: session.result,
       boardSize: session.boardSize,
+      aiDifficulty: session.aiDifficulty,
       startTime: session.startTime,
       endTime: session.endTime,
       currentTurn: session.currentTurn ? String(session.currentTurn) : null,
@@ -23,7 +31,6 @@ function toGameStateDto(session, participants, moves, board) {
       id: String(p._id),
       displayName: p.displayName,
       participantType: p.participantType,
-      marker: p.marker,
       turnOrder: p.turnOrder,
       isWinner: p.isWinner,
       userID: p.userID ? String(p.userID) : null,
@@ -71,14 +78,18 @@ async function loadGameState(sessionId) {
   return { session, participants, moves, board, participantMap };
 }
 
+function resolveAiName(aiDifficulty) {
+  if (aiDifficulty === "easy") return "CPU Easy";
+  if (aiDifficulty === "medium") return "CPU Medium";
+  return "CPU Hard";
+}
+
 async function createLocalGame(authUser, payload) {
   ensurePlayerUser(authUser);
 
   const {
     player2Name,
     boardSize = 10,
-    player1Marker = "X",
-    player2Marker = "O",
     firstTurn = 1,
   } = payload;
 
@@ -90,6 +101,7 @@ async function createLocalGame(authUser, payload) {
     currentTurn: null,
     winnerParticipantID: null,
     winningLine: [],
+    aiDifficulty: null,
   });
 
   const participants = await gameRepository.createParticipants([
@@ -99,7 +111,7 @@ async function createLocalGame(authUser, payload) {
       participantType: "player",
       isWinner: false,
       displayName: authUser.username || "Player 1",
-      marker: player1Marker,
+      marker: "P1",
       turnOrder: 1,
     },
     {
@@ -108,21 +120,188 @@ async function createLocalGame(authUser, payload) {
       participantType: "guest",
       isWinner: false,
       displayName: String(player2Name).trim(),
-      marker: player2Marker,
+      marker: "P2",
       turnOrder: 2,
     },
   ]);
 
-  const player1 = participants.find((p) => p.turnOrder === 1);
-  const player2 = participants.find((p) => p.turnOrder === 2);
-
-  const currentTurnParticipant = firstTurn === 1 ? player1 : player2;
+  const currentTurnParticipant =
+    firstTurn === 1
+      ? participants.find((p) => p.turnOrder === 1)
+      : participants.find((p) => p.turnOrder === 2);
 
   const updatedSession = await gameRepository.updateSession(session._id, {
     currentTurn: currentTurnParticipant._id,
   });
 
   return toGameStateDto(updatedSession, participants, [], buildBoard(boardSize, [], {}));
+}
+
+async function createSinglePlayerGame(authUser, payload) {
+  ensurePlayerUser(authUser);
+
+  const {
+    boardSize = 10,
+    aiDifficulty = "easy",
+    firstTurn = 1,
+  } = payload;
+
+  const session = await gameRepository.createSession({
+    gameMode: "single_player",
+    status: "ongoing",
+    result: "pending",
+    boardSize,
+    currentTurn: null,
+    winnerParticipantID: null,
+    winningLine: [],
+    aiDifficulty,
+  });
+
+  const participants = await gameRepository.createParticipants([
+    {
+      sessionID: session._id,
+      userID: authUser.id,
+      participantType: "player",
+      isWinner: false,
+      displayName: authUser.username || "Player 1",
+      marker: "P1",
+      turnOrder: 1,
+    },
+    {
+      sessionID: session._id,
+      userID: null,
+      participantType: "ai",
+      isWinner: false,
+      displayName: resolveAiName(aiDifficulty),
+      marker: "P2",
+      turnOrder: 2,
+    },
+  ]);
+
+  const currentTurnParticipant =
+    firstTurn === 1
+      ? participants.find((p) => p.turnOrder === 1)
+      : participants.find((p) => p.turnOrder === 2);
+
+  await gameRepository.updateSession(session._id, {
+    currentTurn: currentTurnParticipant._id,
+  });
+
+  if (firstTurn === 2) {
+    await makeAiMove(session._id);
+    return getSessionState(session._id);
+  }
+
+  return getSessionState(session._id);
+}
+
+async function finishGame(session, winnerParticipant, refreshedMoves, refreshedBoard) {
+  await gameRepository.updateParticipant(winnerParticipant._id, {
+    isWinner: true,
+  });
+
+  const winningLine = getWinningLine(
+    refreshedBoard,
+    refreshedMoves[refreshedMoves.length - 1].rowIndex,
+    refreshedMoves[refreshedMoves.length - 1].colIndex,
+    getParticipantToken(winnerParticipant),
+  );
+
+  const updatedSession = await gameRepository.updateSession(session._id, {
+    status: "finished",
+    result: winnerParticipant.turnOrder === 1 ? "player1_win" : "player2_win",
+    endTime: new Date(),
+    winnerParticipantID: winnerParticipant._id,
+    winningLine: winningLine || [],
+    currentTurn: null,
+  });
+
+  const finalParticipants = await gameRepository.findParticipantsBySession(session._id);
+  return toGameStateDto(updatedSession, finalParticipants, refreshedMoves, refreshedBoard);
+}
+
+async function makeAiMove(sessionId) {
+  const { session, participants, moves, board } = await loadGameState(sessionId);
+
+  if (session.gameMode !== "single_player") return null;
+  if (session.status !== "ongoing") return null;
+
+  const aiParticipant = participants.find((p) => p.participantType === "ai");
+  const humanParticipant = participants.find((p) => p.participantType === "player");
+
+  if (!aiParticipant || !humanParticipant) return null;
+  if (String(session.currentTurn) !== String(aiParticipant._id)) return null;
+
+  const lastHumanMove = [...moves]
+    .reverse()
+    .find((m) => String(m.participantID) === String(humanParticipant._id));
+
+  const humanToken = getParticipantToken(humanParticipant);
+  const aiToken = getParticipantToken(aiParticipant);
+
+  let aiMove = null;
+
+  if (session.aiDifficulty === "easy") {
+    aiMove = chooseEasyAiMove(board, lastHumanMove || null);
+  } else if (session.aiDifficulty === "medium") {
+    aiMove =
+      chooseMediumAiMove(board, humanToken) ||
+      chooseEasyAiMove(board, lastHumanMove || null);
+  } else {
+    aiMove =
+      chooseHardAiMove(board, aiToken, humanToken) ||
+      chooseEasyAiMove(board, lastHumanMove || null);
+  }
+
+  if (!aiMove) return null;
+
+  await gameRepository.createMove({
+    sessionID: session._id,
+    participantID: aiParticipant._id,
+    moveNumber: moves.length + 1,
+    rowIndex: aiMove.rowIndex,
+    colIndex: aiMove.colIndex,
+  });
+
+  const refreshedMoves = await gameRepository.findMovesBySession(sessionId);
+  const refreshedParticipants = await gameRepository.findParticipantsBySession(sessionId);
+
+  const participantMap = {};
+  for (const participant of refreshedParticipants) {
+    participantMap[String(participant._id)] = participant;
+  }
+
+  const refreshedBoard = buildBoard(session.boardSize, refreshedMoves, participantMap);
+
+  const aiWin = getWinningLine(
+    refreshedBoard,
+    aiMove.rowIndex,
+    aiMove.colIndex,
+    aiToken,
+  );
+
+  if (aiWin) {
+    return finishGame(session, aiParticipant, refreshedMoves, refreshedBoard);
+  }
+
+  if (!getEmptyCells(refreshedBoard).length) {
+    const updatedSession = await gameRepository.updateSession(session._id, {
+      status: "finished",
+      result: "draw",
+      endTime: new Date(),
+      currentTurn: null,
+      winnerParticipantID: null,
+      winningLine: [],
+    });
+
+    return toGameStateDto(updatedSession, refreshedParticipants, refreshedMoves, refreshedBoard);
+  }
+
+  const updatedSession = await gameRepository.updateSession(session._id, {
+    currentTurn: humanParticipant._id,
+  });
+
+  return toGameStateDto(updatedSession, refreshedParticipants, refreshedMoves, refreshedBoard);
 }
 
 async function makeMove(authUser, sessionId, payload) {
@@ -182,12 +361,10 @@ async function makeMove(authUser, sessionId, payload) {
     });
   }
 
-  const nextMoveNumber = moves.length + 1;
-
   await gameRepository.createMove({
     sessionID: session._id,
     participantID: requestingParticipant._id,
-    moveNumber: nextMoveNumber,
+    moveNumber: moves.length + 1,
     rowIndex,
     colIndex,
   });
@@ -195,41 +372,47 @@ async function makeMove(authUser, sessionId, payload) {
   const refreshedMoves = await gameRepository.findMovesBySession(sessionId);
   const refreshedBoard = buildBoard(session.boardSize, refreshedMoves, participantMap);
 
+  const playerToken = getParticipantToken(requestingParticipant);
   const winningLine = getWinningLine(
     refreshedBoard,
     rowIndex,
     colIndex,
-    requestingParticipant.marker,
+    playerToken,
   );
 
-  let updatedSession;
-
   if (winningLine) {
-    await gameRepository.updateParticipant(requestingParticipant._id, {
-      isWinner: true,
-    });
-
-    updatedSession = await gameRepository.updateSession(session._id, {
-      status: "finished",
-      result: requestingParticipant.turnOrder === 1 ? "player1_win" : "player2_win",
-      endTime: new Date(),
-      winnerParticipantID: requestingParticipant._id,
-      winningLine,
-      currentTurn: null,
-    });
-  } else {
-    const nextParticipant = participants.find(
-      (p) => String(p._id) !== String(requestingParticipant._id),
-    );
-
-    updatedSession = await gameRepository.updateSession(session._id, {
-      status: "ongoing",
-      currentTurn: nextParticipant ? nextParticipant._id : null,
-    });
+    return finishGame(session, requestingParticipant, refreshedMoves, refreshedBoard);
   }
 
-  const finalParticipants = await gameRepository.findParticipantsBySession(sessionId);
-  return toGameStateDto(updatedSession, finalParticipants, refreshedMoves, refreshedBoard);
+  if (!getEmptyCells(refreshedBoard).length) {
+    const updatedSession = await gameRepository.updateSession(session._id, {
+      status: "finished",
+      result: "draw",
+      endTime: new Date(),
+      currentTurn: null,
+      winnerParticipantID: null,
+      winningLine: [],
+    });
+
+    const finalParticipants = await gameRepository.findParticipantsBySession(sessionId);
+    return toGameStateDto(updatedSession, finalParticipants, refreshedMoves, refreshedBoard);
+  }
+
+  const nextParticipant = participants.find(
+    (p) => String(p._id) !== String(requestingParticipant._id),
+  );
+
+  await gameRepository.updateSession(session._id, {
+    status: "ongoing",
+    currentTurn: nextParticipant ? nextParticipant._id : null,
+  });
+
+  if (session.gameMode === "single_player" && nextParticipant?.participantType === "ai") {
+    await makeAiMove(session._id);
+    return getSessionState(session._id);
+  }
+
+  return getSessionState(session._id);
 }
 
 async function abortGame(authUser, sessionId) {
@@ -274,6 +457,7 @@ async function getSessionState(sessionId) {
 
 module.exports = {
   createLocalGame,
+  createSinglePlayerGame,
   makeMove,
   abortGame,
   getSessionState,
