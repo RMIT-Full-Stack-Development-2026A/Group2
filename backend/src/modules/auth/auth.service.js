@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const tokenUtils = require("../../shared/utils/token.utils");
-const AppError = require("../../shared/utils/AppError");
+const AppError = require("../../shared/errors/AppError");
 const userRepository = require("./auth.repository");
 const { validateRegisterBody } = require("./auth.validation");
 
