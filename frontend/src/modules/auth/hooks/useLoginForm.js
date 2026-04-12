@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { loginUser } from "../services/auth.service";
 import { useAuth } from "./useAuth";
 import { validateEmail } from "../utils/auth.validation";
 
 export default function useLoginForm() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { login } = useAuth();
   const [formData, setFormData] = useState({
     identifier: "",
@@ -46,8 +45,7 @@ export default function useLoginForm() {
 
       login(result.accessToken, result.user);
 
-      const redirectTo = location.state?.from?.pathname || "/dashboard";
-      navigate(redirectTo, { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       if (err.validationErrors?.length) {
         setErrorIssues(err.validationErrors);

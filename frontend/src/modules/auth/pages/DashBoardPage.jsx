@@ -1,36 +1,12 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
 export default function DashboardPage() {
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
-
-  async function handleLogout() {
-    await logout();
-    navigate("/login", { replace: true });
-  }
-
+  const { user } = useAuth();
   const displayName = user?.username ?? "player";
 
   return (
-    <div className="min-vh-100 bg-light">
-      <nav className="navbar navbar-expand-lg bg-white border-bottom">
-        <div className="container">
-          <span className="navbar-brand fw-bold text-primary mb-0">TicTacToang</span>
-
-          <div className="ms-auto d-flex align-items-center gap-3">
-            <span className="badge text-bg-secondary rounded-pill px-3 py-2">
-              {user?.role ?? "player"}
-            </span>
-            <span className="text-secondary">{displayName}</span>
-            <button type="button" className="btn btn-outline-dark btn-sm" onClick={handleLogout}>
-              Logout
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      <div className="container py-5">
+    <>
         <div className="text-center mb-5">
           <h1 className="fw-bold">Welcome, {displayName}!</h1>
           <p className="text-secondary fs-5">Choose a game mode to start playing</p>
@@ -66,7 +42,6 @@ export default function DashboardPage() {
           
           <Link to="/profile" className="col-md-4 text-decoration-none">View Profile</Link>
         </div>
-      </div>
-    </div>
+    </>
   );
 }

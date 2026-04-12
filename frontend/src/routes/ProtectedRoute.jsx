@@ -6,8 +6,7 @@ export default function ProtectedRoute({ children }) {
     const { isAuthenticated, isLoadingAuth } = useAuth();
     const location = useLocation();
 
-    // Wait for initial refresh attempt before deciding auth redirect.
-    if (isLoadingAuth) {
+    if (!isAuthenticated && isLoadingAuth) {
         return null;
     }
 
