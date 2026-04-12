@@ -8,7 +8,7 @@ useEffect(() => {
     // Fetch user profile data from backend
     const fetchProfile = async () => {
         try {
-            const response = await httpGet("http://localhost:3000/api/auth/profile");
+            const response = await httpGet("/api/auth/profile");
             const data = await response.json();
             setUser(data.user);
         } catch (error) {

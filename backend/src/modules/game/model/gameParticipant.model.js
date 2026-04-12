@@ -17,11 +17,6 @@ const gameParticipantSchema = new Schema(
       ref: "User",
       default: null,
     },
-    markerID: {
-      type: Types.ObjectId,
-      ref: "Marker",
-      default: null,
-    },
     participantType: {
       type: String,
       enum: PARTICIPANT_TYPES,
@@ -35,6 +30,16 @@ const gameParticipantSchema = new Schema(
       type: String,
       required: true,
       trim: true,
+    },
+    marker: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    turnOrder: {
+      type: Number,
+      enum: [1, 2],
+      required: true,
     },
   },
   {

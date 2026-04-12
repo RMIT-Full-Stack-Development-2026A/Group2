@@ -4,7 +4,9 @@ import RegisterPage from "../modules/auth/pages/RegisterPage";
 import DashboardPage from "../modules/auth/pages/DashBoardPage";
 import ProtectedRoute from "../routes/ProtectedRoute";
 import Profile from "../modules/auth/pages/Profile";
-import GamePage from "../modules/game/pages/LocalGamePage";
+import App from "../App";
+import PremiumPage from "../modules/premium/pages/PremiumPage";
+import OnlineArenaPage from "../modules/game/pages/OnlineArenaPage";
 
 const router = createBrowserRouter([
   {
@@ -20,27 +22,18 @@ const router = createBrowserRouter([
     element: <RegisterPage />,
   },
   {
-    path: "/dashboard",
     element: (
       <ProtectedRoute>
-        <DashboardPage />
+        <App />
       </ProtectedRoute>
     ),
+    children: [
+      { path: "/dashboard", element: <DashboardPage /> },
+      { path: "/profile", element: <Profile /> },
+      { path: "/online", element: <OnlineArenaPage /> },
+      { path: "/premium", element: <PremiumPage /> },
+    ],
   },
-  {
-    path: "/profile",
-    element: (
-      <ProtectedRoute>
-        <Profile />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/game",
-    element: (
-      <GamePage/>
-    )
-  }
 ]);
 
 export default router;

@@ -1,0 +1,17 @@
+/* Centered content column: max-width + horizontal padding (Bootstrap container handles padding; this caps width). */
+.app-page {
+  max-width: 1120px;
+}
+
+/* Navbar inner: same max-width as main so header lines up with content */
+.app-navbar-inner {
+  max-width: 1120px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: calc(var(--bs-gutter-x, 1.5rem) * 0.5);
+  padding-right: calc(var(--bs-gutter-x, 1.5rem) * 0.5);
+}
+
+.app-shell .navbar-nav .nav-link.active {
+  color: var(--bs-primary) !important;
+}

@@ -13,11 +13,6 @@ const GAME_RESULTS = [
 
 const gameSessionSchema = new Schema(
   {
-    boardStyleID: {
-      type: Types.ObjectId,
-      ref: "BoardStyle",
-      default: null,
-    },
     gameMode: {
       type: String,
       enum: GAME_MODES,
@@ -52,6 +47,21 @@ const gameSessionSchema = new Schema(
       type: Types.ObjectId,
       ref: "GameParticipant",
       default: null,
+    },
+    boardSize: {
+      type: Number,
+      enum: [10, 15],
+      default: 10,
+      required: true,
+    },
+    winnerParticipantID: {
+      type: Types.ObjectId,
+      ref: "GameParticipant",
+      default: null,
+    },
+    winningLine: {
+      type: [[Number]], // [[row, col], ...]
+      default: [],
     },
   },
   {

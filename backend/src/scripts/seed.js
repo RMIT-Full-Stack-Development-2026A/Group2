@@ -11,13 +11,10 @@ const Wallet = require("../modules/wallet/model/wallet.model");
 const Transaction = require("../modules/wallet/model/transaction.model");
 const SubscriptionPlan = require("../modules/premium/model/subscriptionPlan.model");
 const UserSubscription = require("../modules/premium/model/userSubscription.model");
-const BoardStyle = require("../modules/media/model/boardStyle.model");
-const Marker = require("../modules/media/model/marker.model");
 const GameSession = require("../modules/game/model/gameSession.model");
 const GameParticipant = require("../modules/game/model/gameParticipant.model");
 const Move = require("../modules/game/model/move.model");
-const OnlineGameRoom = require("../modules/multiplayer/model/onlineGameRoom.model");
-const Message = require("../modules/multiplayer/model/message.model");
+const MatchLobby = require("../modules/multiplayer/model/matchLobby.model");
 
 dotenv.config();
 
@@ -36,14 +33,6 @@ const I = {
   wAlpha: o("040404040404040404040401"),
   wBeta: o("040404040404040404040402"),
   tx1: o("050505050505050505050501"),
-  bs1: o("060606060606060606060601"),
-  bs2: o("060606060606060606060602"),
-  mk1: o("070707070707070707070701"),
-  mk2: o("070707070707070707070702"),
-  mk3: o("070707070707070707070703"),
-  mk4: o("070707070707070707070704"),
-  mk5: o("070707070707070707070705"),
-  mk6: o("070707070707070707070706"),
   gs1: o("080808080808080808080801"),
   gs2: o("080808080808080808080802"),
   gs3: o("080808080808080808080803"),
@@ -53,10 +42,7 @@ const I = {
   gp4: o("090909090909090909090904"),
   gp5: o("090909090909090909090905"),
   gp6: o("090909090909090909090906"),
-  room1: o("0b0b0b0b0b0b0b0b0b0b0b01"),
-  msg1: o("0c0c0c0c0c0c0c0c0c0c0c01"),
-  msg2: o("0c0c0c0c0c0c0c0c0c0c0c02"),
-  msg3: o("0c0c0c0c0c0c0c0c0c0c0c03"),
+  matchLobby1: o("0b0b0b0b0b0b0b0b0b0b0b01"),
 };
 
 function moveId(i) {
@@ -71,21 +57,25 @@ function cell(row, col) {
 
 async function clearAll() {
   const order = [
-    Message,
     Move,
     GameParticipant,
-    OnlineGameRoom,
+    MatchLobby,
     GameSession,
     Transaction,
     Wallet,
     UserSubscription,
-    Marker,
-    BoardStyle,
     SubscriptionPlan,
     User,
   ];
   for (const Model of order) {
     await Model.deleteMany({});
+  }
+  for (const name of ["boardstyles", "markers", "onlinegamerooms", "messages"]) {
+    try {
+      await mongoose.connection.collection(name).deleteMany({});
+    } catch {
+      /* collection may not exist */
+    }
   }
 }
 
@@ -146,7 +136,6 @@ async function seed() {
       price: 10,
       durationMonths: 1,
       isActive: true,
-      createdAt: new Date("2026-01-01T00:00:00.000Z"),
     },
   ]);
 
@@ -158,7 +147,6 @@ async function seed() {
       status: "active",
       startDate: new Date("2026-03-01T00:00:00.000Z"),
       endDate: new Date("2026-04-01T00:00:00.000Z"),
-      createdAt: new Date("2026-03-01T00:05:00.000Z"),
     },
   ]);
 
@@ -191,72 +179,9 @@ async function seed() {
     },
   ]);
 
-  await BoardStyle.insertMany([
-    {
-      _id: I.bs1,
-      uploadedUser: I.userAlpha,
-      boardSize: 10,
-      style: "Midnight Grid",
-      isActive: true,
-      styleType: "preset",
-      backgroundColor: "#0f172a",
-      backgroundURL: "https://cdn.tictactoang.dev/boards/midnight-grid.png",
-    },
-    {
-      _id: I.bs2,
-      uploadedUser: I.userBeta,
-      boardSize: 15,
-      style: "Pastel Arena",
-      isActive: true,
-      styleType: "custom",
-      backgroundColor: "#fce7f3",
-      backgroundURL: "https://cdn.tictactoang.dev/boards/pastel-arena.png",
-    },
-  ]);
-
-  await Marker.insertMany([
-    {
-      _id: I.mk1,
-      uploadedUser: I.userAlpha,
-      markerType: "classic_x_red",
-      isActive: true,
-    },
-    {
-      _id: I.mk2,
-      uploadedUser: I.userAlpha,
-      markerType: "classic_o_blue",
-      isActive: true,
-    },
-    {
-      _id: I.mk3,
-      uploadedUser: I.userAlpha,
-      markerType: "neon_x_cyan",
-      isActive: true,
-    },
-    {
-      _id: I.mk4,
-      uploadedUser: I.userBeta,
-      markerType: "neon_o_magenta",
-      isActive: true,
-    },
-    {
-      _id: I.mk5,
-      uploadedUser: I.userAlpha,
-      markerType: "ai_glyph_easy",
-      isActive: true,
-    },
-    {
-      _id: I.mk6,
-      uploadedUser: I.userAlpha,
-      markerType: "ai_glyph_medium",
-      isActive: true,
-    },
-  ]);
-
   await GameSession.insertMany([
     {
       _id: I.gs1,
-      boardStyleID: I.bs1,
       gameMode: "single_player",
       status: "finished",
       aiDifficulty: "easy",
@@ -267,7 +192,6 @@ async function seed() {
     },
     {
       _id: I.gs2,
-      boardStyleID: I.bs1,
       gameMode: "single_player",
       status: "finished",
       aiDifficulty: "medium",
@@ -278,7 +202,6 @@ async function seed() {
     },
     {
       _id: I.gs3,
-      boardStyleID: I.bs2,
       gameMode: "two_player",
       status: "finished",
       startTime: new Date("2026-03-22T17:00:00.000Z"),
@@ -293,7 +216,6 @@ async function seed() {
       _id: I.gp1,
       sessionID: I.gs1,
       userID: I.userAlpha,
-      markerID: I.mk1,
       participantType: "player",
       isWinner: true,
       displayName: "PlayerAlpha",
@@ -302,7 +224,6 @@ async function seed() {
       _id: I.gp2,
       sessionID: I.gs1,
       userID: null,
-      markerID: I.mk5,
       participantType: "ai",
       isWinner: false,
       displayName: "CPU Easy",
@@ -311,7 +232,6 @@ async function seed() {
       _id: I.gp3,
       sessionID: I.gs2,
       userID: I.userAlpha,
-      markerID: I.mk1,
       participantType: "player",
       isWinner: false,
       displayName: "PlayerAlpha",
@@ -320,7 +240,6 @@ async function seed() {
       _id: I.gp4,
       sessionID: I.gs2,
       userID: null,
-      markerID: I.mk6,
       participantType: "ai",
       isWinner: true,
       displayName: "CPU Medium",
@@ -329,7 +248,6 @@ async function seed() {
       _id: I.gp5,
       sessionID: I.gs3,
       userID: I.userAlpha,
-      markerID: I.mk1,
       participantType: "player",
       isWinner: true,
       displayName: "PlayerAlpha",
@@ -338,7 +256,6 @@ async function seed() {
       _id: I.gp6,
       sessionID: I.gs3,
       userID: I.userBeta,
-      markerID: I.mk2,
       participantType: "player",
       isWinner: false,
       displayName: "PlayerBeta",
@@ -381,40 +298,16 @@ async function seed() {
 
   await Move.insertMany(moves);
 
-  await OnlineGameRoom.insertMany([
+  await MatchLobby.insertMany([
     {
-      _id: I.room1,
+      _id: I.matchLobby1,
       sessionId: I.gs3,
       createdBy: I.userAlpha,
-      roomNumber: "ROOM-8842",
+      lobbyCode: "ROOM-8842",
       status: "finished",
       startedAt: new Date("2026-03-22T17:00:00.000Z"),
       endedAt: new Date("2026-03-22T17:12:00.000Z"),
       createdAt: new Date("2026-03-22T16:55:00.000Z"),
-    },
-  ]);
-
-  await Message.insertMany([
-    {
-      _id: I.msg1,
-      roomId: I.room1,
-      senderId: I.userAlpha,
-      content: "Hey, ready for a ranked match?",
-      sentAt: new Date("2026-03-22T16:55:30.000Z"),
-    },
-    {
-      _id: I.msg2,
-      roomId: I.room1,
-      senderId: I.userBeta,
-      content: "Yep — same board style as last time?",
-      sentAt: new Date("2026-03-22T16:56:05.000Z"),
-    },
-    {
-      _id: I.msg3,
-      roomId: I.room1,
-      senderId: I.userAlpha,
-      content: "Sounds good. Good luck!",
-      sentAt: new Date("2026-03-22T16:56:40.000Z"),
     },
   ]);
 

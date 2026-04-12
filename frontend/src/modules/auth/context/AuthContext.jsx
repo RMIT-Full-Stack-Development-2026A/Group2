@@ -1,17 +1,7 @@
-import {
-    createContext,
-    useCallback,
-    useContext,
-    useMemo,
-    useRef,
-    useState,
-    useEffect,
-} from "react";
+import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import { logoutUser, refreshToken } from "../services/auth.service";
 import { initHttpClient } from "../../../lib/httpClient";
-
-// All auth state kept in React state only (tokens in HTTP-only cookies).
-const AuthContext = createContext(null);
+import { AuthContext } from "./auth-context";
 
 export function AuthProvider({ children }) {
     const [accessToken, setAccessToken] = useState("");
@@ -90,12 +80,4 @@ export function AuthProvider({ children }) {
     return (
         <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
     );
-}
-
-export function useAuth() {
-    const ctx = useContext(AuthContext);
-    if (!ctx) {
-        throw new Error("useAuth must be used within AuthProvider");
-    }
-    return ctx;
 }

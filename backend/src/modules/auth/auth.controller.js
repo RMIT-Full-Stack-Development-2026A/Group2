@@ -83,6 +83,7 @@ async function logIn(req, res) {
       secure: secureCookie,
       sameSite: secureCookie ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/",
     });
 
     res.status(200).json({
@@ -107,6 +108,7 @@ function logOut(req, res) {
       httpOnly: true,
       secure: secureCookie,
       sameSite: secureCookie ? "none" : "lax",
+      path: "/",
     });
   }
 
@@ -128,7 +130,7 @@ async function refresh(req, res) {
   }
 
   try {
-    const { accessToken , user } = await authService.refresh(cookies.jwt);
+    const { accessToken, user } = await authService.refresh(cookies.jwt);
     res.json({
       status: "success",
       accessToken,

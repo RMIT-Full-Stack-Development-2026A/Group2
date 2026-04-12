@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const { Schema, model, Types } = mongoose;
+const { Schema, model } = mongoose;
 
 const subscriptionPlanSchema = new Schema(
   {
@@ -25,10 +25,6 @@ const subscriptionPlanSchema = new Schema(
       type: Boolean,
       default: true,
       required: true,
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now,
     },
   },
   {
