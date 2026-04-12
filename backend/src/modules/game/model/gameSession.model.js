@@ -48,6 +48,21 @@ const gameSessionSchema = new Schema(
       ref: "GameParticipant",
       default: null,
     },
+    boardSize: {
+      type: Number,
+      enum: [10, 15],
+      default: 10,
+      required: true,
+    },
+    winnerParticipantID: {
+      type: Types.ObjectId,
+      ref: "GameParticipant",
+      default: null,
+    },
+    winningLine: {
+      type: [[Number]], // [[row, col], ...]
+      default: [],
+    },
   },
   {
     versionKey: false,

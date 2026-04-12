@@ -31,6 +31,16 @@ const gameParticipantSchema = new Schema(
       required: true,
       trim: true,
     },
+    marker: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    turnOrder: {
+      type: Number,
+      enum: [1, 2],
+      required: true,
+    },
   },
   {
     versionKey: false,
