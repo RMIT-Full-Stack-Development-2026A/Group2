@@ -6,7 +6,7 @@ import NavBar from "./components/NavBar/NavBar";
  */
 export default function App() {
   return (
-    <div className="app-shell min-vh-100 d-flex flex-column bg-light">
+    <div className="app-shell min-vh-100 d-flex flex-column">
       <NavBar />
       <main className="flex-grow-1 w-100">
         <div className="container app-page py-4 py-lg-5">
