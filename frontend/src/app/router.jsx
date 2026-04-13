@@ -7,6 +7,9 @@ import Profile from "../modules/auth/pages/Profile";
 import App from "../App";
 import PremiumPage from "../modules/premium/pages/PremiumPage";
 import OnlineArenaPage from "../modules/game/pages/OnlineArenaPage";
+import LocalGameSetupPage from "../modules/game/pages/LocalGameSetupPage";
+import AIGameSetupPage from "../modules/game/pages/AIGameSetupPage";
+import GamePlayPage from "../modules/game/pages/GamePlayPage";
 
 const router = createBrowserRouter([
   {
@@ -31,6 +34,9 @@ const router = createBrowserRouter([
       { path: "/dashboard", element: <DashboardPage /> },
       { path: "/profile", element: <Profile /> },
       { path: "/online", element: <OnlineArenaPage /> },
+      { path: "/game/local", element: <LocalGameSetupPage /> },
+      { path: "/game/ai", element: <AIGameSetupPage /> },
+      { path: "/game/play", element: <GamePlayPage /> },
       { path: "/premium", element: <PremiumPage /> },
     ],
   },

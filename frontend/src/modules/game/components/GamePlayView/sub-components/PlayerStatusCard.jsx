@@ -1,0 +1,21 @@
+import styles from "./PlayerStatusCard.module.css";
+
+export default function PlayerStatusCard({
+  name,
+  marker,
+  isActive,
+  turnText,
+  avatarContent,
+}) {
+  return (
+    <div className={styles.column}>
+      <div className={`${styles.card} ${isActive ? styles.active : ""}`}>
+        <p className={styles.name}>{name}</p>
+        <div className={styles.marker}>{marker}</div>
+        {isActive ? <p className={styles.turnText}>{turnText}</p> : null}
+      </div>
+
+      <div className={styles.avatar}>{avatarContent}</div>
+    </div>
+  );
+}

@@ -1,0 +1,47 @@
+.boardShell {
+  position: relative;
+  --cell-size: clamp(2.2rem, 2.8vw, 2.85rem);
+  border: 1px solid #d7dde6;
+  border-radius: 16px;
+  padding: 10px;
+  overflow: auto;
+  max-width: 100%;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+}
+
+.boardGrid {
+  display: grid;
+  gap: 0;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.classicBoard {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.woodBoard {
+  background: linear-gradient(180deg, #f6ead4 0%, #ead7b3 100%);
+}
+
+.darkBoard {
+  background: linear-gradient(180deg, #202838 0%, #111827 100%);
+  border-color: rgba(148, 163, 184, 0.25);
+}
+
+.pauseOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+}
+
+.pauseText {
+  font-size: 18px;
+  font-weight: 600;
+  color: #4b5563;
+}

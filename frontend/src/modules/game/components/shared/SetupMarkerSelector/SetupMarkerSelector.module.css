@@ -1,0 +1,39 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.marker {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #d8dee9;
+  border-radius: 10px;
+  background: #ffffff;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  cursor: pointer;
+}
+
+.marker:hover {
+  background: #f8fafc;
+}
+
+.active {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: white;
+}

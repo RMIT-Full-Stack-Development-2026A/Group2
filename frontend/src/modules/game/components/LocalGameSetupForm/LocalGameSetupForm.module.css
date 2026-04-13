@@ -1,0 +1,102 @@
+.root {
+  width: 100%;
+}
+
+.container {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+
+.shell {
+  background: #fff;
+  border: 1px solid #d8dee9;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.06);
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.subtitle {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.previewGrid,
+.markerGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.previewColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.input {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid #d8dee9;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #0f172a;
+  outline: none;
+}
+
+.input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.startButton {
+  width: 100%;
+  height: 48px;
+  border: 0;
+  border-radius: 12px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 24px 12px;
+  }
+
+  .shell {
+    padding: 20px;
+  }
+
+  .previewGrid,
+  .markerGrid {
+    grid-template-columns: 1fr;
+  }
+}
