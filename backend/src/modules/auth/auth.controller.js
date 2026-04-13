@@ -141,9 +141,42 @@ async function refresh(req, res) {
   }
 }
 
+function getProfile(req, res) {
+  res.json({ status: "success", user: req.user });
+}
+
+async function updateProfile(req, res) {
+  try {
+    const user = await authService.updateProfile(String(req.user.id), req.body);
+    res.json({
+      status: "success",
+      message: "Profile updated successfully.",
+      user,
+    });
+  } catch (err) {
+    handleControllerError(res, err);
+  }
+}
+
+async function changePassword(req, res) {
+  try {
+    const user = await authService.changePassword(String(req.user.id), req.body);
+    res.json({
+      status: "success",
+      message: "Password changed successfully.",
+      user,
+    });
+  } catch (err) {
+    handleControllerError(res, err);
+  }
+}
+
 module.exports = {
   signUp,
   logIn,
   logOut,
   refresh,
+  getProfile,
+  updateProfile,
+  changePassword,
 };

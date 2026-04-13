@@ -31,9 +31,26 @@ async function findById(id) {
   return await User.findById(id);
 }
 
+async function findByIdWithPasswordHash(id) {
+  return User.findById(id).select("+passwordHash");
+}
+
+/**
+ * @param {Record<string, unknown>} update - only username, email, country, passwordHash
+ */
+async function updateUser(id, update) {
+  return User.findByIdAndUpdate(
+    id,
+    { $set: update },
+    { new: true, runValidators: true },
+  );
+}
+
 module.exports = {
   findByEmail,
   findByUsernameOrEmail,
   createUser,
   findById,
+  findByIdWithPasswordHash,
+  updateUser,
 };
