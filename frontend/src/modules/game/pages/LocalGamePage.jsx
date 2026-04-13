@@ -12,14 +12,15 @@ export default function LocalGamePage() {
   }
 
   return (
-    <div className="text-center">
+    <div className={started ? "" : "text-center"}>
       {!started ? (
         <LocalGameSetupPanel onStart={handleStart} />
       ) : (
-        <GameBoard 
+        <GameBoard
+          key={`${gameConfig.boardSize}-${gameConfig.firstTurn}-${gameConfig.boardStyle}`}
           player1={gameConfig.player1}
           player2={gameConfig.player2}
-          player1Marker={gameConfig.player1Marker} 
+          player1Marker={gameConfig.player1Marker}
           player2Marker={gameConfig.player2Marker}
           firstTurn={gameConfig.firstTurn}
           boardStyle={gameConfig.boardStyle}

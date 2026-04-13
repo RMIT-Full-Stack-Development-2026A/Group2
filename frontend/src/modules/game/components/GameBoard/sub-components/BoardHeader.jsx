@@ -1,129 +1,193 @@
-import {  useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 
+export default function BoardHeader({
+  boardSize,
+  timer,
+  aborted,
+  paused,
+  togglePause,
+  abortGame,
+  resetGame,
+  gameStatus,
+}) {
+  const formatTime = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  const navigate = useNavigate();
 
-export default function BoardHeader({ player1, player2, player1Marker, player2Marker, currentPlayer, timer, aborted, abortGame, resetGame, gameStatus}) {
+  /** null | "pause" | "abort" */
+  const [modal, setModal] = useState(null);
 
-    const formatTime = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-    const navigate = useNavigate();
+  function openPauseModal() {
+    if (aborted || gameStatus === "won") return;
+    if (typeof togglePause !== "function") return;
+    if (!paused) {
+      togglePause();
+    }
+    setModal("pause");
+  }
 
-    return (
-        <div style={{ display: "flex", alignItems: "center", gap: 24, marginBottom: 12 }}>
-        
-        
-            <div style={{
-                    display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
-                    padding: "12px 20px", borderRadius: 12, border: "2px solid",
-                    borderColor: currentPlayer === 1 ? "#3b82f6" : "#e2e8f0",
-                    boxShadow: currentPlayer === 1 ? "0 0 0 3px rgba(59,130,246,0.2)" : "none",
-                    transition: "all 0.3s",
-                    minWidth: 100,
-                }}>
-                
-                <div style={{
-                    width: 44, height: 44, borderRadius: "50%",
-                    background: currentPlayer === 1 ? "#3b82f6" : "#e2e8f0",
-                    color: currentPlayer === 1 ? "#fff" : "#999",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontWeight: 700, fontSize: 18,
-                    transition: "all 0.3s",
-                    }}>
-                    {player1?.charAt(0).toUpperCase()}
-                </div>
-                
-                <div style={{ fontWeight: 600, fontSize: 14, color: currentPlayer === 1 ? "#3b82f6" : "#999" }}>
-                    {player1}
-                </div>
+  function closePauseModalStayPaused() {
+    setModal(null);
+  }
 
-                <div style={{ fontSize: 20 }}>{player1Marker}</div>
-                
-                {currentPlayer === 1 && (
-                <div style={{ fontSize: 11, color: "#3b82f6", fontWeight: 600, letterSpacing: "0.05em" }}>
-                    YOUR TURN
-                </div>
-                )}
-            </div>
+  function resumeFromModal() {
+    if (paused && typeof togglePause === "function") {
+      togglePause();
+    }
+    setModal(null);
+  }
 
-        
-        <div style={{ fontWeight: 700, color: "#999", fontSize: 14 }}>VS</div>
+  function openAbortModal() {
+    if (aborted || gameStatus === "won") return;
+    setModal("abort");
+  }
 
-        
-            <div style={{
-                    display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
-                    padding: "12px 20px", borderRadius: 12, border: "2px solid",
-                    borderColor: currentPlayer === 2 ? "#3b82f6" : "#e2e8f0",
-                    boxShadow: currentPlayer === 2 ? "0 0 0 3px rgba(59,130,246,0.2)" : "none",
-                    transition: "all 0.3s",
-                    minWidth: 100,
-                }}>
-            
-                <div style={{
-                        width: 44, height: 44, borderRadius: "50%",
-                        background: currentPlayer === 2 ? "#3b82f6" : "#e2e8f0",
-                        color: currentPlayer === 2 ? "#fff" : "#999",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        fontWeight: 700, fontSize: 18,
-                        transition: "all 0.3s",
-                    }}>
-                    {player2?.charAt(0).toUpperCase()}
-                </div>
-            
-                <div style={{ fontWeight: 600, fontSize: 14, color: currentPlayer === 2 ? "#3b82f6" : "#999" }}>
-                    {player2}
-                </div>
+  function confirmAbortToMenu() {
+    abortGame();
+    setModal(null);
+    navigate("/dashboard");
+  }
 
-                <div style={{ fontSize: 20 }}>{player2Marker}</div>
-                
-                {currentPlayer === 2 && (
-                <div style={{ fontSize: 11, color: "#3b82f6", fontWeight: 600, letterSpacing: "0.05em" }}>
-                    YOUR TURN
-                </div>
-                )}
-            </div>
+  function cancelAbortModal() {
+    setModal(null);
+  }
 
+  const controlsDisabled = aborted || gameStatus === "won";
 
-            <div style={{ fontFamily: "monospace", fontSize: 20, fontWeight: 700 }}>
-                {formatTime(timer)}
-            </div>
-
-            <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={resetGame}
-                    style={{ padding: "6px 14px", background: "#3b82f6",
-                        color: "#fff", border: "none", borderRadius: 6,
-                        fontWeight: 600, cursor: "pointer" }}>
-                        Restart
+  const pauseModal =
+    modal === "pause" && !aborted && gameStatus === "ongoing" ? (
+      <>
+        <div
+          className="modal fade show d-block"
+          tabIndex={-1}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="pause-dialog-title"
+          style={{ backgroundColor: "rgba(33, 37, 41, 0.5)", zIndex: 1060 }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              closePauseModalStayPaused();
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              closePauseModalStayPaused();
+            }
+          }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content shadow" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header border-0 pb-0">
+                <h2 className="modal-title fs-5 fw-bold" id="pause-dialog-title">
+                  Game paused
+                </h2>
+                <button
+                  type="button"
+                  className="btn-close"
+                  aria-label="Close"
+                  onClick={closePauseModalStayPaused}
+                />
+              </div>
+              <div className="modal-body text-secondary pt-2">
+                The clock is stopped and moves are disabled until you resume.
+              </div>
+              <div className="modal-footer border-0 gap-2">
+                <button type="button" className="btn btn-outline-secondary" onClick={closePauseModalStayPaused}>
+                  Close
                 </button>
-                <button onClick={abortGame}
-                    disabled={aborted || gameStatus === "won"}
-                    style={{ padding: "6px 14px", background: "#ef4444",
-                        color: "#fff", border: "none", borderRadius: 6,
-                        fontWeight: 600, cursor: "pointer",
-                        opacity: aborted || gameStatus === "won" ? 0.5 : 1 }}>
-                        Abort
+                <button type="button" className="btn btn-primary" onClick={resumeFromModal}>
+                  Resume
                 </button>
+              </div>
             </div>
-            
-            {aborted && (
-                
-                <div style={{ fontSize: 12, color: "#ef4444", fontWeight: 600 }}>
-                    GAME ABORTED
-
-                    <div> 
-                        <button
-                        onClick={() => navigate("/dashboard")}
-                        style={{
-                        padding: "6px 14px", background: "#e2e8f0",
-                        color: "#333", border: "none", borderRadius: 6,
-                        fontWeight: 600, cursor: "pointer"
-                        }}>
-                        Back to Menu
-                        </button>
-                    </div>
-                </div>
-
-                
-                
-            )}
-            
+          </div>
         </div>
-    )
+        <div className="modal-backdrop fade show" style={{ zIndex: 1055 }} aria-hidden="true" />
+      </>
+    ) : null;
+
+  const abortModal =
+    modal === "abort" && !aborted && gameStatus === "ongoing" ? (
+      <>
+        <div
+          className="modal fade show d-block"
+          tabIndex={-1}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="abort-dialog-title"
+          style={{ backgroundColor: "rgba(33, 37, 41, 0.5)", zIndex: 1060 }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              cancelAbortModal();
+            }
+          }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content shadow" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header border-0 pb-0">
+                <h2 className="modal-title fs-5 fw-bold text-dark" id="abort-dialog-title">
+                  Leave this game?
+                </h2>
+                <button
+                  type="button"
+                  className="btn-close"
+                  aria-label="Close"
+                  onClick={cancelAbortModal}
+                />
+              </div>
+              <div className="modal-body text-secondary pt-2">
+                You will exit the local match and return to the dashboard. This game will not be saved.
+              </div>
+              <div className="modal-footer border-0 gap-2">
+                <button type="button" className="btn btn-outline-secondary" onClick={cancelAbortModal}>
+                  Cancel
+                </button>
+                <button type="button" className="btn btn-danger" onClick={confirmAbortToMenu}>
+                  Back to menu
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="modal-backdrop fade show" style={{ zIndex: 1055 }} aria-hidden="true" />
+      </>
+    ) : null;
+
+  return (
+    <>
+      <div className="position-relative d-flex align-items-center w-100 mx-auto mb-3 mb-md-4" style={{ maxWidth: "980px", minHeight: "52px" }}>
+        <div className="flex-grow-1 d-flex align-items-center gap-2 position-relative z-1">
+          <span className="badge rounded-pill bg-light text-secondary border fw-semibold px-3 py-2">LOCAL</span>
+          <span className="badge rounded-pill bg-light text-secondary border fw-semibold px-3 py-2">
+            {boardSize}x{boardSize}
+          </span>
+        </div>
+
+        <div className="position-absolute top-50 start-50 translate-middle font-monospace fs-4 fw-bold text-dark user-select-none">
+          {formatTime(timer)}
+        </div>
+
+        <div className="flex-grow-1 d-flex align-items-center justify-content-end gap-2 position-relative z-1">
+          <button type="button" className="btn btn-outline-secondary btn-sm" onClick={resetGame}>
+            Restart
+          </button>
+          <button
+            type="button"
+            className="btn btn-outline-secondary btn-sm"
+            onClick={paused ? resumeFromModal : openPauseModal}
+            disabled={controlsDisabled}
+          >
+            {paused ? "Resume" : "Pause"}
+          </button>
+          <button type="button" className="btn btn-danger btn-sm" onClick={openAbortModal} disabled={controlsDisabled}>
+            Abort
+          </button>
+        </div>
+      </div>
+
+      {typeof document !== "undefined" && pauseModal ? createPortal(pauseModal, document.body) : null}
+      {typeof document !== "undefined" && abortModal ? createPortal(abortModal, document.body) : null}
+    </>
+  );
 }

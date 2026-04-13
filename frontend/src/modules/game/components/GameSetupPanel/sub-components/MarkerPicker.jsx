@@ -1,23 +1,24 @@
 const markers = ["X", "O", "△", "□", "☆", "♦"];
 
-export default function MarkerPicker({label, selectedMarker, onMarkerChange, otherMarker}) {
-    return(
-        <div style={{ flex: 1 }}>
-            <label style={{ fontWeight: 600 }}>{label}</label>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
-                {markers.filter(m => m !== otherMarker).map(m => (
-                <button key={m}
-                    onClick={() => onMarkerChange(m)}
-                    style={{
-                    width: 40, height: 40, borderRadius: 8, border: "none",
-                    cursor: "pointer", fontSize: 16, fontWeight: 700,
-                    background: selectedMarker === m ? "#3b82f6" : "#e5e7eb",
-                    color: selectedMarker === m ? "#fff" : "#333",
-                    }}>
-                    {m}
-                </button>
-                ))}
-            </div>
-        </div>
-    )
+export default function MarkerPicker({ label, selectedMarker, onMarkerChange, otherMarker }) {
+  return (
+    <div>
+      <label className="form-label fw-semibold">{label}</label>
+      <div className="d-flex flex-wrap gap-2 mt-2">
+        {markers
+          .filter((m) => m !== otherMarker)
+          .map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => onMarkerChange(m)}
+              className={`btn btn-sm ${selectedMarker === m ? "btn-primary" : "btn-outline-secondary"}`}
+              style={{ width: "44px", height: "44px" }}
+            >
+              {m}
+            </button>
+          ))}
+      </div>
+    </div>
+  );
 }

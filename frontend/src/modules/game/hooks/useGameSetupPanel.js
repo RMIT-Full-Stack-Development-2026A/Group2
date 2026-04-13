@@ -1,7 +1,7 @@
 import { useState } from "react"
 
 export default function useGameSetupPanel(onStart) {
-  const [player1, setPlayer1] = useState("Player1");
+  const [player1] = useState("Player1");
   const [player2, setPlayer2] = useState("");
   const [firstTurn, setFirstTurn] = useState(1);
   const [boardSize, setBoardSize] = useState(10);
@@ -9,7 +9,7 @@ export default function useGameSetupPanel(onStart) {
   const [player1Marker, setPlayer1Marker] = useState("X");
   const [player2Marker, setPlayer2Marker] = useState("O");
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
 
   function handlePlayer2NameChange(event) {
     setPlayer2(event.target.value);
@@ -21,7 +21,8 @@ export default function useGameSetupPanel(onStart) {
   }
 
   function handleBoardSize(size) {
-    setBoardSize(size);
+    const parsedSize = Number.parseInt(size, 10);
+    setBoardSize(Number.isNaN(parsedSize) ? 10 : parsedSize);
   }
 
   function handleBoardStyle(style) {

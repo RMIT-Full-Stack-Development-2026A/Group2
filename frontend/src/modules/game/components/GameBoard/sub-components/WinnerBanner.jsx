@@ -1,49 +1,44 @@
 import { useNavigate } from "react-router-dom";
 
 export default function WinnerBanner({ winner, player1, player2, resetGame }) {
-
   const navigate = useNavigate();
 
   if (winner === null) return null;
 
   return (
-    <div style={{
-      position: "fixed", inset: 0,
-      background: "rgba(0,0,0,0.6)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      zIndex: 100,
-    }}>
-      <div style={{
-        background: "#fff", borderRadius: 16,
-        padding: "40px 48px", textAlign: "center",
-        boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
-      }}>
-        <div style={{ fontSize: 48, marginBottom: 12 }}>🎉</div>
-        <h2 style={{ fontWeight: 700, marginBottom: 8 }}>
-          {winner === 1 ? player1 : player2} wins!
-        </h2>
-        <p style={{ color: "#666", marginBottom: 24 }}>5 in a row!</p>
-        <button
-          onClick={resetGame}
-          style={{
-            padding: "12px 32px", background: "#3b82f6",
-            color: "#fff", border: "none", borderRadius: 8,
-            fontWeight: 600, fontSize: 16, cursor: "pointer",
-          }}>
-          Play Again
-        </button>
-
-        <button
-          onClick={() => navigate("/dashboard")}
-          style={{
-            padding: "12px 32px", background: "#e2e8f0",
-            color: "#333", border: "none", borderRadius: 8,
-            fontWeight: 600, fontSize: 16, cursor: "pointer",
-          }}>
-          Back to Menu
-        </button>
-
+    <>
+      <div
+        className="modal fade show d-block"
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="winner-dialog-title"
+        style={{ backgroundColor: "rgba(33, 37, 41, 0.6)" }}
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content border-0 shadow-lg text-center p-4 p-md-5">
+            <div className="modal-body">
+              <h2 className="modal-title fw-bold mb-2" id="winner-dialog-title">
+                {winner === 1 ? player1 : player2} wins!
+              </h2>
+              <p className="text-secondary mb-4">5 in a row!</p>
+              <div className="d-flex flex-column flex-sm-row gap-2 justify-content-center">
+                <button type="button" className="btn btn-primary btn-lg px-4" onClick={resetGame}>
+                  Play Again
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary btn-lg px-4"
+                  onClick={() => navigate("/dashboard")}
+                >
+                  Back to Menu
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  )
+      <div className="modal-backdrop fade show" aria-hidden="true" />
+    </>
+  );
 }

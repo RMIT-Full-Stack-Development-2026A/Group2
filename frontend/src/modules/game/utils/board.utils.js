@@ -15,6 +15,13 @@ export const boardThemes = {
   },
 };
 
+/** Bootstrap utility classes for the board frame (used in GameBoard). */
+export const boardFrameClassByStyle = {
+  classic: "bg-white border border-secondary-subtle",
+  dark: "bg-dark border border-secondary text-light",
+  wood: "bg-warning bg-opacity-10 border border-warning",
+};
+
 export const cellThemes = {
     classic: {
         background: "#f8fafc",

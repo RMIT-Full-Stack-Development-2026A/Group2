@@ -4,13 +4,17 @@ import BoardStylePicker from "./sub-components/BoardStylePicker";
 import PlayerCard from "./sub-components/PlayerCard";
 import MarkerPicker from "./sub-components/MarkerPicker";
 
-
-export default function LocalGameSetupPanel({onStart}) {
+export default function LocalGameSetupPanel({ onStart }) {
   const {
-    player1, player2, firstTurn,
-    boardSize, boardStyle,
-    player1Marker, player2Marker,
-    error, isLoading,
+    player1,
+    player2,
+    firstTurn,
+    boardSize,
+    boardStyle,
+    player1Marker,
+    player2Marker,
+    error,
+    isLoading,
     handlePlayer2NameChange,
     handleFirstTurn,
     handleBoardSize,
@@ -20,83 +24,109 @@ export default function LocalGameSetupPanel({onStart}) {
   } = useGameSetupPanel(onStart);
 
   return (
-    <div style={{ maxWidth: 500, margin: "auto", padding: 20}}>
-      <h2>Local 2-Player Game Setup</h2>
-      <p style={{ color: "gray" }}>Configure your match settings</p>
+    <div className="card shadow-sm border-0 mx-auto" style={{ maxWidth: "720px" }}>
+      <div className="card-body p-4 p-md-5">
+        <h2 className="card-title fw-bold mb-1">Local 2-Player Game Setup</h2>
+        <p className="text-secondary mb-4">Configure your match settings</p>
 
-      <div style={{ display: "flex", gap: 40, marginTop: 30 }}>
-        <div style={{ flex: 1 }}>
-          <h5>Player 1</h5>
-          <PlayerCard name={player1} marker={player1Marker} />
-        </div>
-        <div style={{ flex: 1 }}>
-          <h5>Player 2</h5>
-          <input type="text" placeholder="Enter name" value={player2}
-            onChange={handlePlayer2NameChange} 
-            style={{ width: "100%", padding: "10px 12px",
-              border: "1px solid #ccc", borderRadius: 8,
-              marginBottom: 8, fontSize: 14 }}
-          />
-          {player2 && <PlayerCard name={player2} marker={player2Marker} />}
-          {error && <p style={{ color: "red", fontSize: 13, marginTop: 4 }}>{error}</p>}
-        </div>
-      </div>
-
-      <div style={{ marginTop: 24 }}>
-        <label style={{ fontWeight: 600 }}>Who goes first?</label>
-        <div style={{ display: "flex", gap: 24, marginTop: 8 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
-            <input type="radio" name="firstTurn"
-              checked={firstTurn === 1}
-              onChange={() => handleFirstTurn(1)} />
-            {player1}
+        <div className="row g-4 mt-1">
+          <div className="col-md-6">
+            <h5 className="small text-uppercase text-secondary fw-semibold mb-2">Player 1</h5>
+            <PlayerCard name={player1} marker={player1Marker} />
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
-            <input type="radio" name="firstTurn"
-              checked={firstTurn === 2}
-              onChange={() => handleFirstTurn(2)} />
-            {player2 || "Player2"}
+          <div className="col-md-6">
+            <h5 className="small text-uppercase text-secondary fw-semibold mb-2">Player 2</h5>
+            <label htmlFor="p2-name" className="visually-hidden">
+              Player 2 name
+            </label>
+            <input
+              id="p2-name"
+              type="text"
+              className="form-control mb-2"
+              placeholder="Enter name"
+              value={player2}
+              onChange={handlePlayer2NameChange}
+              autoComplete="off"
+            />
+            {player2 ? <PlayerCard name={player2} marker={player2Marker} /> : null}
+            {error ? (
+              <p className="text-danger small mt-2 mb-0" role="alert">
+                {error}
+              </p>
+            ) : null}
           </div>
         </div>
-      </div>
 
-      <div style={{ marginTop: 24 }}>
-        <label style={{ fontWeight: 600 }}>Board Size</label>
-        <div style={{ display: "flex", gap: 24, marginTop: 8 }}>
-          <BoardSizePicker boardSize={boardSize} onSizeChange={handleBoardSize}/>
+        <div className="mt-4">
+          <label className="form-label fw-semibold">Who goes first?</label>
+          <div className="d-flex flex-wrap gap-4 mt-2">
+            <div className="form-check">
+              <input
+                className="form-check-input"
+                type="radio"
+                name="firstTurn"
+                id="ft-p1"
+                checked={firstTurn === 1}
+                onChange={() => handleFirstTurn(1)}
+              />
+              <label className="form-check-label" htmlFor="ft-p1">
+                {player1}
+              </label>
+            </div>
+            <div className="form-check">
+              <input
+                className="form-check-input"
+                type="radio"
+                name="firstTurn"
+                id="ft-p2"
+                checked={firstTurn === 2}
+                onChange={() => handleFirstTurn(2)}
+              />
+              <label className="form-check-label" htmlFor="ft-p2">
+                {player2 || "Player 2"}
+              </label>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div style={{ marginTop: 24 }}>
-        <label style={{ fontWeight: 600 }}>Board Style</label>
-        <BoardStylePicker boardStyle={boardStyle} onStyleChange={handleBoardStyle}/>
-      </div>
+        <div className="mt-4">
+          <label className="form-label fw-semibold">Board size</label>
+          <BoardSizePicker boardSize={boardSize} onSizeChange={handleBoardSize} />
+        </div>
 
-      <div style={{ display: "flex", gap: 24, marginTop: 24 }}>
-        <MarkerPicker
-          label="Player 1 Marker"
-          selectedMarker={player1Marker}
-          otherMarker={player2Marker}
-          onMarkerChange={(m) => handleMarkerChange(1, m)}
-        />
-        <MarkerPicker
-          label="Player 2 Marker"
-          selectedMarker={player2Marker}
-          otherMarker={player1Marker}
-          onMarkerChange={(m) => handleMarkerChange(2, m)}
-        />
-      </div>
+        <div className="mt-4">
+          <label className="form-label fw-semibold">Board style</label>
+          <BoardStylePicker boardStyle={boardStyle} onStyleChange={handleBoardStyle} />
+        </div>
 
-      <button
-        onClick={handleGameStart}
-        disabled={isLoading}
-        style={{
-          width: "100%", padding: "14px", marginTop: 32,
-          background: "#3b82f6", color: "#fff", border: "none",
-          borderRadius: 8, fontSize: 16, fontWeight: 700, cursor: "pointer",
-        }}>
-        Start Game
-      </button>
+        <div className="row g-4 mt-2">
+          <div className="col-md-6">
+            <MarkerPicker
+              label="Player 1 Marker"
+              selectedMarker={player1Marker}
+              otherMarker={player2Marker}
+              onMarkerChange={(m) => handleMarkerChange(1, m)}
+            />
+          </div>
+          <div className="col-md-6">
+            <MarkerPicker
+              label="Player 2 Marker"
+              selectedMarker={player2Marker}
+              otherMarker={player1Marker}
+              onMarkerChange={(m) => handleMarkerChange(2, m)}
+            />
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="btn btn-primary btn-lg w-100 fw-bold mt-4 py-3"
+          onClick={handleGameStart}
+          disabled={isLoading}
+        >
+          Start Game
+        </button>
+      </div>
     </div>
   );
 }
