@@ -21,7 +21,8 @@ export default function useGameSetupPanel(onStart) {
   }
 
   function handleBoardSize(size) {
-    setBoardSize(size);
+    const parsedSize = Number.parseInt(size, 10);
+    setBoardSize(Number.isNaN(parsedSize) ? 10 : parsedSize);
   }
 
   function handleBoardStyle(style) {

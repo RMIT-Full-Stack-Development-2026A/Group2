@@ -1,4 +1,5 @@
-export const createEmptyBoard = (size = 10) => Array(size).fill(null).map(() => Array(size).fill(null));
+export const createEmptyBoard = (size = 10) =>
+  Array.from({ length: size }, () => Array(size).fill(null));
 
 export const boardThemes = {
   classic: {
