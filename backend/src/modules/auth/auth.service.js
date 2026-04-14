@@ -2,30 +2,19 @@ const bcrypt = require("bcrypt");
 const tokenUtils = require("../../shared/utils/token.utils");
 const AppError = require("../../shared/errors/AppError");
 const userRepository = require("./auth.repository");
-const {
-  validateRegisterBody,
-} = require("./auth.validation");
+const { validateRegisterBody } = require("./auth.validation");
 
 function publicUserDto(userDoc) {
     return {
         id: String(userDoc._id),
         username: userDoc.username,
         role: userDoc.role,
-        displayName: userDoc.displayName ?? userDoc.username,
     };
 }
 
-async function signUp(
-    username,
-    displayName,
-    email,
-    password,
-    confirmPassword,
-    country,
-) {
+async function signUp(username, email, password, confirmPassword, country) {
     const validationErrors = validateRegisterBody({
         username,
-        displayName,
         email,
         password,
         confirmPassword,
@@ -65,7 +54,6 @@ async function signUp(
             email: email.trim().toLowerCase(),
             passwordHash,
             country,
-            displayName: displayName.trim(),
         });
     } catch (e) {
         if (e?.code === 11000) {

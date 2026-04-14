@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useRef, useState, useEffect } from "react";
-import { getProfile } from "../../profile/services/profile.service";
 import { logoutUser, refreshToken } from "../services/auth.service";
 import { initHttpClient } from "../../../lib/httpClient";
 import { AUTH_TOKEN_KEY, AUTH_USER_KEY } from "../../../config/api.config";
@@ -92,15 +91,6 @@ export function AuthProvider({ children }) {
         persistSession("", null);
     }, [persistSession]);
 
-    /** Re-fetch GET /api/profile and update `user` (navbar, profile card, etc.). */
-    const refreshUser = useCallback(async () => {
-        const next = await getProfile();
-        if (next) {
-            setUser(next);
-        }
-        return next;
-    }, []);
-
     const value = useMemo(
         () => ({
             accessToken,
@@ -109,9 +99,8 @@ export function AuthProvider({ children }) {
             isLoadingAuth,
             login,
             logout,
-            refreshUser,
         }),
-        [accessToken, user, isLoadingAuth, login, logout, refreshUser],
+        [accessToken, user, isLoadingAuth, login, logout],
     );
 
     return (

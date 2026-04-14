@@ -7,23 +7,9 @@ function toAuthUserDto(userDoc) {
   return {
     id: userDoc._id,
     username: userDoc.username,
-    displayName: userDoc.displayName ?? userDoc.username,
+    email: userDoc.email,
     role: userDoc.role,
     accountStatus: userDoc.accountStatus,
-    profile: {
-      email: userDoc.email,
-      country: userDoc.country ?? null,
-      avatarURL: userDoc.avatarURL ?? null,
-      createdAt: userDoc.profileCreatedAt
-        ? userDoc.profileCreatedAt.toISOString()
-        : null,
-      updatedAt: userDoc.profileUpdatedAt
-        ? userDoc.profileUpdatedAt.toISOString()
-        : null,
-    },
-    createdAt: userDoc.createdAt
-      ? userDoc.createdAt.toISOString()
-      : null,
   };
 }
 

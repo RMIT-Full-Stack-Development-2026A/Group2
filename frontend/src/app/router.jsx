@@ -3,8 +3,7 @@ import LoginPage from "../modules/auth/pages/LoginPage";
 import RegisterPage from "../modules/auth/pages/RegisterPage";
 import DashboardPage from "../modules/auth/pages/DashBoardPage";
 import ProtectedRoute from "../routes/ProtectedRoute";
-import ProfilePage from "../modules/profile/pages/ProfilePage";
-import EditProfilePage from "../modules/profile/pages/EditProfilePage";
+import Profile from "../modules/auth/pages/Profile";
 import App from "../App";
 import PremiumPage from "../modules/premium/pages/PremiumPage";
 import OnlineArenaPage from "../modules/game/pages/OnlineArenaPage";
@@ -33,8 +32,7 @@ const router = createBrowserRouter([
     ),
     children: [
       { path: "/dashboard", element: <DashboardPage /> },
-      { path: "/profile", element: <ProfilePage /> },
-      { path: "/profile/edit", element: <EditProfilePage /> },
+      { path: "/profile", element: <Profile /> },
       { path: "/online", element: <OnlineArenaPage /> },
       { path: "/onlinearena", element: <OnlineArenaPage /> },
       { path: "/game/local", element: <LocalGameSetupPage /> },

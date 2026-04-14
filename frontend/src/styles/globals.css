@@ -15,36 +15,3 @@
 .app-shell .navbar-nav .nav-link.active {
   color: var(--bs-primary) !important;
 }
-
-/* Profile — fixed widths/sizes (no matching Bootstrap utility) */
-.profile-page-shell {
-  max-width: 750px;
-}
-
-.profile-tab-btn {
-  width: 180px;
-}
-
-.profile-avatar {
-  width: 104px;
-  height: 104px;
-  font-size: 40px;
-}
-
-.profile-upload-overlay {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 32px;
-  height: 32px;
-}
-
-.profile-identity-text {
-  min-width: 200px;
-}
-
-.profile-history-blurb {
-  max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
-}

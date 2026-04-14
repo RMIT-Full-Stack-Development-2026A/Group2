@@ -1,15 +1,12 @@
 /**
- * Seed script for non-test database with split User/Profile schema.
- *
- * Usage:
- * - npm run seed
- * - or: SEED_DB_NAME=tictactoang npm run seed
+ * Gold dataset seed for TicTacToang (MongoDB).
+ * Run from backend root: npm run seed
+ * Requires MONGO_URI in .env
  */
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 
 const User = require("../modules/auth/model/user.model");
-const Profile = require("../modules/profile/model/profile.model");
 const Wallet = require("../modules/wallet/model/wallet.model");
 const Transaction = require("../modules/wallet/model/transaction.model");
 const SubscriptionPlan = require("../modules/premium/model/subscriptionPlan.model");
@@ -21,11 +18,12 @@ const MatchLobby = require("../modules/multiplayer/model/matchLobby.model");
 
 dotenv.config();
 
-const TARGET_DB = process.env.SEED_DB_NAME || "tictactoang";
 const PASSWORD_HASH =
   "$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31Cm";
 
+/** Deterministic 24-hex ObjectIds (readable prefixes in comments). */
 const o = (hex24) => new mongoose.Types.ObjectId(hex24);
+
 const I = {
   userAdmin: o("010101010101010101010101"),
   userAlpha: o("010101010101010101010102"),
@@ -52,84 +50,80 @@ function moveId(i) {
   return o(`0a0a0a0a0a0a0a0a0a0a0a${hex}`);
 }
 
-async function connectSeedDb() {
+/** 3×3 cell (row, col) → single rowIndex for current Move schema */
+function cell(row, col) {
+  return row * 3 + col;
+}
+
+async function clearAll() {
+  const order = [
+    Move,
+    GameParticipant,
+    MatchLobby,
+    GameSession,
+    Transaction,
+    Wallet,
+    UserSubscription,
+    SubscriptionPlan,
+    User,
+  ];
+  for (const Model of order) {
+    await Model.deleteMany({});
+  }
+  for (const name of ["boardstyles", "markers", "onlinegamerooms", "messages"]) {
+    try {
+      await mongoose.connection.collection(name).deleteMany({});
+    } catch {
+      /* collection may not exist */
+    }
+  }
+}
+
+async function seed() {
   const uri = process.env.MONGO_URI;
   if (!uri) {
-    throw new Error("Missing MONGO_URI in environment.");
-  }
-  if (TARGET_DB.toLowerCase() === "test") {
-    throw new Error("Refusing to seed 'test' database. Set SEED_DB_NAME to a non-test database.");
+    console.error("Missing MONGO_URI in environment.");
+    process.exit(1);
   }
 
-  await mongoose.connect(uri, { dbName: TARGET_DB });
-  const connectedDb = mongoose.connection?.db?.databaseName;
-  if (!connectedDb || connectedDb.toLowerCase() === "test") {
-    throw new Error("Safety stop: connected database is 'test'.");
-  }
-  console.log(`Connected to database: ${connectedDb}`);
-}
+  await mongoose.connect(uri);
+  console.log("Connected. Clearing collections…");
+  await clearAll();
 
-async function clearAllCollections() {
-  await mongoose.connection.db.dropDatabase();
-  console.log("Dropped existing database content.");
-}
-
-async function insertSeedData() {
   await User.insertMany([
     {
       _id: I.userAdmin,
       role: "admin",
+      country: "US",
       accountStatus: "active",
       username: "AdminRoot",
       passwordHash: PASSWORD_HASH,
+      email: "admin@tictactoang.dev",
+      avatarURL: "https://cdn.tictactoang.dev/avatars/admin.png",
       createdAt: new Date("2026-01-05T10:00:00.000Z"),
       updatedAt: new Date("2026-04-01T08:00:00.000Z"),
     },
     {
       _id: I.userAlpha,
       role: "player",
+      country: "CA",
       accountStatus: "active",
       username: "PlayerAlpha",
       passwordHash: PASSWORD_HASH,
+      email: "alpha.player@email.com",
+      avatarURL: "https://cdn.tictactoang.dev/avatars/alpha.png",
       createdAt: new Date("2026-02-10T14:30:00.000Z"),
       updatedAt: new Date("2026-04-03T16:20:00.000Z"),
     },
     {
       _id: I.userBeta,
       role: "player",
+      country: "GB",
       accountStatus: "active",
       username: "PlayerBeta",
       passwordHash: PASSWORD_HASH,
-      createdAt: new Date("2026-02-18T09:15:00.000Z"),
-      updatedAt: new Date("2026-04-02T11:45:00.000Z"),
-    },
-  ]);
-
-  await Profile.insertMany([
-    {
-      userID: I.userAdmin,
-      displayName: "AdminRoot",
-      avatarURL: "https://cdn.tictactoang.dev/avatars/admin.png",
-      country: "United States",
-      email: "admin@tictactoang.dev",
-      createdAt: new Date("2026-01-05T10:00:00.000Z"),
-      updatedAt: new Date("2026-04-01T08:00:00.000Z"),
-    },
-    {
-      userID: I.userAlpha,
-      displayName: "PlayerAlpha",
-      avatarURL: "https://cdn.tictactoang.dev/avatars/alpha.png",
-      country: "Canada",
-      email: "alpha.player@email.com",
-      createdAt: new Date("2026-02-10T14:30:00.000Z"),
-      updatedAt: new Date("2026-04-03T16:20:00.000Z"),
-    },
-    {
-      userID: I.userBeta,
-      displayName: "PlayerBeta",
-      avatarURL: null,
-      country: "United Kingdom",
       email: "beta.player@email.com",
+      avatarURL: null,
       createdAt: new Date("2026-02-18T09:15:00.000Z"),
       updatedAt: new Date("2026-04-02T11:45:00.000Z"),
     },
@@ -225,8 +219,6 @@ async function insertSeedData() {
       participantType: "player",
       isWinner: true,
       displayName: "PlayerAlpha",
-      marker: "X",
-      turnOrder: 1,
     },
     {
       _id: I.gp2,
@@ -235,8 +227,6 @@ async function insertSeedData() {
       participantType: "ai",
       isWinner: false,
       displayName: "CPU Easy",
-      marker: "O",
-      turnOrder: 2,
     },
     {
       _id: I.gp3,
@@ -245,8 +235,6 @@ async function insertSeedData() {
       participantType: "player",
       isWinner: false,
       displayName: "PlayerAlpha",
-      marker: "X",
-      turnOrder: 1,
     },
     {
       _id: I.gp4,
@@ -255,8 +243,6 @@ async function insertSeedData() {
       participantType: "ai",
       isWinner: true,
       displayName: "CPU Medium",
-      marker: "O",
-      turnOrder: 2,
     },
     {
       _id: I.gp5,
@@ -265,8 +251,6 @@ async function insertSeedData() {
       participantType: "player",
       isWinner: true,
       displayName: "PlayerAlpha",
-      marker: "X",
-      turnOrder: 1,
     },
     {
       _id: I.gp6,
@@ -275,8 +259,6 @@ async function insertSeedData() {
       participantType: "player",
       isWinner: false,
       displayName: "PlayerBeta",
-      marker: "O",
-      turnOrder: 2,
     },
   ]);
 
@@ -305,17 +287,15 @@ async function insertSeedData() {
     [I.gs3, I.gp5, 7, 1, 2, "2026-03-22T17:01:56.000Z"],
   ];
 
-  const moves = moveRows.map(
-    ([sessionID, participantID, moveNumber, row, col, iso], idx) => ({
-      _id: moveId(idx + 1),
-      sessionID,
-      participantID,
-      moveNumber,
-      rowIndex: row,
-      colIndex: col,
-      playedAt: new Date(iso),
-    }),
-  );
+  const moves = moveRows.map(([sessionID, participantID, moveNumber, r, c, iso], idx) => ({
+    _id: moveId(idx + 1),
+    sessionID,
+    participantID,
+    moveNumber,
+    rowIndex: cell(r, c),
+    playedAt: new Date(iso),
+  }));
+
   await Move.insertMany(moves);
 
   await MatchLobby.insertMany([
@@ -330,20 +310,13 @@ async function insertSeedData() {
       createdAt: new Date("2026-03-22T16:55:00.000Z"),
     },
   ]);
+
+  console.log("Seed completed successfully.");
+  await mongoose.disconnect();
 }
 
-async function runSeed() {
-  await connectSeedDb();
-  await clearAllCollections();
-  await insertSeedData();
-  console.log(`Seed complete for database: ${TARGET_DB}`);
-}
-
-runSeed()
-  .catch((error) => {
-    console.error("Seed failed:", error.message);
-    process.exitCode = 1;
-  })
-  .finally(async () => {
-    await mongoose.disconnect();
-  });
+seed().catch(async (err) => {
+  console.error(err);
+  await mongoose.disconnect();
+  process.exit(1);
+});
