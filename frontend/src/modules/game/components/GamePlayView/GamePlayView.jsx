@@ -1,14 +1,18 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
+import AppLayout from "@/components/AppLayout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Bot } from "lucide-react";
 import GameChat from "@/components/GameChat";
 import styles from "./GamePlayView.module.css";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
 
 import useGamePlayView from "./GamePlayView.hook";
 import GameHeaderBar from "./sub-components/GameHeaderBar";
 import PlayerStatusCard from "./sub-components/PlayerStatusCard";
 import GameBoard from "./sub-components/GameBoard";
 import WinnerDialog from "./sub-components/WinnerDialog";
+import LeaveGameDialog from "./sub-components/LeaveGameDialog";
 
 export default function GamePlayView() {
   const location = useLocation();
@@ -17,9 +21,11 @@ export default function GamePlayView() {
 
   if (!config) {
     return (
-      <div className={styles.emptyState}>
-        <p>No game configuration found.</p>
-      </div>
+      <AppLayout>
+        <div className={styles.emptyState}>
+          <p>No game configuration found.</p>
+        </div>
+      </AppLayout>
     );
   }
 
@@ -27,6 +33,10 @@ export default function GamePlayView() {
 }
 
 function GamePlayViewContent({ config, navigate }) {
+  const outletContext = useOutletContext();
+  const registerNavigationGuard = outletContext?.registerNavigationGuard;
+  const { logout } = useAuth();
+
   const {
     size,
     board,
@@ -46,82 +56,130 @@ function GamePlayViewContent({ config, navigate }) {
     handleCellClick,
   } = useGamePlayView(config);
 
+  const [navLeaveOpen, setNavLeaveOpen] = useState(false);
+  const pendingNavRef = useRef(null);
+
+  const gameInProgress = !winner && !aborted;
+
+  const handleNavIntercept = useCallback(
+    (to) => {
+      if (gameInProgress) {
+        pendingNavRef.current = to;
+        setNavLeaveOpen(true);
+        return true;
+      }
+      return false;
+    },
+    [gameInProgress],
+  );
+
+  useEffect(() => {
+    if (typeof registerNavigationGuard !== "function") return undefined;
+
+    registerNavigationGuard(handleNavIntercept);
+    return () => {
+      registerNavigationGuard(null);
+    };
+  }, [handleNavIntercept, registerNavigationGuard]);
+
   const isOnline = config.gameType === "online";
 
   return (
-    <div className={styles.root}>
-      <GameHeaderBar
-        gameType={config.gameType}
-        boardSize={config.boardSize}
-        aiDifficulty={config.aiDifficulty}
-        elapsed={elapsed}
-        winner={winner}
-        aborted={aborted}
-        isPaused={isPaused}
-        onRestart={resetGame}
-        onTogglePause={() => setIsPaused((prev) => !prev)}
-        onAbort={() => setAborted(true)}
-      />
+    <AppLayout>
+      <div className={styles.root}>
+        <GameHeaderBar
+          gameType={config.gameType}
+          boardSize={config.boardSize}
+          aiDifficulty={config.aiDifficulty}
+          elapsed={elapsed}
+          winner={winner}
+          aborted={aborted}
+          isPaused={isPaused}
+          onRestart={resetGame}
+          onTogglePause={() => setIsPaused((prev) => !prev)}
+          onAbort={() => setAborted(true)}
+        />
 
-      {aborted ? (
-        <Alert variant="destructive">
-          <AlertDescription>Game aborted. No result recorded.</AlertDescription>
-        </Alert>
-      ) : null}
+        {aborted ? (
+          <Alert variant="destructive">
+            <AlertDescription>Game aborted. No result recorded.</AlertDescription>
+          </Alert>
+        ) : null}
 
-      <div className={isOnline ? styles.mainOnline : styles.mainLocal}>
-        <div className={styles.centerRow}>
-          <PlayerStatusCard
-            name={config.player1}
-            marker={config.marker1}
-            isActive={currentPlayer === 1 && !winner && !aborted}
-            turnText="Your turn"
-            avatarContent={config.player1.charAt(0).toUpperCase()}
-          />
+        <div className={isOnline ? styles.mainOnline : styles.mainLocal}>
+          <div className={styles.centerRow}>
+            <PlayerStatusCard
+              name={config.player1}
+              marker={config.marker1}
+              isActive={currentPlayer === 1 && !winner && !aborted}
+              turnText="Your turn"
+              avatarContent={config.player1.charAt(0).toUpperCase()}
+            />
 
-          <GameBoard
-            board={board}
-            size={size}
-            boardStyle={config.boardStyle}
-            customBoardImage={config.customBoardImage}
-            winner={winner}
-            aborted={aborted}
-            isPaused={isPaused}
-            winningCells={winningCells}
-            onCellClick={handleCellClick}
-          />
+            <GameBoard
+              board={board}
+              size={size}
+              boardStyle={config.boardStyle}
+              customBoardImage={config.customBoardImage}
+              winner={winner}
+              aborted={aborted}
+              isPaused={isPaused}
+              winningCells={winningCells}
+              onCellClick={handleCellClick}
+            />
 
-          <PlayerStatusCard
-            name={config.player2}
-            marker={config.marker2}
-            isActive={currentPlayer === 2 && !winner && !aborted}
-            turnText={aiThinking ? "Thinking..." : "Their turn"}
-            avatarContent={
-              config.gameType === "ai"
-                ? <Bot className="h-5 w-5" />
-                : config.player2.charAt(0).toUpperCase()
-            }
-          />
+            <PlayerStatusCard
+              name={config.player2}
+              marker={config.marker2}
+              isActive={currentPlayer === 2 && !winner && !aborted}
+              turnText={aiThinking ? "Thinking..." : "Their turn"}
+              avatarContent={
+                config.gameType === "ai"
+                  ? <Bot className="h-5 w-5" />
+                  : config.player2.charAt(0).toUpperCase()
+              }
+            />
+          </div>
+
+          {isOnline ? (
+            <div className={styles.chatPanel}>
+              <GameChat currentUser={config.player1} opponent={config.player2} />
+            </div>
+          ) : null}
         </div>
 
-        {isOnline ? (
-          <div className={styles.chatPanel}>
-            <GameChat currentUser={config.player1} opponent={config.player2} />
-          </div>
-        ) : null}
+        <p className={styles.startedText}>
+          Started: {new Date(startTime.current).toLocaleTimeString()}
+        </p>
+
+        <WinnerDialog
+          open={showWinnerModal}
+          winner={winner}
+          onOpenChange={setShowWinnerModal}
+          onHistory={() => navigate("/profile?tab=history")}
+          onPlayAgain={resetGame}
+        />
+
+        <LeaveGameDialog
+          open={navLeaveOpen}
+          onClose={() => {
+            setNavLeaveOpen(false);
+            pendingNavRef.current = null;
+          }}
+          onConfirm={async () => {
+            setAborted(true);
+            setNavLeaveOpen(false);
+            const dest = pendingNavRef.current;
+            pendingNavRef.current = null;
+            if (dest === "/logout") {
+              await logout();
+              navigate("/login", { replace: true });
+              return;
+            }
+            if (dest) navigate(dest);
+          }}
+        />
       </div>
-
-      <p className={styles.startedText}>
-        Started: {new Date(startTime.current).toLocaleTimeString()}
-      </p>
-
-      <WinnerDialog
-        open={showWinnerModal}
-        winner={winner}
-        onOpenChange={setShowWinnerModal}
-        onHistory={() => navigate("/profile?tab=history")}
-        onPlayAgain={resetGame}
-      />
-    </div>
+    </AppLayout>
   );
 }

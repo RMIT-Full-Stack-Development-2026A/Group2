@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
-import useRegisterForm from "../../hooks/useRegisterForm";
-import FormErrorAlert from "../FormErrorAlert/FormErrorAlert";
+import useRegisterForm from "../../../hooks/useRegisterForm";
+import FormErrorAlert from "../../FormErrorAlert/FormErrorAlert";
 import {
   ALLOWED_COUNTRIES,
   getPasswordRulesStatus,
   PASSWORD_HINT,
-} from "../../utils/auth.validation";
+} from "../../../utils/auth.validation";
 
 export default function RegisterForm() {
   const { formData, error, errorIssues, success, handleChange, handleSubmit } =

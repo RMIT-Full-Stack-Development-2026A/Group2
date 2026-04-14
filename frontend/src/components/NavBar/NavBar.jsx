@@ -13,14 +13,28 @@ import { useAuth } from "../../modules/auth/hooks/useAuth";
 const navClass = ({ isActive }) =>
   `nav-link rounded-3 px-3 py-2 ${isActive ? "active fw-semibold bg-light" : "text-secondary"}`;
 
-export default function NavBar() {
+export default function NavBar({ onNavigate }) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const displayName = user?.username ?? "player";
 
+  function shouldBlockNavigation(to) {
+    if (typeof onNavigate !== "function") return false;
+    return onNavigate(to) === true;
+  }
+
   async function handleLogout() {
+    if (shouldBlockNavigation("/logout")) return;
     await logout();
     navigate("/login", { replace: true });
+  }
+
+  function handleNavLinkClick(to) {
+    return (event) => {
+      if (shouldBlockNavigation(to)) {
+        event.preventDefault();
+      }
+    };
   }
 
   return (
@@ -47,7 +61,7 @@ export default function NavBar() {
           <div className="collapse navbar-collapse" id="appMainNav">
             <ul className="navbar-nav mx-auto mb-2 mb-lg-0 gap-lg-1">
               <li className="nav-item">
-                <NavLink to="/dashboard" className={navClass} end>
+                <NavLink to="/dashboard" className={navClass} end onClick={handleNavLinkClick("/dashboard")}>
                   <span className="d-inline-flex align-items-center gap-2">
                     <LayoutDashboard size={18} strokeWidth={2} aria-hidden />
                     Dashboard
@@ -55,7 +69,7 @@ export default function NavBar() {
                 </NavLink>
               </li>
               <li className="nav-item">
-                <NavLink to="/profile" className={navClass}>
+                <NavLink to="/profile" className={navClass} onClick={handleNavLinkClick("/profile")}>
                   <span className="d-inline-flex align-items-center gap-2">
                     <User size={18} strokeWidth={2} aria-hidden />
                     Profile
@@ -63,7 +77,7 @@ export default function NavBar() {
                 </NavLink>
               </li>
               <li className="nav-item">
-                <NavLink to="/online" className={navClass}>
+                <NavLink to="/online" className={navClass} onClick={handleNavLinkClick("/online")}>
                   <span className="d-inline-flex align-items-center gap-2">
                     <Trophy size={18} strokeWidth={2} aria-hidden />
                     Online Arena
@@ -71,7 +85,7 @@ export default function NavBar() {
                 </NavLink>
               </li>
               <li className="nav-item">
-                <NavLink to="/premium" className={navClass}>
+                <NavLink to="/premium" className={navClass} onClick={handleNavLinkClick("/premium")}>
                   <span className="d-inline-flex align-items-center gap-2">
                     <Crown size={18} strokeWidth={2} aria-hidden />
                     Premium
