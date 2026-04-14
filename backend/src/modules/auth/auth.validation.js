@@ -118,6 +118,7 @@ function getStrictEmailViolations(trimmed) {
 
 const EXAMPLES = {
   username: "Example: player_one or Player-99",
+  displayName: "Example: Player Alpha",
   email: "Example: you@example.com",
   password:
     "Example: MyP@ssw0rd (8+ chars, 1 uppercase, 1 number, 1 special character)",
@@ -159,6 +160,18 @@ function validateUsername(username) {
     );
   }
   return errors;
+}
+
+function validateDisplayName(displayName, field = "displayName") {
+  if (typeof displayName !== "string" || !displayName.trim()) {
+    return [
+      err(
+        field,
+        "Display name is required. It is shown publicly on your profile.",
+      ),
+    ];
+  }
+  return [];
 }
 
 function validateEmail(email, field = "email") {
@@ -241,6 +254,7 @@ function validateRegisterBody(body) {
   const errors = [];
   const {
     username,
+    displayName,
     email,
     password,
     confirmPassword,
@@ -248,6 +262,7 @@ function validateRegisterBody(body) {
   } = body ?? {};
 
   errors.push(...validateUsername(username));
+  errors.push(...validateDisplayName(displayName));
   errors.push(...validateEmail(email));
   errors.push(...validatePassword(password));
 
@@ -348,6 +363,7 @@ module.exports = {
   validateChangePasswordBody,
   ALLOWED_COUNTRIES,
   validateUsername,
+  validateDisplayName,
   validateEmail,
   validateCountry,
   validatePassword,

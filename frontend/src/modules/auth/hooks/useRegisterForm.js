@@ -5,6 +5,7 @@ import { validateRegisterForm } from "../utils/auth.validation";
 
 const initialForm = {
   username: "",
+  displayName: "",
   email: "",
   password: "",
   confirmPassword: "",
@@ -42,6 +43,7 @@ export default function useRegisterForm() {
     try {
       await registerUser({
         username: formData.username.trim(),
+        displayName: formData.displayName.trim(),
         email: formData.email.trim(),
         password: formData.password,
         confirmPassword: formData.confirmPassword,

@@ -15,9 +15,17 @@ function publicUserDto(userDoc) {
     };
 }
 
-async function signUp(username, email, password, confirmPassword, country) {
+async function signUp(
+    username,
+    displayName,
+    email,
+    password,
+    confirmPassword,
+    country,
+) {
     const validationErrors = validateRegisterBody({
         username,
+        displayName,
         email,
         password,
         confirmPassword,
@@ -57,7 +65,7 @@ async function signUp(username, email, password, confirmPassword, country) {
             email: email.trim().toLowerCase(),
             passwordHash,
             country,
-            displayName: username.trim(),
+            displayName: displayName.trim(),
         });
     } catch (e) {
         if (e?.code === 11000) {
