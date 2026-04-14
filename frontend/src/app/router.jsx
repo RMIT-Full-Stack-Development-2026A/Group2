@@ -34,6 +34,7 @@ const router = createBrowserRouter([
       { path: "/dashboard", element: <DashboardPage /> },
       { path: "/profile", element: <Profile /> },
       { path: "/online", element: <OnlineArenaPage /> },
+      { path: "/onlinearena", element: <OnlineArenaPage /> },
       { path: "/game/local", element: <LocalGameSetupPage /> },
       { path: "/game/ai", element: <AIGameSetupPage /> },
       { path: "/game/play", element: <GamePlayPage /> },

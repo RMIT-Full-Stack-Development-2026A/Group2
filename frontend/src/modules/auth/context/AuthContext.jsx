@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import { logoutUser, refreshToken } from "../services/auth.service";
 import { initHttpClient } from "../../../lib/httpClient";
+import { AUTH_TOKEN_KEY, AUTH_USER_KEY } from "../../../config/api.config";
 import { AuthContext } from "./auth-context";
 
 export function AuthProvider({ children }) {
@@ -13,6 +14,28 @@ export function AuthProvider({ children }) {
         accessTokenRef.current = accessToken;
     }, [accessToken]);
 
+    const syncStoredSession = useCallback((token, nextUser) => {
+        if (typeof window === "undefined") {
+            return;
+        }
+
+        try {
+            if (token) {
+                window.localStorage.setItem(AUTH_TOKEN_KEY, token);
+            } else {
+                window.localStorage.removeItem(AUTH_TOKEN_KEY);
+            }
+
+            if (nextUser) {
+                window.localStorage.setItem(AUTH_USER_KEY, JSON.stringify(nextUser));
+            } else {
+                window.localStorage.removeItem(AUTH_USER_KEY);
+            }
+        } catch {
+            // Ignore storage write failures and keep in-memory auth state.
+        }
+    }, []);
+
     // On app mount, try to restore session using refresh token (in HTTP-only cookie)
     useEffect(() => {
         const restoreSession = async () => {
@@ -22,12 +45,14 @@ export function AuthProvider({ children }) {
                     accessTokenRef.current = data.accessToken;
                     setAccessToken(data.accessToken);
                     setUser(data.user);
+                    syncStoredSession(data.accessToken, data.user);
                 }
             } catch {
                 // No valid refresh token or session expired
                 accessTokenRef.current = "";
                 setAccessToken("");
                 setUser(null);
+                syncStoredSession("", null);
             } finally {
                 setIsLoadingAuth(false);
             }
@@ -41,13 +66,14 @@ export function AuthProvider({ children }) {
         );
 
         restoreSession();
-    }, []);
+    }, [syncStoredSession]);
 
     const persistSession = useCallback((token, nextUser) => {
         accessTokenRef.current = token ?? "";
         setAccessToken(token ?? "");
         setUser(nextUser ?? null);
-    }, []);
+        syncStoredSession(token ?? "", nextUser ?? null);
+    }, [syncStoredSession]);
 
     const login = useCallback(
         (token, nextUser) => {
