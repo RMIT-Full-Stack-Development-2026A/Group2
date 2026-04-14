@@ -6,6 +6,7 @@ dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI;
+const DB_NAME = process.env.DB_NAME || "tictactoang";
 
 async function startServer() {
   try {
@@ -13,8 +14,8 @@ async function startServer() {
       throw new Error("MONGO_URI is missing in environment variables.");
     }
 
-    await mongoose.connect(MONGO_URI);
-    console.log("Connected to MongoDB");
+    await mongoose.connect(MONGO_URI, { dbName: DB_NAME });
+    console.log(`Connected to MongoDB (${DB_NAME})`);
 
     app.listen(PORT, () => {
       console.log(`Server is running at http://localhost:${PORT}`);

@@ -16,7 +16,7 @@ const navClass = ({ isActive }) =>
 export default function NavBar({ onNavigate }) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const displayName = user?.username ?? "player";
+  const displayName = user?.displayName ?? user?.username ?? "player";
 
   function shouldBlockNavigation(to) {
     if (typeof onNavigate !== "function") return false;
