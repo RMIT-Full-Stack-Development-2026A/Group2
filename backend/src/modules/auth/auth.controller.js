@@ -1,7 +1,7 @@
-const AppError = require("../../shared/utils/AppError");
+const authService = require("./auth.service");
+const AppError = require("../../shared/errors/AppError");
 const { sendError } = require("../../shared/utils/httpResponse");
 const { validateLoginBody } = require("./auth.validation");
-const authService = require("./auth.service");
 const {
   assertNotLocked,
   recordFailedLogin,
