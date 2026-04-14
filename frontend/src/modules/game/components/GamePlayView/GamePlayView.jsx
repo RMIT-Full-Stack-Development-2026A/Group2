@@ -56,22 +56,49 @@ function GamePlayViewContent({ config, navigate }) {
     handleCellClick,
   } = useGamePlayView(config);
 
-  const [navLeaveOpen, setNavLeaveOpen] = useState(false);
+  const [pauseDialogOpen, setPauseDialogOpen] = useState(false);
+  const [abortDialogOpen, setAbortDialogOpen] = useState(false);
   const pendingNavRef = useRef(null);
 
   const gameInProgress = !winner && !aborted;
+
+  const handleConfirmAbort = useCallback(async () => {
+    setIsPaused(false);
+    setAborted(true);
+    setPauseDialogOpen(false);
+    setAbortDialogOpen(false);
+    const dest = pendingNavRef.current;
+    pendingNavRef.current = null;
+    if (dest === "/logout") {
+      await logout();
+      navigate("/login", { replace: true });
+      return;
+    }
+    if (dest) navigate(dest);
+  }, [logout, navigate, setAborted, setIsPaused]);
 
   const handleNavIntercept = useCallback(
     (to) => {
       if (gameInProgress) {
         pendingNavRef.current = to;
-        setNavLeaveOpen(true);
+        setAbortDialogOpen(true);
         return true;
       }
       return false;
     },
     [gameInProgress],
   );
+
+  const handlePauseAction = useCallback(() => {
+    if (winner || aborted) return;
+    if (isPaused) {
+      setIsPaused(false);
+      setPauseDialogOpen(false);
+      return;
+    }
+    setIsPaused(true);
+    setPauseDialogOpen(true);
+  }, [winner, aborted, isPaused, setIsPaused]);
 
   useEffect(() => {
     if (typeof registerNavigationGuard !== "function") return undefined;
@@ -96,8 +123,8 @@ function GamePlayViewContent({ config, navigate }) {
           aborted={aborted}
           isPaused={isPaused}
           onRestart={resetGame}
-          onTogglePause={() => setIsPaused((prev) => !prev)}
-          onAbort={() => setAborted(true)}
+          onTogglePause={handlePauseAction}
+          onAbort={() => setAbortDialogOpen(true)}
         />
 
         {aborted ? (
@@ -161,23 +188,32 @@ function GamePlayViewContent({ config, navigate }) {
         />
 
         <LeaveGameDialog
-          open={navLeaveOpen}
+          open={pauseDialogOpen}
+          onClose={() => setPauseDialogOpen(false)}
+          onConfirm={() => {
+            setIsPaused(false);
+            setPauseDialogOpen(false);
+          }}
+          kicker="Pause"
+          title="Game Paused"
+          description="Take a break. You can resume anytime."
+          cancelText="Close"
+          confirmText="Resume"
+          confirmTone="primary"
+        />
+
+        <LeaveGameDialog
+          open={abortDialogOpen}
           onClose={() => {
-            setNavLeaveOpen(false);
+            setAbortDialogOpen(false);
             pendingNavRef.current = null;
           }}
-          onConfirm={async () => {
-            setAborted(true);
-            setNavLeaveOpen(false);
-            const dest = pendingNavRef.current;
-            pendingNavRef.current = null;
-            if (dest === "/logout") {
-              await logout();
-              navigate("/login", { replace: true });
-              return;
-            }
-            if (dest) navigate(dest);
-          }}
+          onConfirm={handleConfirmAbort}
+          kicker="Confirm action"
+          title="Abort Game?"
+          description="This action cannot be undone. No result will be recorded."
+          cancelText="Cancel"
+          confirmText="Confirm Abort"
         />
       </div>
     </AppLayout>

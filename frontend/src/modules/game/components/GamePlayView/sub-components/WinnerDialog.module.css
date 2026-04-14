@@ -1,7 +1,7 @@
 .backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.52);
+  background: rgba(15, 23, 42, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -10,21 +10,52 @@
 }
 
 .modal {
-  width: min(92vw, 460px);
+  position: relative;
+  width: min(90vw, 380px);
   background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-  border-radius: 20px;
-  box-shadow: 0 28px 70px rgba(15, 23, 42, 0.28);
+  border-radius: 16px;
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.24);
   border: 1px solid rgba(148, 163, 184, 0.22);
-  padding: 24px 22px 22px;
+  padding: 18px 16px 16px;
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+}
+
+.closeButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #334155;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton:hover {
+  background: #f1f5f9;
+}
+
+.closeButton:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.75);
+  outline-offset: 2px;
 }
 
 .header {
   text-align: center;
+  padding: 6px 20px 0;
 }
 
 .kicker {
-  margin: 0 0 8px;
-  font-size: 12px;
+  margin: 0 0 6px;
+  font-size: 11px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #64748b;
@@ -32,8 +63,8 @@
 }
 
 .title {
-  margin: 0 0 8px;
-  font-size: 26px;
+  margin: 0 0 6px;
+  font-size: 22px;
   font-weight: 700;
   color: #0f172a;
 }
@@ -41,43 +72,25 @@
 .description {
   margin: 0;
   color: #6b7280;
-  font-size: 14px;
-}
-
-.body {
-  padding: 22px 0 24px;
-  text-align: center;
-}
-
-.resultPill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 160px;
-  padding: 14px 18px;
-  border-radius: 14px;
-  background: rgba(37, 99, 235, 0.1);
-  color: #1d4ed8;
-  font-size: 30px;
-  font-weight: 800;
-  letter-spacing: 0.01em;
+  font-size: 13px;
 }
 
 .footer {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   justify-content: center;
   flex-wrap: wrap;
+  margin-top: 14px;
 }
 
 .primaryButton,
 .secondaryButton {
   border-radius: 10px;
-  padding: 10px 16px;
+  padding: 9px 14px;
   font-weight: 600;
   cursor: pointer;
   border: 1px solid transparent;
-  min-width: 132px;
+  min-width: 120px;
   transition:
     transform 120ms ease,
     box-shadow 120ms ease,
@@ -109,7 +122,8 @@
 
 @media (max-width: 480px) {
   .modal {
-    padding: 20px 18px 18px;
+    width: min(94vw, 360px);
+    padding: 16px 14px 14px;
   }
 
   .footer {

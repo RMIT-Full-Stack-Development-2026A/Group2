@@ -20,14 +20,19 @@ export default function WinnerDialog({
       aria-label="Game result"
     >
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        <button
+          type="button"
+          className={styles.closeButton}
+          aria-label="Close result popup"
+          onClick={() => onOpenChange(false)}
+        >
+          ×
+        </button>
+
         <div className={styles.header}>
           <p className={styles.kicker}>Match result</p>
           <h2 className={styles.title}>{label}</h2>
           <p className={styles.description}>Congratulations. The game is over.</p>
-        </div>
-
-        <div className={styles.body}>
-          <div className={styles.resultPill}>{winner || "No winner"}</div>
         </div>
 
         <div className={styles.footer}>

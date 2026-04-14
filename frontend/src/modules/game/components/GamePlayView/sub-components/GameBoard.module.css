@@ -13,7 +13,57 @@
   display: grid;
   gap: 0;
   width: fit-content;
+  margin: 0;
+}
+
+.boardWithCoordinates {
+  display: grid;
+  grid-template-columns: 1.5rem auto;
+  grid-template-rows: 1.5rem auto;
+  width: fit-content;
   margin: 0 auto;
+  align-items: start;
+}
+
+.cornerSpacer {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.columnLabels {
+  display: grid;
+  gap: 0;
+  width: fit-content;
+}
+
+.rowLabels {
+  display: grid;
+  grid-template-rows: repeat(var(--board-size, 10), var(--cell-size));
+  gap: 0;
+  width: 1.5rem;
+}
+
+.coordinateLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--cell-size);
+  height: var(--cell-size);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #475569;
+  user-select: none;
+  pointer-events: none;
+}
+
+.columnLabels .coordinateLabel {
+  width: var(--cell-size);
+  height: 1.5rem;
+}
+
+.rowLabels .coordinateLabel {
+  width: 1.5rem;
+  height: var(--cell-size);
 }
 
 .classicBoard {
@@ -27,6 +77,10 @@
 .darkBoard {
   background: linear-gradient(180deg, #202838 0%, #111827 100%);
   border-color: rgba(148, 163, 184, 0.25);
+}
+
+.darkBoard .coordinateLabel {
+  color: #cbd5e1;
 }
 
 .pauseOverlay {

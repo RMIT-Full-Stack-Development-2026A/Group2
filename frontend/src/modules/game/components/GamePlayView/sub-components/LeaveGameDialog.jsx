@@ -1,6 +1,16 @@
 import styles from "./LeaveGameDialog.module.css";
 
-export default function LeaveGameDialog({ open, onClose, onConfirm }) {
+export default function LeaveGameDialog({
+  open,
+  onClose,
+  onConfirm,
+  kicker = "Game in progress",
+  title = "Leave Game?",
+  description = "You have a game in progress. Leaving will abort the current game and no result will be recorded.",
+  cancelText = "Stay",
+  confirmText = "Leave Game",
+  confirmTone = "danger",
+}) {
   if (!open) return null;
 
   return (
@@ -13,12 +23,9 @@ export default function LeaveGameDialog({ open, onClose, onConfirm }) {
     >
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
-          <p className={styles.kicker}>Game in progress</p>
-          <h2 className={styles.title}>Leave Game?</h2>
-          <p className={styles.description}>
-            You have a game in progress. Leaving will abort the current game and
-            no result will be recorded.
-          </p>
+          <p className={styles.kicker}>{kicker}</p>
+          <h2 className={styles.title}>{title}</h2>
+          <p className={styles.description}>{description}</p>
         </div>
 
         <div className={styles.footer}>
@@ -27,14 +34,14 @@ export default function LeaveGameDialog({ open, onClose, onConfirm }) {
             className={styles.secondaryButton}
             onClick={onClose}
           >
-            Stay
+            {cancelText}
           </button>
           <button
             type="button"
-            className={styles.dangerButton}
+            className={confirmTone === "primary" ? styles.primaryButton : styles.dangerButton}
             onClick={onConfirm}
           >
-            Leave Game
+            {confirmText}
           </button>
         </div>
       </div>
