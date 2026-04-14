@@ -78,8 +78,8 @@ export default function ProfileCard({ embedded = false }) {
           <p className="fs-5 fw-bold text-dark mb-1">
             {user.profile?.displayName || user.username}
           </p>
-          <p className="text-secondary small mb-1">@{user.username}</p>
-          <p className="text-secondary small mb-3">{user.profile?.email}</p>
+          <p className="text-secondary small mb-1">username: {user.username}</p>
+          <p className="text-secondary small mb-3">email: {user.profile?.email}</p>
           <div className="d-flex flex-wrap gap-2">
             <span className="badge rounded-pill bg-white text-dark border border-secondary-subtle d-inline-flex align-items-center gap-1 px-2 py-2 fw-semibold">
               <Hexagon size={14} strokeWidth={2} aria-hidden />

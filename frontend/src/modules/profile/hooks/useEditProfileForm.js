@@ -83,11 +83,6 @@ export function useEditProfileForm(initialUser) {
         return;
       }
 
-      if (allPw && newPw !== confirmPw) {
-        setError("New password and confirmation do not match.");
-        return;
-      }
-
       if (!formData.country) {
         setError("Please select a country.");
         return;
@@ -95,6 +90,21 @@ export function useEditProfileForm(initialUser) {
 
       setLoading(true);
       try {
+        let latestUser = null;
+        if (allPw) {
+          const pwdResult = await changePassword({
+            currentPassword: currentPw,
+            newPassword: newPw,
+            confirmNewPassword: confirmPw,
+          });
+          if (!pwdResult.ok) {
+            setError(pwdResult.message);
+            setErrorIssues(mapApiErrorsToIssues(pwdResult.errors));
+            return;
+          }
+          latestUser = pwdResult.user ?? null;
+        }
+
         const profileResult = await updateProfile({
           username: formData.username.trim(),
           displayName: formData.displayName.trim(),
@@ -109,28 +119,21 @@ export function useEditProfileForm(initialUser) {
           return;
         }
 
-        let latestUser = profileResult.user;
-
-        if (allPw) {
-          const pwdResult = await changePassword({
-            currentPassword: currentPw,
-            newPassword: newPw,
-            confirmNewPassword: confirmPw,
-          });
-          if (!pwdResult.ok) {
-            setError(pwdResult.message);
-            setErrorIssues(mapApiErrorsToIssues(pwdResult.errors));
-            return;
-          }
-          latestUser = pwdResult.user ?? latestUser;
-        }
+        latestUser = profileResult.user ?? latestUser;
 
         const synced = await refreshUser();
         if (!synced && latestUser && accessToken) {
           login(accessToken, latestUser);
         }
 
-        navigate("/profile", { replace: true });
+        navigate("/profile", {
+          replace: true,
+          state: {
+            successMessage: allPw
+              ? "Profile and password updated successfully."
+              : "Profile updated successfully.",
+          },
+        });
       } finally {
         setLoading(false);
       }

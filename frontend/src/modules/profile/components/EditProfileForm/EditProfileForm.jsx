@@ -43,7 +43,7 @@ export default function EditProfileForm({ initialUser }) {
 
           <div className="mb-3">
             <label htmlFor="edit-display-name" className="form-label fw-semibold">
-              Display name
+              Display Name
             </label>
             <input
               id="edit-display-name"
@@ -81,7 +81,6 @@ export default function EditProfileForm({ initialUser }) {
               type="url"
               name="avatarURL"
               className="form-control"
-              placeholder="https://cdn.example.com/avatar.png"
               value={formData.avatarURL}
               onChange={handleChange}
             />
@@ -117,7 +116,7 @@ export default function EditProfileForm({ initialUser }) {
               <span className="fw-normal text-secondary">(optional)</span>
             </legend>
             <p className="small text-muted mb-3">
-              Leave all three fields blank to keep your current password.
+              Leave fields blank to keep your current password.
             </p>
             <div className="mb-3">
               <label
