@@ -1,5 +1,5 @@
 const profileService = require("./profile.service");
-const AppError = require("../../shared/utils/AppError");
+const AppError = require("../../shared/errors/AppError");
 const { sendError } = require("../../shared/utils/httpResponse");
 
 function handleControllerError(res, err) {

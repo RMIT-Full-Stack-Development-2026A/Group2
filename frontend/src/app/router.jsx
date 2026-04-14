@@ -8,6 +8,7 @@ import EditProfilePage from "../modules/profile/pages/EditProfilePage";
 import App from "../App";
 import PremiumPage from "../modules/premium/pages/PremiumPage";
 import OnlineArenaPage from "../modules/game/pages/OnlineArenaPage";
+import LocalGamePage from "../modules/game/pages/LocalGamePage";
 
 const router = createBrowserRouter([
   {
@@ -33,6 +34,7 @@ const router = createBrowserRouter([
       { path: "/profile", element: <ProfilePage /> },
       { path: "/profile/edit", element: <EditProfilePage /> },
       { path: "/online", element: <OnlineArenaPage /> },
+      { path: "/game/local", element: <LocalGamePage /> },
       { path: "/premium", element: <PremiumPage /> },
     ],
   },

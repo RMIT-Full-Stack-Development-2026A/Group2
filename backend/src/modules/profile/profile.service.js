@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const AppError = require("../../shared/utils/AppError");
+const AppError = require("../../shared/errors/AppError");
 const profileRepository = require("./profile.repository");
 const authRepository = require("../auth/auth.repository");
 const {
