@@ -4,42 +4,14 @@ const AppError = require("../../shared/utils/AppError");
 const userRepository = require("./auth.repository");
 const {
   validateRegisterBody,
-  validateProfileUpdateBody,
-  validateChangePasswordBody,
 } = require("./auth.validation");
-
-function throwValidation(errors) {
-  throw new AppError("Validation failed.", {
-    code: "VALIDATION_ERROR",
-    statusCode: 400,
-    errors,
-  });
-}
 
 function publicUserDto(userDoc) {
     return {
         id: String(userDoc._id),
         username: userDoc.username,
         role: userDoc.role,
-    };
-}
-
-/** Same shape as GET /api/auth/profile (`toAuthUserDto` in authenticate middleware). */
-function profileResponseDto(userDoc) {
-    if (!userDoc) {
-        return null;
-    }
-    return {
-        id: userDoc._id,
-        username: userDoc.username,
-        email: userDoc.email,
-        role: userDoc.role,
-        accountStatus: userDoc.accountStatus,
-        country: userDoc.country ?? null,
-        createdAt: userDoc.createdAt
-            ? userDoc.createdAt.toISOString()
-            : null,
-        avatarURL: userDoc.avatarURL ?? null,
+        displayName: userDoc.displayName ?? userDoc.username,
     };
 }
 
@@ -85,6 +57,7 @@ async function signUp(username, email, password, confirmPassword, country) {
             email: email.trim().toLowerCase(),
             passwordHash,
             country,
+            displayName: username.trim(),
         });
     } catch (e) {
         if (e?.code === 11000) {
@@ -230,98 +203,8 @@ async function refresh(refreshToken) {
     };
 }
 
-async function updateProfile(userId, body) {
-    const errors = validateProfileUpdateBody(body);
-    if (errors.length) {
-        throwValidation(errors);
-    }
-
-    const trimmedUsername = body.username.trim();
-    const trimmedEmail = body.email.trim().toLowerCase();
-    const { country } = body;
-
-    const existing = await userRepository.findById(userId);
-    if (!existing) {
-        throw new AppError("User not found.", {
-            code: "USER_NOT_FOUND",
-            statusCode: 404,
-        });
-    }
-
-    try {
-        const updated = await userRepository.updateUser(userId, {
-            username: trimmedUsername,
-            email: trimmedEmail,
-            country,
-        });
-        if (!updated) {
-            throw new AppError("User not found.", {
-                code: "USER_NOT_FOUND",
-                statusCode: 404,
-            });
-        }
-        return profileResponseDto(updated);
-    } catch (e) {
-        if (e instanceof AppError) {
-            throw e;
-        }
-        if (e?.code === 11000) {
-            const key = Object.keys(
-                e.keyPattern ?? e.keyValue ?? {},
-            )[0];
-            const isUsername = key === "username";
-            throw new AppError(
-                isUsername ? "Username already taken." : "Email already in use.",
-                {
-                    code: isUsername ? "USERNAME_IN_USE" : "EMAIL_IN_USE",
-                    statusCode: 409,
-                },
-            );
-        }
-        throw e;
-    }
-}
-
-async function changePassword(userId, body) {
-    const errors = validateChangePasswordBody(body);
-    if (errors.length) {
-        throwValidation(errors);
-    }
-
-    const { currentPassword, newPassword } = body;
-
-    const user = await userRepository.findByIdWithPasswordHash(userId);
-    if (!user?.passwordHash) {
-        throw new AppError("User not found.", {
-            code: "USER_NOT_FOUND",
-            statusCode: 404,
-        });
-    }
-
-    const ok = await bcrypt.compare(currentPassword, user.passwordHash);
-    if (!ok) {
-        throw new AppError("Current password is incorrect.", {
-            code: "INVALID_CURRENT_PASSWORD",
-            statusCode: 401,
-        });
-    }
-
-    const passwordHash = await bcrypt.hash(newPassword, 10);
-    const updated = await userRepository.updateUser(userId, { passwordHash });
-    if (!updated) {
-        throw new AppError("User not found.", {
-            code: "USER_NOT_FOUND",
-            statusCode: 404,
-        });
-    }
-
-    return profileResponseDto(updated);
-}
-
 module.exports = {
     signUp,
     logIn,
     refresh,
-    updateProfile,
-    changePassword,
 };

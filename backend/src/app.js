@@ -21,5 +21,6 @@ app.get("/", (_req, res) => {
 });
 
 app.use("/api/auth", routes.authRouter);
+app.use("/api/profile", routes.profileRouter);
 
 module.exports = app;

@@ -6,8 +6,10 @@ import { changePassword, updateProfile } from "../services/profile.service";
 
 const emptyForm = {
   username: "",
+  displayName: "",
   email: "",
   country: "",
+  avatarURL: "",
   currentPassword: "",
   newPassword: "",
   confirmNewPassword: "",
@@ -26,7 +28,7 @@ function mapApiErrorsToIssues(errors) {
 }
 
 /**
- * @param {object | null} initialUser — profile from GET /api/auth/profile (username, email, country, …)
+ * @param {object | null} initialUser — profile from GET /api/profile
  */
 export function useEditProfileForm(initialUser) {
   const navigate = useNavigate();
@@ -40,13 +42,15 @@ export function useEditProfileForm(initialUser) {
     if (!initialUser) {
       return;
     }
-    const country = ALLOWED_COUNTRIES.includes(initialUser.country)
-      ? initialUser.country
+    const country = ALLOWED_COUNTRIES.includes(initialUser.profile?.country)
+      ? initialUser.profile.country
       : "";
     setFormData({
       username: initialUser.username ?? "",
-      email: initialUser.email ?? "",
+      displayName: initialUser.profile?.displayName ?? initialUser.username ?? "",
+      email: initialUser.profile?.email ?? "",
       country,
+      avatarURL: initialUser.profile?.avatarURL ?? "",
       currentPassword: "",
       newPassword: "",
       confirmNewPassword: "",
@@ -93,8 +97,10 @@ export function useEditProfileForm(initialUser) {
       try {
         const profileResult = await updateProfile({
           username: formData.username.trim(),
+          displayName: formData.displayName.trim(),
           email: formData.email.trim(),
           country: formData.country,
+          avatarURL: formData.avatarURL.trim() || null,
         });
 
         if (!profileResult.ok) {

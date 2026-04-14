@@ -13,11 +13,6 @@ const userSchema = new Schema(
       default: "player",
       required: true,
     },
-    country: {
-      type: String,
-      required: true,
-      trim: true,
-    },
     accountStatus: {
       type: String,
       enum: ACCOUNT_STATUSES,
@@ -35,18 +30,6 @@ const userSchema = new Schema(
       type: String,
       required: true,
       select: false,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-      maxlength: 254,
-    },
-    avatarURL: {
-      type: String,
-      default: null,
     },
   },
   {

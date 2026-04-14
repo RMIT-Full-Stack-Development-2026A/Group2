@@ -7,6 +7,7 @@ const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 
 const User = require("../modules/auth/model/user.model");
+const Profile = require("../modules/profile/model/profile.model");
 const Wallet = require("../modules/wallet/model/wallet.model");
 const Transaction = require("../modules/wallet/model/transaction.model");
 const SubscriptionPlan = require("../modules/premium/model/subscriptionPlan.model");
@@ -66,6 +67,7 @@ async function clearAll() {
     UserSubscription,
     SubscriptionPlan,
     User,
+    Profile,
   ];
   for (const Model of order) {
     await Model.deleteMany({});
@@ -94,34 +96,55 @@ async function seed() {
     {
       _id: I.userAdmin,
       role: "admin",
-      country: "US",
       accountStatus: "active",
       username: "AdminRoot",
       passwordHash: PASSWORD_HASH,
-      email: "admin@tictactoang.dev",
-      avatarURL: "https://cdn.tictactoang.dev/avatars/admin.png",
       createdAt: new Date("2026-01-05T10:00:00.000Z"),
       updatedAt: new Date("2026-04-01T08:00:00.000Z"),
     },
     {
       _id: I.userAlpha,
       role: "player",
-      country: "CA",
       accountStatus: "active",
       username: "PlayerAlpha",
       passwordHash: PASSWORD_HASH,
-      email: "alpha.player@email.com",
-      avatarURL: "https://cdn.tictactoang.dev/avatars/alpha.png",
       createdAt: new Date("2026-02-10T14:30:00.000Z"),
       updatedAt: new Date("2026-04-03T16:20:00.000Z"),
     },
     {
       _id: I.userBeta,
       role: "player",
-      country: "GB",
       accountStatus: "active",
       username: "PlayerBeta",
       passwordHash: PASSWORD_HASH,
+      createdAt: new Date("2026-02-18T09:15:00.000Z"),
+      updatedAt: new Date("2026-04-02T11:45:00.000Z"),
+    },
+  ]);
+
+  await Profile.insertMany([
+    {
+      userID: I.userAdmin,
+      displayName: "AdminRoot",
+      country: "US",
+      email: "admin@tictactoang.dev",
+      avatarURL: "https://cdn.tictactoang.dev/avatars/admin.png",
+      createdAt: new Date("2026-01-05T10:00:00.000Z"),
+      updatedAt: new Date("2026-04-01T08:00:00.000Z"),
+    },
+    {
+      userID: I.userAlpha,
+      displayName: "PlayerAlpha",
+      country: "CA",
+      email: "alpha.player@email.com",
+      avatarURL: "https://cdn.tictactoang.dev/avatars/alpha.png",
+      createdAt: new Date("2026-02-10T14:30:00.000Z"),
+      updatedAt: new Date("2026-04-03T16:20:00.000Z"),
+    },
+    {
+      userID: I.userBeta,
+      displayName: "PlayerBeta",
+      country: "GB",
       email: "beta.player@email.com",
       avatarURL: null,
       createdAt: new Date("2026-02-18T09:15:00.000Z"),

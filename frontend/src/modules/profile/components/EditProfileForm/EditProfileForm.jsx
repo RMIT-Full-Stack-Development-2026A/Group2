@@ -42,6 +42,21 @@ export default function EditProfileForm({ initialUser }) {
           </div>
 
           <div className="mb-3">
+            <label htmlFor="edit-display-name" className="form-label fw-semibold">
+              Display name
+            </label>
+            <input
+              id="edit-display-name"
+              type="text"
+              name="displayName"
+              className="form-control"
+              value={formData.displayName}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="mb-3">
             <label htmlFor="edit-email" className="form-label fw-semibold">
               Email
             </label>
@@ -55,6 +70,24 @@ export default function EditProfileForm({ initialUser }) {
               onChange={handleChange}
               required
             />
+          </div>
+
+          <div className="mb-3">
+            <label htmlFor="edit-avatar-url" className="form-label fw-semibold">
+              Avatar URL
+            </label>
+            <input
+              id="edit-avatar-url"
+              type="url"
+              name="avatarURL"
+              className="form-control"
+              placeholder="https://cdn.example.com/avatar.png"
+              value={formData.avatarURL}
+              onChange={handleChange}
+            />
+            <small className="text-muted">
+              Leave blank to remove your avatar.
+            </small>
           </div>
 
           <div className="mb-4">

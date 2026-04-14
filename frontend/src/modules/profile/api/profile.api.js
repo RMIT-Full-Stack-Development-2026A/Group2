@@ -4,7 +4,7 @@ import { httpGet, httpPatch, httpPost } from "../../../lib/httpClient";
  * Raw GET for the authenticated user's profile (expects JSON body with `user`).
  */
 export async function fetchProfileRequest() {
-  return httpGet("/api/auth/profile");
+  return httpGet("/api/profile");
 }
 
 /**
@@ -12,7 +12,7 @@ export async function fetchProfileRequest() {
  * @param {{ username: string, email: string, country: string }} data
  */
 export async function patchProfile(data) {
-  return httpPatch("/api/auth/profile", data);
+  return httpPatch("/api/profile", data);
 }
 
 /**
@@ -20,5 +20,5 @@ export async function patchProfile(data) {
  * @param {{ currentPassword: string, newPassword: string, confirmNewPassword: string }} data
  */
 export async function postChangePassword(data) {
-  return httpPost("/api/auth/change-password", data);
+  return httpPost("/api/profile/change-password", data);
 }

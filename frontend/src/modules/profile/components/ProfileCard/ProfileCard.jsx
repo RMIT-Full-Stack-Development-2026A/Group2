@@ -33,10 +33,10 @@ export default function ProfileCard({ embedded = false }) {
     );
   }
 
-  const initial = getAvatarInitials(user.username);
-  const country = user.country?.trim() ? user.country : "—";
+  const initial = getAvatarInitials(user.displayName || user.username);
+  const country = user.profile?.country?.trim() ? user.profile.country : "—";
   const memberSince = formatMemberSince(user.createdAt);
-  const avatarSrc = user.avatarURL?.trim() ? user.avatarURL : null;
+  const avatarSrc = user.profile?.avatarURL?.trim() ? user.profile.avatarURL : null;
 
   return shell(
     <div className={bodyClass}>
@@ -75,8 +75,11 @@ export default function ProfileCard({ embedded = false }) {
         </div>
 
         <div className="flex-grow-1 profile-identity-text">
-          <p className="fs-5 fw-bold text-dark mb-1">{user.username}</p>
-          <p className="text-secondary small mb-3">{user.email}</p>
+          <p className="fs-5 fw-bold text-dark mb-1">
+            {user.profile?.displayName || user.username}
+          </p>
+          <p className="text-secondary small mb-1">@{user.username}</p>
+          <p className="text-secondary small mb-3">{user.profile?.email}</p>
           <div className="d-flex flex-wrap gap-2">
             <span className="badge rounded-pill bg-white text-dark border border-secondary-subtle d-inline-flex align-items-center gap-1 px-2 py-2 fw-semibold">
               <Hexagon size={14} strokeWidth={2} aria-hidden />
