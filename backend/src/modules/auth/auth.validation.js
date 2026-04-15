@@ -157,6 +157,18 @@ function validateUsername(username) {
   return errors;
 }
 
+function validateDisplayName(displayName, field = "displayName") {
+  if (typeof displayName !== "string" || !displayName.trim()) {
+    return [
+      err(
+        field,
+        "Display name is required. It is shown publicly on your profile.",
+      ),
+    ];
+  }
+  return [];
+}
+
 function validateEmail(email, field = "email") {
   const errors = [];
   if (typeof email !== "string" || !email.trim()) {
@@ -291,4 +303,9 @@ module.exports = {
   validateRegisterBody,
   validateLoginBody,
   ALLOWED_COUNTRIES,
+  validateUsername,
+  validateDisplayName,
+  validateEmail,
+  validateCountry,
+  validatePassword,
 };
