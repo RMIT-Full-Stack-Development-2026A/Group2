@@ -4,7 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 export default function DashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const displayName = user?.username ?? "player";
+  const displayName = user?.displayName ?? user?.username ?? "player";
 
   return (
     <>
