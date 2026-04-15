@@ -17,6 +17,7 @@ export default function LocalGamePage() {
         <LocalGameSetupPanel onStart={handleStart} />
       ) : (
         <GameBoard
+          sessionId={gameConfig.sessionId}
           key={`${gameConfig.boardSize}-${gameConfig.firstTurn}-${gameConfig.boardStyle}`}
           player1={gameConfig.player1}
           player2={gameConfig.player2}

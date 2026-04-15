@@ -21,7 +21,7 @@ export default function LocalGameSetupPanel({ onStart }) {
     handleBoardStyle,
     handleMarkerChange,
     handleGameStart,
-  } = useGameSetupPanel(onStart);
+  } = useGameSetupPanel(onStart, "two_player");
 
   return (
     <div className="card shadow-sm border-0 mx-auto" style={{ maxWidth: "720px" }}>

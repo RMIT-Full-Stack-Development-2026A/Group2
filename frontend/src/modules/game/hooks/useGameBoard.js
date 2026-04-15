@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import checkWin from "../utils/winChecker";
 import { createEmptyBoard } from "../utils/board.utils";
+import { makeMove, abort } from "../components/GameBoard/GameBoard.service";
 
-export default function useGameBoard(player1Marker, player2Marker, boardSize, firstTurn = 1) {
+export default function useGameBoard(player1Marker, player2Marker, boardSize, firstTurn = 1, sessionId) {
   const resolvedBoardSize = Number.parseInt(boardSize, 10) || 10;
 
   const [board, setBoard] = useState(() => createEmptyBoard(resolvedBoardSize));
@@ -24,7 +25,7 @@ export default function useGameBoard(player1Marker, player2Marker, boardSize, fi
     return () => clearInterval(interval);
   }, [gameStatus, aborted, paused]);
 
-  function handleCellClick(rowIndex, colIndex) {
+  async function handleCellClick(rowIndex, colIndex) {
     if (gameStatus !== "ongoing") return;
     if (aborted) return;
     if (paused) return;
@@ -38,6 +39,14 @@ export default function useGameBoard(player1Marker, player2Marker, boardSize, fi
 
     setBoard(newBoard);
 
+    if(sessionId) {
+      try {
+        await makeMove(sessionId, rowIndex, colIndex);
+      } catch (error) {
+        console.error("Failed to save move: ", error );
+      }
+    }
+
     if (winCells) {
       setGameStatus("won");
       setWinner(currentPlayer);
@@ -47,8 +56,15 @@ export default function useGameBoard(player1Marker, player2Marker, boardSize, fi
     }
   }
 
-  function abortGame() {
+  async function abortGame() {
     setAborted(true);
+    if(sessionId) {
+      try {
+        await abort(sessionId)
+      } catch (error) {
+        console.error("Failed to abort game: ", error);
+      }
+    }
   }
 
   function togglePause() {

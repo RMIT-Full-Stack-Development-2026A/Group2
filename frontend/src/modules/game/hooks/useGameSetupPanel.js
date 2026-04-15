@@ -1,6 +1,7 @@
 import { useState } from "react"
+import { createGameSession } from "../components/GameBoard/GameBoard.service";
 
-export default function useGameSetupPanel(onStart) {
+export default function useGameSetupPanel(onStart, gameMode) {
   const [player1] = useState("Player1");
   const [player2, setPlayer2] = useState("");
   const [firstTurn, setFirstTurn] = useState(1);
@@ -9,7 +10,7 @@ export default function useGameSetupPanel(onStart) {
   const [player1Marker, setPlayer1Marker] = useState("X");
   const [player2Marker, setPlayer2Marker] = useState("O");
   const [error, setError] = useState("");
-  const [isLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   function handlePlayer2NameChange(event) {
     setPlayer2(event.target.value);
@@ -34,7 +35,7 @@ export default function useGameSetupPanel(onStart) {
     if (player === 2) setPlayer2Marker(marker);
   }
 
-  function handleGameStart() {
+  async function handleGameStart() {
     if (!player2.trim()) {
       setError("Please enter player 2's name");
       return;
@@ -51,15 +52,34 @@ export default function useGameSetupPanel(onStart) {
       setError("Name can only contain letters, numbers, and spaces");
       return;
     }
-    onStart({
-      player1,
-      player2,
-      firstTurn,
-      boardSize,
-      boardStyle,      
-      player1Marker,
-      player2Marker,
-    });
+
+    try{
+      setIsLoading(true);
+
+      const result = await createGameSession(
+        {
+          gameMode,
+          player2Name: player2.trim(),
+          boardSize,
+          firstTurn
+        }
+      );
+    
+      onStart({
+        sessionId: result.data.session.id,
+        player1,
+        player2,
+        firstTurn,
+        boardSize,
+        boardStyle,      
+        player1Marker,
+        player2Marker,
+      });
+    } catch (error){
+        setError(error.message || "Failed to start game")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return {

@@ -317,9 +317,16 @@ async function makeMove(authUser, sessionId, payload) {
     });
   }
 
-  const requestingParticipant = participants.find(
-    (p) => String(p.userID) === String(authUser.id),
-  );
+  let requestingParticipant;
+  if (session.gameMode === "two_player") {
+    requestingParticipant = participants.find(
+      (p) => String(p._id) === String(session.currentTurn)
+    );
+  } else {
+    requestingParticipant = participants.find(
+      (p) => String(p.userID) === String(authUser.id)
+    );
+  }
 
   if (!requestingParticipant) {
     throw new AppError("You are not a participant in this game.", {
@@ -327,12 +334,14 @@ async function makeMove(authUser, sessionId, payload) {
       statusCode: 403,
     });
   }
-
-  if (String(session.currentTurn) !== String(requestingParticipant._id)) {
-    throw new AppError("It is not your turn.", {
-      code: "NOT_YOUR_TURN",
-      statusCode: 409,
-    });
+  
+  if(session.gameMode !== "two_player") {
+    if (String(session.currentTurn) !== String(requestingParticipant._id)) {
+      throw new AppError("It is not your turn.", {
+        code: "NOT_YOUR_TURN",
+        statusCode: 409,
+      });
+    }
   }
 
   if (

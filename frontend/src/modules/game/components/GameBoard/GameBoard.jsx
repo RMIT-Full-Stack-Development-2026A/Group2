@@ -34,6 +34,7 @@ export default function GameBoard({
   player2,
   boardSize,
   firstTurn,
+  sessionId
 }) {
   const {
     board,
@@ -48,7 +49,7 @@ export default function GameBoard({
     resetGame,
     abortGame,
     togglePause,
-  } = useGameBoard(player1Marker, player2Marker, boardSize, firstTurn);
+  } = useGameBoard(player1Marker, player2Marker, boardSize, firstTurn, sessionId);
 
   const resolvedSize = Number.parseInt(boardSize, 10) || 10;
   const cellSize = useMemo(() => (resolvedSize >= 15 ? 32 : 48), [resolvedSize]);
