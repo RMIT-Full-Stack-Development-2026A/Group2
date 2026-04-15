@@ -2,7 +2,7 @@ const { getEmptyCells } = require("../utils/board.utils");
 const { getWinningLine } = require("../utils/winChecker");
 const { chooseMediumAiMove } = require("./medium-ai");
 
-function chooseHardAiMove(board, aiToken, humanToken) {
+function chooseHardAiMove(board, aiToken, humanToken, lastHumanMove = null) {
   const emptyCells = getEmptyCells(board);
 
   for (const [rowIndex, colIndex] of emptyCells) {
@@ -15,7 +15,7 @@ function chooseHardAiMove(board, aiToken, humanToken) {
     }
   }
 
-  return chooseMediumAiMove(board, humanToken);
+  return chooseMediumAiMove(board, humanToken, lastHumanMove);
 }
 
 module.exports = {

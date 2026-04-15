@@ -244,13 +244,9 @@ async function makeAiMove(sessionId) {
   if (session.aiDifficulty === "easy") {
     aiMove = chooseEasyAiMove(board, lastHumanMove || null);
   } else if (session.aiDifficulty === "medium") {
-    aiMove =
-      chooseMediumAiMove(board, humanToken) ||
-      chooseEasyAiMove(board, lastHumanMove || null);
+    aiMove = chooseMediumAiMove(board, humanToken, lastHumanMove || null);
   } else {
-    aiMove =
-      chooseHardAiMove(board, aiToken, humanToken) ||
-      chooseEasyAiMove(board, lastHumanMove || null);
+    aiMove = chooseHardAiMove(board, aiToken, humanToken, lastHumanMove || null);
   }
 
   if (!aiMove) return null;

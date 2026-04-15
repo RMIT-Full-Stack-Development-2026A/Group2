@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createEmptyBoard } from "../../utils/game.helpers";
 import { checkWinner } from "../../utils/checkWinner";
+import { selectAiMove } from "../../utils/aiMove";
 
 export default function useGamePlayView(config) {
   const size = config?.boardSize || 10;
@@ -18,6 +19,7 @@ export default function useGamePlayView(config) {
   const [showWinnerModal, setShowWinnerModal] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const startTime = useRef(new Date().toISOString());
+  const lastHumanMoveRef = useRef(null);
 
   useEffect(() => {
     if (winner || aborted || isPaused) return;
@@ -35,6 +37,7 @@ export default function useGamePlayView(config) {
     setShowWinnerModal(false);
     setIsPaused(false);
     setCurrentPlayer(firstPlayer === "player2" ? 2 : 1);
+    lastHumanMoveRef.current = null;
   }, [firstPlayer, size]);
 
   const makeAIMove = useCallback(
@@ -42,19 +45,20 @@ export default function useGamePlayView(config) {
       setAiThinking(true);
 
       setTimeout(() => {
-        const empty = [];
-        for (let r = 0; r < size; r += 1) {
-          for (let c = 0; c < size; c += 1) {
-            if (!currentBoard[r][c]) empty.push([r, c]);
-          }
-        }
+        const aiMove = selectAiMove({
+          board: currentBoard,
+          difficulty: config.aiDifficulty || "easy",
+          aiMarker: config.marker2,
+          humanMarker: config.marker1,
+          lastHumanMove: lastHumanMoveRef.current,
+        });
 
-        if (!empty.length) {
+        if (!aiMove) {
           setAiThinking(false);
           return;
         }
 
-        const [r, c] = empty[Math.floor(Math.random() * empty.length)];
+        const { rowIndex: r, colIndex: c } = aiMove;
         const nextBoard = currentBoard.map((row) => [...row]);
         nextBoard[r][c] = config.marker2;
         setBoard(nextBoard);
@@ -83,6 +87,10 @@ export default function useGamePlayView(config) {
       const nextBoard = board.map((r) => [...r]);
       nextBoard[row][col] = marker;
       setBoard(nextBoard);
+
+      if (config.gameType === "ai" && currentPlayer === 1) {
+        lastHumanMoveRef.current = { rowIndex: row, colIndex: col };
+      }
 
       const win = checkWinner(nextBoard, row, col);
       if (win) {
