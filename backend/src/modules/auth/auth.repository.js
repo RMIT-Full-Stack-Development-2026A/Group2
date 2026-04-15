@@ -1,3 +1,4 @@
+const AppError = require("../../shared/utils/AppError");
 const User = require("./model/user.model");
 
 function escapeRegex(s) {
@@ -31,9 +32,26 @@ async function findById(id) {
   return await User.findById(id);
 }
 
+async function findAllUsers() {
+  return await User.find({}).select("username email accountStatus");
+}
+
+async function toggleUserAccountStatus(userId) {
+  const user = await findById(userId);
+  if (!user) {
+    throw new AppError("User not found", { code: "USER_NOT_FOUND", statusCode: 404 });
+  }
+
+  user.accountStatus = user.accountStatus === "active" ? "deactivated" : "active";
+  await user.save();
+  return user;
+}
+
 module.exports = {
   findByEmail,
   findByUsernameOrEmail,
   createUser,
   findById,
+  findAllUsers,
+  toggleUserAccountStatus,
 };

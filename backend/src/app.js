@@ -21,5 +21,5 @@ app.get("/", (_req, res) => {
 });
 
 app.use("/api/auth", routes.authRouter);
-
+app.use("/api/admin", routes.adminRouter);
 module.exports = app;
