@@ -5,29 +5,19 @@ const routes = require("./routes");
 
 const app = express();
 
-// CORS + cookies: allow configured origins + localhost on any port (dev).
-const configuredOrigins = (process.env.CLIENT_URL || "")
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
-const localhostOriginRegex = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i;
-
+// CORS + cookies: frontend origin (default Vite port).
+const clientOrigin = process.env.CLIENT_URL || "http://localhost:5173";
+const localhostOriginPattern = /^http:\/\/localhost:\d+$/;
 app.use(
   cors({
     origin(origin, callback) {
-      // Allow non-browser requests (curl/postman) and same-origin.
-      if (!origin) {
+      if (!origin) return callback(null, true);
+
+      if (origin === clientOrigin || localhostOriginPattern.test(origin)) {
         return callback(null, true);
       }
 
-      if (
-        localhostOriginRegex.test(origin) ||
-        configuredOrigins.includes(origin)
-      ) {
-        return callback(null, true);
-      }
-
-      return callback(new Error(`CORS blocked for origin: ${origin}`));
+      return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
   }),
