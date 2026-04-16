@@ -1,8 +1,9 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Bot } from "lucide-react";
 import useAIGameSetupForm from "./AIGameSetupForm.hook";
-import { buildAIGameNavigationState } from "./AIGameSetupForm.service";
+import { startAIGame } from "./AIGameSetupForm.service";
 import DifficultySelector from "./sub-components/DifficultySelector";
 import SetupPlayerPreviewCard from "../shared/SetupPlayerPreviewCard/SetupPlayerPreviewCard";
 import SetupFirstPlayerSelector from "../shared/SetupFirstPlayerSelector/SetupFirstPlayerSelector";
@@ -14,6 +15,8 @@ import styles from "./AIGameSetupForm.module.css";
 export default function AIGameSetupForm() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const {
     difficulty,
@@ -35,9 +38,12 @@ export default function AIGameSetupForm() {
     botName,
   } = useAIGameSetupForm();
 
-  const handleStart = () => {
-    navigate("/game/play", {
-      state: buildAIGameNavigationState({
+  const handleStart = async () => {
+    setSubmitError("");
+    setSubmitting(true);
+
+    try {
+      const state = await startAIGame({
         username: user?.username,
         botName,
         firstPlayer,
@@ -48,8 +54,20 @@ export default function AIGameSetupForm() {
         difficulty,
         useCustomBoard,
         customBoardImage,
-      }),
-    });
+      });
+
+      navigate("/game/play", {
+        state,
+      });
+    } catch (error) {
+      setSubmitError(
+        error?.data?.message ||
+          error?.message ||
+          "Could not start the single-player game.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -131,12 +149,17 @@ export default function AIGameSetupForm() {
               />
             </div>
 
+            {submitError ? (
+              <p className={styles.errorText}>{submitError}</p>
+            ) : null}
+
             <button
               type="button"
               onClick={handleStart}
               className={styles.startButton}
+              disabled={submitting}
             >
-              Start Game vs {botName}
+              {submitting ? "Starting..." : `Start Game vs ${botName}`}
             </button>
           </div>
         </div>

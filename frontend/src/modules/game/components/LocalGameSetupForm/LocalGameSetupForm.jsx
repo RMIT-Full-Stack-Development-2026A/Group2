@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import useLocalGameSetupForm from "./LocalGameSetupForm.hook";
-import { buildLocalGameNavigationState } from "./LocalGameSetupForm.service";
+import { startLocalGame } from "./LocalGameSetupForm.service";
 import SetupPlayerPreviewCard from "../shared/SetupPlayerPreviewCard/SetupPlayerPreviewCard";
 import SetupFirstPlayerSelector from "../shared/SetupFirstPlayerSelector/SetupFirstPlayerSelector";
 import SetupBoardSizeSelector from "../shared/SetupBoardSizeSelector/SetupBoardSizeSelector";
@@ -12,6 +13,8 @@ import styles from "./LocalGameSetupForm.module.css";
 export default function LocalGameSetupForm() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const {
     player2Name,
@@ -32,9 +35,18 @@ export default function LocalGameSetupForm() {
     setUseCustomBoard,
   } = useLocalGameSetupForm();
 
-  const handleStart = () => {
-    navigate("/game/play", {
-      state: buildLocalGameNavigationState({
+  const handleStart = async () => {
+    setSubmitError("");
+
+    if (!String(player2Name || "").trim()) {
+      setSubmitError("Player 2 name is required.");
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const state = await startLocalGame({
         username: user?.username,
         player2Name,
         firstPlayer,
@@ -44,8 +56,20 @@ export default function LocalGameSetupForm() {
         marker2,
         useCustomBoard,
         customBoardImage,
-      }),
-    });
+      });
+
+      navigate("/game/play", {
+        state,
+      });
+    } catch (error) {
+      setSubmitError(
+        error?.data?.message ||
+          error?.message ||
+          "Could not start the local game.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -129,12 +153,17 @@ export default function LocalGameSetupForm() {
               />
             </div>
 
+            {submitError ? (
+              <p className={styles.errorText}>{submitError}</p>
+            ) : null}
+
             <button
               type="button"
               onClick={handleStart}
               className={styles.startButton}
+              disabled={submitting}
             >
-              Start Game
+              {submitting ? "Starting..." : "Start Game"}
             </button>
           </div>
         </div>

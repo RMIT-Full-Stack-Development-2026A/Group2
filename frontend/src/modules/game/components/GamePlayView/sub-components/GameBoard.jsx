@@ -15,6 +15,12 @@ function getColumnLabel(index) {
   return label;
 }
 
+function mapBoardValueToMarker(value, marker1, marker2) {
+  if (value === "P1") return marker1;
+  if (value === "P2") return marker2;
+  return value;
+}
+
 export default function GameBoard({
   board,
   size,
@@ -24,6 +30,8 @@ export default function GameBoard({
   aborted,
   isPaused,
   winningCells,
+  marker1,
+  marker2,
   onCellClick,
 }) {
   const boardRows = Array.isArray(board) ? board : [];
@@ -48,18 +56,22 @@ export default function GameBoard({
         ? styles.woodBoard
         : styles.classicBoard;
 
+  const cellSize =
+    size === 15 ? "clamp(1.7rem, 2.1vw, 2.15rem)" : "clamp(2.2rem, 2.8vw, 2.85rem)";
+
   return (
     <div
       className={`${styles.boardShell} ${customBoardImage ? "" : boardStyleClass}`}
-      style={
-        customBoardImage
+      style={{
+        ...(customBoardImage
           ? {
               backgroundImage: `url(${customBoardImage})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
             }
-          : undefined
-      }
+          : {}),
+        "--cell-size": cellSize,
+      }}
     >
       <div className={styles.boardWithCoordinates} style={{ "--board-size": size }}>
         <div className={styles.cornerSpacer} aria-hidden="true" />
@@ -94,7 +106,7 @@ export default function GameBoard({
                 key={`${rowIndex}-${colIndex}`}
                 rowIndex={rowIndex}
                 colIndex={colIndex}
-                value={cell}
+                value={mapBoardValueToMarker(cell, marker1, marker2)}
                 isWinning={isWinningCell(winningCells, rowIndex, colIndex)}
                 disabled={!!winner || aborted || isPaused}
                 customBoardImage={customBoardImage}

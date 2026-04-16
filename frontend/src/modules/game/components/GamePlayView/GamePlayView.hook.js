@@ -1,25 +1,49 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createEmptyBoard } from "../../utils/game.helpers";
-import { checkWinner } from "../../utils/checkWinner";
-import { selectAiMove } from "../../utils/aiMove";
+import {
+  abortGameSession,
+  getGameSession,
+  makeGameMove,
+} from "../../api/game.api";
+import { normalizeBackendGameState } from "./GamePlayView.service";
 
 export default function useGamePlayView(config) {
+  const AI_THINKING_DELAY_MS = 600;
   const size = config?.boardSize || 10;
   const firstPlayer = config?.firstPlayer;
+  const isBackendManaged =
+    !!config?.sessionId &&
+    (config?.gameType === "ai" || config?.gameType === "local");
 
-  const [board, setBoard] = useState(() => createEmptyBoard(size));
-  const [currentPlayer, setCurrentPlayer] = useState(
-    firstPlayer === "player2" ? 2 : 1,
+  const initialBackendState = useMemo(() => {
+    if (!isBackendManaged || !config?.backendSession) {
+      return null;
+    }
+
+    return normalizeBackendGameState(config.backendSession, config);
+  }, [config, isBackendManaged]);
+
+  const [board, setBoard] = useState(() =>
+    initialBackendState?.board || createEmptyBoard(size),
   );
-  const [winner, setWinner] = useState(null);
-  const [winningCells, setWinningCells] = useState([]);
-  const [aborted, setAborted] = useState(false);
+  const [currentPlayer, setCurrentPlayer] = useState(() =>
+    initialBackendState?.currentPlayer || (firstPlayer === "player2" ? 2 : 1),
+  );
+  const [winner, setWinner] = useState(() => initialBackendState?.winner || null);
+  const [winningCells, setWinningCells] = useState(
+    () => initialBackendState?.winningCells || [],
+  );
+  const [aborted, setAborted] = useState(() => initialBackendState?.aborted || false);
   const [elapsed, setElapsed] = useState(0);
   const [aiThinking, setAiThinking] = useState(false);
-  const [showWinnerModal, setShowWinnerModal] = useState(false);
+  const [showWinnerModal, setShowWinnerModal] = useState(
+    () => initialBackendState?.showWinnerModal || false,
+  );
   const [isPaused, setIsPaused] = useState(false);
-  const startTime = useRef(new Date().toISOString());
-  const lastHumanMoveRef = useRef(null);
+  const [apiError, setApiError] = useState("");
+  const startTime = useRef(
+    initialBackendState?.startedAt || new Date().toISOString(),
+  );
 
   useEffect(() => {
     if (winner || aborted || isPaused) return;
@@ -27,7 +51,57 @@ export default function useGamePlayView(config) {
     return () => clearInterval(interval);
   }, [winner, aborted, isPaused]);
 
+  const applyBackendState = useCallback(
+    (dto) => {
+      const nextState = normalizeBackendGameState(dto, config);
+      setBoard(nextState.board);
+      setCurrentPlayer(nextState.currentPlayer);
+      setWinner(nextState.winner);
+      setWinningCells(nextState.winningCells);
+      setAborted(nextState.aborted);
+      setShowWinnerModal(nextState.showWinnerModal);
+
+      if (nextState.startedAt) {
+        startTime.current = nextState.startedAt;
+      }
+    },
+    [config],
+  );
+
+  useEffect(() => {
+    if (!isBackendManaged || !config?.sessionId) return;
+
+    let active = true;
+
+    async function loadSession() {
+      try {
+        setApiError("");
+        const dto = await getGameSession(config.sessionId);
+        if (!active) return;
+        applyBackendState(dto);
+      } catch (error) {
+        if (!active) return;
+        setApiError(
+          error?.data?.message ||
+            error?.message ||
+            "Could not load game session.",
+        );
+      }
+    }
+
+    loadSession();
+
+    return () => {
+      active = false;
+    };
+  }, [applyBackendState, config?.sessionId, isBackendManaged]);
+
   const resetGame = useCallback(() => {
+    if (isBackendManaged) {
+      setShowWinnerModal(false);
+      return;
+    }
+
     setBoard(createEmptyBoard(size));
     setWinner(null);
     setWinningCells([]);
@@ -36,77 +110,103 @@ export default function useGamePlayView(config) {
     setAiThinking(false);
     setShowWinnerModal(false);
     setIsPaused(false);
+    setApiError("");
     setCurrentPlayer(firstPlayer === "player2" ? 2 : 1);
-    lastHumanMoveRef.current = null;
-  }, [firstPlayer, size]);
+  }, [firstPlayer, isBackendManaged, size]);
 
-  const makeAIMove = useCallback(
-    (currentBoard) => {
-      setAiThinking(true);
+  const handleBackendCellClick = useCallback(
+    async (row, col) => {
+      if (winner || aborted || aiThinking || isPaused) return;
+      if (board[row]?.[col]) return;
 
-      setTimeout(() => {
-        const aiMove = selectAiMove({
-          board: currentBoard,
-          difficulty: config.aiDifficulty || "easy",
-          aiMarker: config.marker2,
-          humanMarker: config.marker1,
-          lastHumanMove: lastHumanMoveRef.current,
+      if (config.gameType === "ai" && currentPlayer !== 1) {
+        return;
+      }
+
+      const previousBoard = board;
+      const previousPlayer = currentPlayer;
+
+      try {
+        setApiError("");
+        const marker = currentPlayer === 1 ? config.marker1 : config.marker2;
+        const optimisticBoard = board.map((r) => [...r]);
+        optimisticBoard[row][col] = marker;
+
+        // Show the player's move immediately while waiting for backend processing.
+        setBoard(optimisticBoard);
+        setCurrentPlayer(currentPlayer === 1 ? 2 : 1);
+
+        const shouldShowAiThinking =
+          config.gameType === "ai" && previousPlayer === 1;
+        setAiThinking(shouldShowAiThinking);
+
+        const movePromise = makeGameMove(config.sessionId, {
+          rowIndex: row,
+          colIndex: col,
         });
 
-        if (!aiMove) {
-          setAiThinking(false);
-          return;
-        }
+        // Keep the indicator visible long enough for users to perceive the AI turn.
+        const delayPromise = shouldShowAiThinking
+          ? new Promise((resolve) => setTimeout(resolve, AI_THINKING_DELAY_MS))
+          : Promise.resolve();
 
-        const { rowIndex: r, colIndex: c } = aiMove;
-        const nextBoard = currentBoard.map((row) => [...row]);
-        nextBoard[r][c] = config.marker2;
-        setBoard(nextBoard);
+        const [dto] = await Promise.all([movePromise, delayPromise]);
 
-        const win = checkWinner(nextBoard, r, c);
-        if (win) {
-          setWinningCells(win);
-          setWinner(config.player2);
-          setShowWinnerModal(true);
-        } else {
-          setCurrentPlayer(1);
-        }
-
+        applyBackendState(dto);
+      } catch (error) {
+        setBoard(previousBoard);
+        setCurrentPlayer(previousPlayer);
+        setApiError(
+          error?.data?.message ||
+            error?.message ||
+            "Could not submit move.",
+        );
+      } finally {
         setAiThinking(false);
-      }, 600);
+      }
     },
-    [config.marker2, config.player2, size],
+    [
+      aborted,
+      aiThinking,
+      applyBackendState,
+      board,
+      config.gameType,
+      config.marker1,
+      config.marker2,
+      config.sessionId,
+      currentPlayer,
+      isPaused,
+      winner,
+    ],
   );
 
   const handleCellClick = useCallback(
     (row, col) => {
-      if (winner || aborted || board[row][col] || aiThinking || isPaused) return;
-      if (config.gameType === "ai" && currentPlayer === 2) return;
-
-      const marker = currentPlayer === 1 ? config.marker1 : config.marker2;
-      const nextBoard = board.map((r) => [...r]);
-      nextBoard[row][col] = marker;
-      setBoard(nextBoard);
-
-      if (config.gameType === "ai" && currentPlayer === 1) {
-        lastHumanMoveRef.current = { rowIndex: row, colIndex: col };
-      }
-
-      const win = checkWinner(nextBoard, row, col);
-      if (win) {
-        setWinningCells(win);
-        setWinner(currentPlayer === 1 ? config.player1 : config.player2);
-        setShowWinnerModal(true);
-      } else {
-        const next = currentPlayer === 1 ? 2 : 1;
-        setCurrentPlayer(next);
-        if (config.gameType === "ai" && next === 2) {
-          makeAIMove(nextBoard);
-        }
+      if (isBackendManaged) {
+        handleBackendCellClick(row, col);
       }
     },
-    [winner, aborted, board, aiThinking, isPaused, config, currentPlayer, makeAIMove],
+    [handleBackendCellClick, isBackendManaged],
   );
+
+  const abortCurrentGame = useCallback(async () => {
+    if (!isBackendManaged || !config?.sessionId) {
+      setAborted(true);
+      return;
+    }
+
+    try {
+      setApiError("");
+      const dto = await abortGameSession(config.sessionId);
+      applyBackendState(dto);
+    } catch (error) {
+      setApiError(
+        error?.data?.message ||
+          error?.message ||
+          "Could not abort the game.",
+      );
+    }
+  }, [applyBackendState, config?.sessionId, isBackendManaged]);
 
   return {
     size,
@@ -120,10 +220,12 @@ export default function useGamePlayView(config) {
     showWinnerModal,
     isPaused,
     startTime,
+    apiError,
     setAborted,
     setIsPaused,
     setShowWinnerModal,
     resetGame,
     handleCellClick,
+    abortCurrentGame,
   };
 }
