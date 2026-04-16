@@ -1,22 +1,24 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import {
-  Crown,
-  Gamepad2,
-  LayoutDashboard,
-  LogOut,
-  Trophy,
-  User,
+    Crown,
+    Gamepad2,
+    LayoutDashboard,
+    LogOut,
+    Trophy,
+    User,
 } from "lucide-react";
 
 import { useAuth } from "../../modules/auth/hooks/useAuth";
 
 const navClass = ({ isActive }) =>
-  `nav-link rounded-3 px-3 py-2 ${isActive ? "active fw-semibold bg-light" : "text-secondary"}`;
+    `nav-link rounded-3 px-3 py-2 ${isActive ? "active fw-semibold bg-light" : "text-secondary"}`;
 
 export default function NavBar({ onNavigate }) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const displayName = user?.username ?? "player";
+  const displayName = user?.displayName ?? user?.username ?? "player";
+  const dashboardPath =
+        user?.role === "admin" ? "/admin/dashboard" : "/dashboard";
 
   function shouldBlockNavigation(to) {
     if (typeof onNavigate !== "function") return false;
@@ -46,22 +48,22 @@ export default function NavBar({ onNavigate }) {
             TicTacToang
           </span>
 
-          <button
-            className="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#appMainNav"
-            aria-controls="appMainNav"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
-            <span className="navbar-toggler-icon" />
-          </button>
+                    <button
+                        className="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#appMainNav"
+                        aria-controls="appMainNav"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation"
+                    >
+                        <span className="navbar-toggler-icon" />
+                    </button>
 
           <div className="collapse navbar-collapse" id="appMainNav">
             <ul className="navbar-nav mx-auto mb-2 mb-lg-0 gap-lg-1">
               <li className="nav-item">
-                <NavLink to="/dashboard" className={navClass} end onClick={handleNavLinkClick("/dashboard")}>
+                <NavLink to={dashboardPath} className={navClass} end onClick={handleNavLinkClick(dashboardPath)}>
                   <span className="d-inline-flex align-items-center gap-2">
                     <LayoutDashboard size={18} strokeWidth={2} aria-hidden />
                     Dashboard
@@ -94,23 +96,25 @@ export default function NavBar({ onNavigate }) {
               </li>
             </ul>
 
-            <div className="d-flex align-items-center gap-3 ms-lg-auto">
-              <span className="badge rounded-pill text-bg-warning text-dark px-3 py-2">
-                PREMIUM
-              </span>
-              <span className="text-secondary small">{displayName}</span>
-              <button
-                type="button"
-                className="btn btn-outline-dark btn-sm d-inline-flex align-items-center gap-1"
-                onClick={handleLogout}
-              >
-                <LogOut size={16} strokeWidth={2} aria-hidden />
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
-    </header>
-  );
+                        <div className="d-flex align-items-center gap-3 ms-lg-auto">
+                            <span className="badge rounded-pill text-bg-warning text-dark px-3 py-2">
+                                PREMIUM
+                            </span>
+                            <span className="text-secondary small">
+                                {displayName}
+                            </span>
+                            <button
+                                type="button"
+                                className="btn btn-outline-dark btn-sm d-inline-flex align-items-center gap-1"
+                                onClick={handleLogout}
+                            >
+                                <LogOut size={16} strokeWidth={2} aria-hidden />
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+    );
 }
