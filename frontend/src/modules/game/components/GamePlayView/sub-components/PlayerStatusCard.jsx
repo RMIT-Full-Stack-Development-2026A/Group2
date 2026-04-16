@@ -6,13 +6,14 @@ export default function PlayerStatusCard({
   isActive,
   turnText,
   avatarContent,
+  showTurnText = false,
 }) {
   return (
     <div className={styles.column}>
       <div className={`${styles.card} ${isActive ? styles.active : ""}`}>
         <p className={styles.name}>{name}</p>
         <div className={styles.marker}>{marker}</div>
-        {isActive ? <p className={styles.turnText}>{turnText}</p> : null}
+        {isActive || showTurnText ? <p className={styles.turnText}>{turnText}</p> : null}
       </div>
 
       <div className={styles.avatar}>{avatarContent}</div>

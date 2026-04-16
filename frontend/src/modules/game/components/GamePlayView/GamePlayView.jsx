@@ -49,11 +49,13 @@ function GamePlayViewContent({ config, navigate }) {
     showWinnerModal,
     isPaused,
     startTime,
+    apiError,
     setAborted,
     setIsPaused,
     setShowWinnerModal,
     resetGame,
     handleCellClick,
+    abortCurrentGame,
   } = useGamePlayView(config);
 
   const [pauseDialogOpen, setPauseDialogOpen] = useState(false);
@@ -64,18 +66,24 @@ function GamePlayViewContent({ config, navigate }) {
 
   const handleConfirmAbort = useCallback(async () => {
     setIsPaused(false);
-    setAborted(true);
     setPauseDialogOpen(false);
     setAbortDialogOpen(false);
+
+    await abortCurrentGame();
+
+    setAborted(true);
+
     const dest = pendingNavRef.current;
     pendingNavRef.current = null;
+
     if (dest === "/logout") {
       await logout();
       navigate("/login", { replace: true });
       return;
     }
+
     if (dest) navigate(dest);
-  }, [logout, navigate, setAborted, setIsPaused]);
+  }, [abortCurrentGame, logout, navigate, setAborted, setIsPaused]);
 
   const handleNavIntercept = useCallback(
     (to) => {
@@ -133,6 +141,12 @@ function GamePlayViewContent({ config, navigate }) {
           </Alert>
         ) : null}
 
+        {apiError ? (
+          <Alert variant="destructive">
+            <AlertDescription>{apiError}</AlertDescription>
+          </Alert>
+        ) : null}
+
         <div className={isOnline ? styles.mainOnline : styles.mainLocal}>
           <div className={styles.centerRow}>
             <PlayerStatusCard
@@ -152,13 +166,16 @@ function GamePlayViewContent({ config, navigate }) {
               aborted={aborted}
               isPaused={isPaused}
               winningCells={winningCells}
+              marker1={config.marker1}
+              marker2={config.marker2}
               onCellClick={handleCellClick}
             />
 
             <PlayerStatusCard
               name={config.player2}
               marker={config.marker2}
-              isActive={currentPlayer === 2 && !winner && !aborted}
+              isActive={(currentPlayer === 2 || aiThinking) && !winner && !aborted}
+              showTurnText={aiThinking}
               turnText={aiThinking ? "Thinking..." : "Their turn"}
               avatarContent={
                 config.gameType === "ai"
