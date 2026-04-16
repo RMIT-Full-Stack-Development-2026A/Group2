@@ -4,12 +4,12 @@ function escapeRegex(s) {
     return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function toExternalUserDto(userDoc) {
+function toExternalUserDto(userData) {
     return {
-        id: String(userDoc._id),
-        username: userDoc.username,
-        email: userDoc.email,
-        accountStatus: userDoc.accountStatus,
+        id: String(userData._id),
+        username: userData.username,
+        email: userData.email,
+        accountStatus: userData.accountStatus,
     };
 }
 

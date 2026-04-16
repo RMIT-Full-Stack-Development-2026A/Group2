@@ -1,5 +1,4 @@
 const adminService = require("./admin.service");
-const AppError = require("../../shared/utils/AppError");
 const { sendError } = require("../../shared/utils/httpResponse");
 
 function handleControllerError(res, err) {
