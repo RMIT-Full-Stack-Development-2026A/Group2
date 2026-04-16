@@ -16,7 +16,7 @@ const navClass = ({ isActive }) =>
 export default function NavBar() {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
-    const displayName = user?.username ?? "player";
+    const displayName = user?.displayName ?? user?.username ?? "player";
     const dashboardPath =
         user?.role === "admin" ? "/admin/dashboard" : "/dashboard";
 

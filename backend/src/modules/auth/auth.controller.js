@@ -1,5 +1,5 @@
 const authService = require("./auth.service");
-const AppError = require("../../shared/utils/AppError");
+const AppError = require("../../shared/errors/AppError");
 const { sendError } = require("../../shared/utils/httpResponse");
 const { validateLoginBody } = require("./auth.validation");
 const {
@@ -31,10 +31,12 @@ function handleControllerError(res, err) {
 
 async function signUp(req, res) {
   try {
-    const { username, email, password, confirmPassword, country } = req.body;
+    const { username, displayName, email, password, confirmPassword, country } =
+      req.body;
 
     const user = await authService.signUp(
       username,
+      displayName,
       email,
       password,
       confirmPassword,

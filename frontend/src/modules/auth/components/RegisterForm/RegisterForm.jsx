@@ -48,6 +48,19 @@ export default function RegisterForm() {
           />
         </div>
 
+        <div className="mb-3">
+          <label className="form-label fw-semibold">Display Name</label>
+          <input
+            type="text"
+            name="displayName"
+            className="form-control form-control-lg"
+            placeholder="Name displayed on your profile"
+            value={formData.displayName}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
         <div className="mb-2">
           <label className="form-label fw-semibold">Password</label>
           <input
