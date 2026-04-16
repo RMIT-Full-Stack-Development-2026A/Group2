@@ -313,9 +313,38 @@ async function makeMove(authUser, sessionId, payload) {
     });
   }
 
-  const requestingParticipant = participants.find(
-    (p) => String(p.userID) === String(authUser.id),
+  const authenticatedParticipants = participants.filter(
+    (p) => p.userID && String(p.userID) === String(authUser.id),
   );
+
+  let requestingParticipant = null;
+
+  if (authenticatedParticipants.length === 1) {
+    requestingParticipant = authenticatedParticipants[0];
+  } else if (authenticatedParticipants.length > 1) {
+    requestingParticipant =
+      authenticatedParticipants.find(
+        (p) => String(p._id) === String(session.currentTurn),
+      ) || authenticatedParticipants[0];
+  }
+
+  // Local two-player uses a guest P2 without userID. Allow the authenticated
+  // local player account to play that side when it is the guest's turn.
+  if (session.gameMode === "two_player") {
+    const ownerParticipant = authenticatedParticipants[0] || null;
+    const currentTurnParticipant = participants.find(
+      (p) => String(p._id) === String(session.currentTurn),
+    );
+
+    if (
+      ownerParticipant &&
+      currentTurnParticipant &&
+      !currentTurnParticipant.userID &&
+      currentTurnParticipant.participantType === "guest"
+    ) {
+      requestingParticipant = currentTurnParticipant;
+    }
+  }
 
   if (!requestingParticipant) {
     throw new AppError("You are not a participant in this game.", {
