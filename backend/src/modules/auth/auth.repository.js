@@ -107,6 +107,7 @@ function mapAuthUser(user, profile) {
     email: profile?.email ?? null,
     country: profile?.country ?? null,
     avatarURL: profile?.avatarURL ?? null,
+    avatarPublicId: profile?.avatarPublicId ?? null,
     displayName: profile?.displayName ?? user.username,
     profileCreatedAt: profile?.createdAt ?? null,
     profileUpdatedAt: profile?.updatedAt ?? null,

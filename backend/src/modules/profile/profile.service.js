@@ -3,6 +3,11 @@ const AppError = require("../../shared/errors/AppError");
 const profileRepository = require("./profile.repository");
 const authRepository = require("../auth/auth.repository");
 const {
+  uploadBufferToCloudinary,
+  destroyCloudinaryAsset,
+} = require("../../shared/utils/upload.utils");
+
+const {
   validateProfileUpdateBody,
   validateChangePasswordBody,
 } = require("./profile.validation");
@@ -149,9 +154,86 @@ async function changePassword(userId, body) {
   return profileResponseDto(updated);
 }
 
+const ALLOWED_LOGO_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+]);
+
+async function uploadProfileLogo(userId, file) {
+  if (!file) {
+    throw new AppError("Logo file is required.", {
+      code: "LOGO_REQUIRED",
+      statusCode: 400,
+    });
+  }
+
+  if (!ALLOWED_LOGO_MIME_TYPES.has(file.mimetype)) {
+    throw new AppError("Logo must be a JPG, JPEG, PNG, or WEBP image.", {
+      code: "INVALID_LOGO_TYPE",
+      statusCode: 400,
+    });
+  }
+
+  const user = await authRepository.findById(userId);
+  if (!user) {
+    throw new AppError("User not found.", {
+      code: "USER_NOT_FOUND",
+      statusCode: 404,
+    });
+  }
+
+  const existingProfile = await profileRepository.findByUserId(userId);
+  if (!existingProfile) {
+    throw new AppError("Profile not found.", {
+      code: "PROFILE_NOT_FOUND",
+      statusCode: 404,
+    });
+  }
+
+  let uploaded;
+  try {
+    uploaded = await uploadBufferToCloudinary(file.buffer, {
+      folder: "player-logos",
+      resource_type: "image",
+      transformation: [
+        {
+          width: 256,
+          height: 256,
+          crop: "fill",
+          gravity: "auto",
+        },
+        {
+          quality: "auto",
+          fetch_format: "auto",
+        },
+      ],
+    });
+  } catch (_error) {
+    throw new AppError("Could not upload logo to image storage.", {
+      code: "LOGO_UPLOAD_FAILED",
+      statusCode: 502,
+    });
+  }
+
+  await profileRepository.updateByUserId(userId, {
+    avatarURL: uploaded.secure_url,
+    avatarPublicId: uploaded.public_id,
+  });
+
+  if (existingProfile.avatarPublicId && existingProfile.avatarPublicId !== uploaded.public_id) {
+    await destroyCloudinaryAsset(existingProfile.avatarPublicId);
+  }
+
+  const updated = await authRepository.findById(userId);
+  return profileResponseDto(updated);
+}
+
 module.exports = {
   getProfile,
   updateProfile,
   changePassword,
+  uploadProfileLogo,
   profileResponseDto,
 };

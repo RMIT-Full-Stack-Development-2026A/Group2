@@ -2,7 +2,11 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { ALLOWED_COUNTRIES } from "../../auth/utils/auth.validation";
-import { changePassword, updateProfile } from "../services/profile.service";
+import {
+  changePassword,
+  updateProfile,
+  uploadProfileLogo,
+} from "../services/profile.service";
 
 const emptyForm = {
   username: "",
@@ -35,6 +39,9 @@ export function useEditProfileForm(initialUser) {
   const { accessToken, login, refreshUser } = useAuth();
   const [formData, setFormData] = useState(emptyForm);
   const [loading, setLoading] = useState(false);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoError, setLogoError] = useState("");
+  const [logoSuccess, setLogoSuccess] = useState("");
   const [error, setError] = useState("");
   const [errorIssues, setErrorIssues] = useState(null);
 
@@ -57,6 +64,8 @@ export function useEditProfileForm(initialUser) {
     });
     setError("");
     setErrorIssues(null);
+    setLogoError("");
+    setLogoSuccess("");
   }, [initialUser]);
 
   const handleChange = useCallback((event) => {
@@ -141,11 +150,49 @@ export function useEditProfileForm(initialUser) {
     [accessToken, formData, login, navigate, refreshUser],
   );
 
+  const handleLogoUpload = useCallback(
+    async (event) => {
+      const file = event.target.files?.[0];
+      event.target.value = "";
+      if (!file) {
+        return;
+      }
+
+      setLogoError("");
+      setLogoSuccess("");
+      setLogoUploading(true);
+      try {
+        const result = await uploadProfileLogo(file);
+        if (!result.ok) {
+          setLogoError(result.message);
+          return;
+        }
+
+        const synced = await refreshUser();
+        if (!synced && result.user && accessToken) {
+          login(accessToken, result.user);
+        }
+        setFormData((prev) => ({
+          ...prev,
+          avatarURL: result.user?.profile?.avatarURL ?? prev.avatarURL,
+        }));
+        setLogoSuccess("Logo uploaded successfully.");
+      } finally {
+        setLogoUploading(false);
+      }
+    },
+    [accessToken, login, refreshUser],
+  );
+
   return {
     formData,
     handleChange,
     handleSubmit,
+    handleLogoUpload,
     loading,
+    logoUploading,
+    logoError,
+    logoSuccess,
     error,
     errorIssues,
   };

@@ -1,10 +1,18 @@
+import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { Folder, Hexagon, Pencil, Upload } from "lucide-react";
 import { useProfileCard } from "../../hooks/useProfileCard";
 import { formatMemberSince, getAvatarInitials } from "./ProfileCard.service";
 
 export default function ProfileCard({ embedded = false }) {
-  const { user, loading, error } = useProfileCard();
+  const logoInputRef = useRef(null);
+  const {
+    user,
+    loading,
+    error,
+    handleLogoUpload,
+    uploadingLogo,
+  } = useProfileCard();
 
   const shell = (inner) =>
     embedded ? (
@@ -37,6 +45,16 @@ export default function ProfileCard({ embedded = false }) {
   const country = user.profile?.country?.trim() ? user.profile.country : "—";
   const memberSince = formatMemberSince(user.createdAt);
   const avatarSrc = user.profile?.avatarURL?.trim() ? user.profile.avatarURL : null;
+  const logoSrc = user.profile?.avatarURL?.trim() ? user.profile.avatarURL : null;
+  const onLogoButtonClick = () => {
+    logoInputRef.current?.click();
+  };
+
+  const onLogoFileChange = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    await handleLogoUpload(file);
+  };
 
   return shell(
     <div className={bodyClass}>
@@ -66,12 +84,20 @@ export default function ProfileCard({ embedded = false }) {
           <button
             type="button"
             className="profile-upload-overlay btn btn-light border border-secondary-subtle rounded-circle shadow-sm p-0 d-flex align-items-center justify-content-center text-secondary"
-            disabled
-            title="Avatar upload — coming soon"
-            aria-label="Avatar upload — coming soon"
+            onClick={onLogoButtonClick}
+            disabled={uploadingLogo}
+            title={uploadingLogo ? "Uploading logo..." : "Upload logo"}
+            aria-label={uploadingLogo ? "Uploading logo..." : "Upload logo"}
           >
             <Upload size={14} strokeWidth={2} aria-hidden />
           </button>
+          <input
+            ref={logoInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/jpg,image/webp"
+            className="d-none"
+            onChange={onLogoFileChange}
+          />
         </div>
 
         <div className="flex-grow-1 profile-identity-text">
@@ -104,9 +130,7 @@ export default function ProfileCard({ embedded = false }) {
         </div>
       </div>
 
-      <p className="small text-muted border-top pt-3 mb-0">
-        Avatar: Upload a square image (max 200x200px). It will be auto-resized.
-      </p>
+      
     </div>,
   );
 }

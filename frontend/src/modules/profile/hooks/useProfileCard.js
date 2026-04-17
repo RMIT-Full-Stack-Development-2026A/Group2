@@ -1,11 +1,14 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../auth/hooks/useAuth";
+import { uploadProfileLogo } from "../services/profile.service";
 
 export function useProfileCard() {
-  const { user: authUser, refreshUser } = useAuth();
+  const { user: authUser, refreshUser, accessToken, login } = useAuth();
   const [user, setUser] = useState(authUser?.profile ? authUser : null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadLogoSuccess, setUploadLogoSuccess] = useState("");
 
   useEffect(() => {
     if (authUser?.profile) {
@@ -45,5 +48,40 @@ export function useProfileCard() {
     };
   }, [authUser, refreshUser]);
 
-  return { user, loading, error };
+  const handleLogoUpload = useCallback(
+    async (file) => {
+      if (!file) {
+        return;
+      }
+      setUploadLogoSuccess("");
+      setUploadingLogo(true);
+      try {
+        const result = await uploadProfileLogo(file);
+        if (!result.ok) {
+          return;
+        }
+
+        const synced = await refreshUser();
+        if (!synced && result.user && accessToken) {
+          login(accessToken, result.user);
+          setUser(result.user);
+        } else if (synced) {
+          setUser(synced);
+        }
+        setUploadLogoSuccess("Logo uploaded successfully.");
+      } finally {
+        setUploadingLogo(false);
+      }
+    },
+    [accessToken, login, refreshUser],
+  );
+
+  return {
+    user,
+    loading,
+    error,
+    handleLogoUpload,
+    uploadingLogo,
+    uploadLogoSuccess,
+  };
 }

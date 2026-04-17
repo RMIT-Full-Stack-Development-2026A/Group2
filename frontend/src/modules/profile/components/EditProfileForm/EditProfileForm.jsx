@@ -7,8 +7,18 @@ import { useEditProfileForm } from "../../hooks/useEditProfileForm";
  * @param {{ initialUser: object | null }} props — null while parent loads profile
  */
 export default function EditProfileForm({ initialUser }) {
-  const { formData, handleChange, handleSubmit, loading, error, errorIssues } =
-    useEditProfileForm(initialUser);
+  const {
+    formData,
+    handleChange,
+    handleSubmit,
+    handleLogoUpload,
+    loading,
+    logoUploading,
+    logoError,
+    logoSuccess,
+    error,
+    errorIssues,
+  } = useEditProfileForm(initialUser);
 
   if (!initialUser) {
     return <p className="text-secondary mb-0">Loading profile…</p>;
@@ -25,6 +35,41 @@ export default function EditProfileForm({ initialUser }) {
         </div>
 
         <form onSubmit={handleSubmit} noValidate>
+          <div className="mb-4">
+            <label htmlFor="edit-logo-upload" className="form-label fw-semibold">
+              Player Logo
+            </label>
+            <input
+              id="edit-logo-upload"
+              type="file"
+              accept="image/png,image/jpeg,image/jpg,image/webp"
+              className="form-control"
+              onChange={handleLogoUpload}
+              disabled={logoUploading || loading}
+            />
+            <small className="text-muted d-block mt-1">
+              Upload JPG, JPEG, PNG, or WEBP (max 2MB). The image is auto-resized
+              to a standard size.
+            </small>
+            {formData?.avatarURL ? (
+              <img
+                src={formData.avatarURL}
+                alt="Current logo"
+                className="rounded border border-secondary-subtle mt-2"
+                style={{ width: 72, height: 72, objectFit: "cover" }}
+              />
+            ) : null}
+            {logoUploading ? (
+              <p className="small text-secondary mb-0 mt-2">Uploading logo...</p>
+            ) : null}
+            {logoSuccess ? (
+              <p className="small text-success mb-0 mt-2">{logoSuccess}</p>
+            ) : null}
+            {logoError ? (
+              <p className="small text-danger mb-0 mt-2">{logoError}</p>
+            ) : null}
+          </div>
+
           <div className="mb-3">
             <label htmlFor="edit-username" className="form-label fw-semibold">
               Username

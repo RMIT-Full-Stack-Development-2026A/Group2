@@ -55,8 +55,25 @@ async function changePassword(req, res) {
   }
 }
 
+async function uploadProfileLogo(req, res) {
+  try {
+    const user = await profileService.uploadProfileLogo(
+      String(req.user.id),
+      req.file,
+    );
+    res.json({
+      status: "success",
+      message: "Logo uploaded successfully.",
+      user,
+    });
+  } catch (err) {
+    handleControllerError(res, err);
+  }
+}
+
 module.exports = {
   getProfile,
   updateProfile,
   changePassword,
+  uploadProfileLogo,
 };

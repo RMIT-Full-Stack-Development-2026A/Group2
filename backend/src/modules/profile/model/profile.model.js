@@ -20,6 +20,10 @@ const profileSchema = new Schema(
       type: String,
       default: null,
     },
+    avatarPublicId: {
+      type: String,
+      default: null,
+    },
     country: {
       type: String,
       required: true,
