@@ -36,32 +36,45 @@ export default function EditProfileForm({ initialUser }) {
 
         <form onSubmit={handleSubmit} noValidate>
           <div className="mb-4">
-            <label htmlFor="edit-logo-upload" className="form-label fw-semibold">
-              Player Logo
-            </label>
-            <input
-              id="edit-logo-upload"
-              type="file"
-              accept="image/png,image/jpeg,image/jpg,image/webp"
-              className="form-control"
-              onChange={handleLogoUpload}
-              disabled={logoUploading || loading}
-            />
-            <small className="text-muted d-block mt-1">
-              Upload JPG, JPEG, PNG, or WEBP (max 2MB). The image is auto-resized
-              to a standard size.
-            </small>
+            <label className="form-label fw-semibold d-block">Player Logo</label>
+
             {formData?.avatarURL ? (
               <img
                 src={formData.avatarURL}
                 alt="Current logo"
-                className="rounded border border-secondary-subtle mt-2"
+                className="rounded border border-secondary-subtle d-block mb-3"
                 style={{ width: 72, height: 72, objectFit: "cover" }}
               />
-            ) : null}
-            {logoUploading ? (
-              <p className="small text-secondary mb-0 mt-2">Uploading logo...</p>
-            ) : null}
+            ) : (
+              <div
+                className="rounded border border-secondary-subtle d-flex align-items-center justify-content-center text-muted small mb-3"
+                style={{ width: 72, height: 72, backgroundColor: "#f8f9fa" }}
+              >
+                No logo
+              </div>
+            )}
+
+            <label
+              htmlFor="edit-logo-upload"
+              className={`btn btn-outline-secondary btn-sm ${logoUploading || loading ? "disabled" : ""}`}
+            >
+              {logoUploading ? "Uploading..." : "Choose file"}
+            </label>
+
+            <input
+              id="edit-logo-upload"
+              type="file"
+              accept="image/png,image/jpeg,image/jpg,image/webp"
+              className="d-none"
+              onChange={handleLogoUpload}
+              disabled={logoUploading || loading}
+            />
+
+            <small className="text-muted d-block mt-2">
+              Upload JPG, JPEG, PNG, or WEBP (max 2MB). The image is automatically
+              resized to 256 × 256.
+            </small>
+
             {logoSuccess ? (
               <p className="small text-success mb-0 mt-2">{logoSuccess}</p>
             ) : null}
@@ -117,23 +130,6 @@ export default function EditProfileForm({ initialUser }) {
             />
           </div>
 
-          <div className="mb-3">
-            <label htmlFor="edit-avatar-url" className="form-label fw-semibold">
-              Avatar URL
-            </label>
-            <input
-              id="edit-avatar-url"
-              type="url"
-              name="avatarURL"
-              className="form-control"
-              value={formData.avatarURL}
-              onChange={handleChange}
-            />
-            <small className="text-muted">
-              Leave blank to remove your avatar.
-            </small>
-          </div>
-
           <div className="mb-4">
             <label htmlFor="edit-country" className="form-label fw-semibold">
               Country
@@ -156,13 +152,14 @@ export default function EditProfileForm({ initialUser }) {
           </div>
 
           <fieldset className="border rounded-3 p-3 mb-4">
-            <legend className=" w-auto px-1 fs-6 fw-semibold mb-3">
+            <legend className="w-auto px-1 fs-6 fw-semibold mb-3">
               Change password{" "}
               <span className="fw-normal text-secondary">(optional)</span>
             </legend>
             <p className="small text-muted mb-3">
               Leave fields blank to keep your current password.
             </p>
+
             <div className="mb-3">
               <label
                 htmlFor="edit-current-password"
@@ -180,6 +177,7 @@ export default function EditProfileForm({ initialUser }) {
                 onChange={handleChange}
               />
             </div>
+
             <div className="mb-3">
               <label
                 htmlFor="edit-new-password"
@@ -197,6 +195,7 @@ export default function EditProfileForm({ initialUser }) {
                 onChange={handleChange}
               />
             </div>
+
             <div className="mb-0">
               <label
                 htmlFor="edit-confirm-password"
