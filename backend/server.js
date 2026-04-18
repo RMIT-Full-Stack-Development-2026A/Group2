@@ -6,7 +6,7 @@ dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI;
-
+const DB_NAME = process.env.DB_NAME || "tictactoang";
 async function startServer() {
   try {
     if (!MONGO_URI) {
@@ -14,7 +14,7 @@ async function startServer() {
     }
 
     await mongoose.connect(MONGO_URI);
-    console.log("Connected to MongoDB");
+    console.log(`Connected to MongoDB (${DB_NAME})`);
 
     app.listen(PORT, () => {
       console.log(`Server is running at http://localhost:${PORT}`);

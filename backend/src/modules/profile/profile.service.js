@@ -2,10 +2,15 @@ const bcrypt = require("bcrypt");
 const AppError = require("../../shared/errors/AppError");
 const profileRepository = require("./profile.repository");
 const authRepository = require("../auth/auth.repository");
+const { createGameInterface } = require("../game/domain/interfaces/game.interface");
+const { createPremiumInterface } = require("../premium/premium.interface");
 const {
   validateProfileUpdateBody,
   validateChangePasswordBody,
 } = require("./profile.validation");
+
+const gameInterface = createGameInterface();
+const premiumInterface = createPremiumInterface();
 
 function throwValidation(errors) {
   throw new AppError("Validation failed.", {
@@ -149,9 +154,37 @@ async function changePassword(userId, body) {
   return profileResponseDto(updated);
 }
 
+async function getMatchHistory(userId, filters = {}) {
+  const items = await gameInterface.listHistoryForUser(userId, filters);
+  const isPremium = await premiumInterface.hasActiveSubscription(userId);
+
+  return {
+    items: items.map((item) => ({
+      ...item,
+      canReplay: isPremium,
+    })),
+    isPremium,
+  };
+}
+
+async function getMatchReplay(userId, sessionId) {
+  const isPremium = await premiumInterface.hasActiveSubscription(userId);
+
+  if (!isPremium) {
+    throw new AppError("Replay is available for premium players only.", {
+      code: "PREMIUM_REQUIRED",
+      statusCode: 403,
+    });
+  }
+
+  return gameInterface.getReplayForUser(userId, sessionId);
+}
+
 module.exports = {
   getProfile,
   updateProfile,
   changePassword,
+  getMatchHistory,
+  getMatchReplay,
   profileResponseDto,
 };
