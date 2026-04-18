@@ -1,34 +1,39 @@
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/hooks/useAuth";
-import { uploadProfileLogo } from "../services/profile.service";
+import { getProfileResult, uploadProfileLogo } from "../services/profile.service";
 
 export function useProfileCard() {
-  const { user: authUser, refreshUser, accessToken, login } = useAuth();
-  const [user, setUser] = useState(authUser?.profile ? authUser : null);
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadLogoSuccess, setUploadLogoSuccess] = useState("");
 
   useEffect(() => {
-    if (authUser?.profile) {
-      setUser(authUser);
-      setError(null);
-      setLoading(false);
-      return;
-    }
-
     let cancelled = false;
 
     (async () => {
       setLoading(true);
       setError(null);
       try {
-        const next = await refreshUser();
+        const result = await getProfileResult();
         if (!cancelled) {
-          setUser(next);
-          if (!next) {
-            setError("Could not load profile.");
+          if (result.ok && result.user) {
+            setUser(result.user);
+          } else {
+            setUser(null);
+            setError(result.message || "Could not load profile.");
+            if (
+              result.code === "ACCOUNT_INACTIVE" ||
+              result.status === 401 ||
+              result.status === 403
+            ) {
+              await logout();
+              navigate("/login", { replace: true });
+            }
           }
         }
       } catch {
@@ -46,7 +51,7 @@ export function useProfileCard() {
     return () => {
       cancelled = true;
     };
-  }, [authUser, refreshUser]);
+  }, [logout, navigate]);
 
   const handleLogoUpload = useCallback(
     async (file) => {
@@ -61,19 +66,13 @@ export function useProfileCard() {
           return;
         }
 
-        const synced = await refreshUser();
-        if (!synced && result.user && accessToken) {
-          login(accessToken, result.user);
-          setUser(result.user);
-        } else if (synced) {
-          setUser(synced);
-        }
+        setUser(result.user);
         setUploadLogoSuccess("Logo uploaded successfully.");
       } finally {
         setUploadingLogo(false);
       }
     },
-    [accessToken, login, refreshUser],
+    [],
   );
 
   return {

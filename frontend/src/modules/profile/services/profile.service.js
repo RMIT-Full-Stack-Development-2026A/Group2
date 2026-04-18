@@ -69,12 +69,16 @@ async function parseApiResponse(response, fallbackMessage) {
 }
 
 export async function getProfile() {
-  const response = await fetchProfileRequest();
-  if (!response.ok) {
+  const result = await getProfileResult();
+  if (!result.ok) {
     return null;
   }
-  const data = await response.json();
-  return normalizeProfileUser(data.user);
+  return result.user;
+}
+
+export async function getProfileResult() {
+  const response = await fetchProfileRequest();
+  return parseApiResponse(response, "Could not load profile.");
 }
 
 /**

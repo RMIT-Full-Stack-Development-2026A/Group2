@@ -66,13 +66,9 @@ export function AuthProvider({ children }) {
         persistSession("", null);
     }, [persistSession]);
 
-    /** Re-fetch GET /api/profile and update `user` (navbar, profile card, etc.). */
+    /** Re-fetch GET /api/profile without mutating auth session identity. */
     const refreshUser = useCallback(async () => {
-        const next = await getProfile();
-        if (next) {
-            setUser(next);
-        }
-        return next;
+        return getProfile();
     }, []);
 
     const value = useMemo(
