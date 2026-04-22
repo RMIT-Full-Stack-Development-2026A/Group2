@@ -195,48 +195,6 @@ async function createSinglePlayerGame(authUser, payload) {
   return getSessionState(session._id);
 }
 
-async function createOnlineGame(player1User, player2User, payload) {
-  const { boardSize = 10, marker1 = "P1", marker2 = "P2" } = payload;
-
-  const session = await gameRepository.createSession({
-    gameMode: "online_match",
-    status: "ongoing",
-    result: "pending",
-    boardSize,
-    currentTurn: null,
-    winnerParticipantID: null,
-    winningLine: [],
-    aiDifficulty: null
-  });
-
-  const participants = await gameRepository.createParticipants([
-    {
-      sessionID: session._id,
-      userID: player1User.id,
-      participantType: "player",
-      isWinner: false,
-      displayName: player1User.username || "Player 1",
-      marker: marker1,
-      turnOrder: 1
-    },
-    {
-      sessionID: session._id,
-      userID: player2User.id,
-      participantType: "player",
-      isWinner: false,
-      displayName: player2User.username || "Player 2",
-      marker: marker2,
-      turnOrder: 2
-    },
-  ]);
-
-  const updatedSession = await gameRepository.updateSession(session._id, {
-    currentTurn: participants[0]._id
-  });
-
-  return toGameStateDto(updatedSession, participants, [], buildBoard(boardSize, [], {}));
-}
-
 async function finishGame(session, winnerParticipant, refreshedMoves, refreshedBoard) {
   await gameRepository.updateParticipant(winnerParticipant._id, {
     isWinner: true,
@@ -525,7 +483,6 @@ async function getSessionState(sessionId) {
 module.exports = {
   createLocalGame,
   createSinglePlayerGame,
-  createOnlineGame,
   makeMove,
   abortGame,
   getSessionState,

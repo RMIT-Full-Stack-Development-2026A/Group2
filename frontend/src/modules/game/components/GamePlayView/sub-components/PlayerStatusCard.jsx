@@ -7,10 +7,9 @@ export default function PlayerStatusCard({
   turnText,
   avatarContent,
   showTurnText = false,
-  compact = false
 }) {
   return (
-    <div className={compact ? styles.columnCompact : styles.column}>
+    <div className={styles.column}>
       <div className={`${styles.card} ${isActive ? styles.active : ""}`}>
         <p className={styles.name}>{name}</p>
         <div className={styles.marker}>{marker}</div>

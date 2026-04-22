@@ -47,14 +47,10 @@
   color: #6b7280;
 }
 
-.onlinePlayerColumn {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 570px;
-}
-
 @media (max-width: 1024px) {
+  .mainOnline {
+    flex-direction: column;
+  }
 
   .centerRow {
     flex-direction: column;
@@ -62,8 +58,6 @@
   }
 
   .chatPanel {
-    width: 320px;
-    flex-shrink: 0;
-    align-self: stretch;
+    width: 100%;
   }
 }
