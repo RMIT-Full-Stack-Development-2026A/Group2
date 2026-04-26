@@ -1,4 +1,5 @@
-import { Navigate } from "react-router-dom";
+import { cloneElement, isValidElement } from "react";
+import { Navigate, Outlet, useOutletContext } from "react-router-dom";
 import { useAuth } from "../modules/auth/hooks/useAuth";
 
 function getHomePathByRole(role) {
@@ -8,6 +9,7 @@ function getHomePathByRole(role) {
 // Requires login + allowed role.
 export default function RoleRoute({ allowedRoles, children }) {
     const { user, isAuthenticated } = useAuth();
+    const parentOutletContext = useOutletContext();
 
     if (!isAuthenticated) {
         return <Navigate to="/login" replace />;
@@ -18,5 +20,9 @@ export default function RoleRoute({ allowedRoles, children }) {
         return <Navigate to={getHomePathByRole(user?.role)} replace />;
     }
 
-    return children;
+    if (children && isValidElement(children)) {
+        return cloneElement(children, { context: parentOutletContext });
+    }
+
+    return <Outlet context={parentOutletContext} />;
 }
