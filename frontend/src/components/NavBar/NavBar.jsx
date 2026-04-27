@@ -1,4 +1,5 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import {
     Crown,
     Gamepad2,
@@ -9,16 +10,35 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "../../modules/auth/hooks/useAuth";
+import { getPremiumMe } from "../../modules/premium/services/premium.service";
 
 const navClass = ({ isActive }) =>
     `nav-link rounded-3 px-3 py-2 ${isActive ? "active fw-semibold bg-light" : "text-secondary"}`;
 
 export default function NavBar({ onNavigate }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useAuth();
+  const [isPremiumActive, setIsPremiumActive] = useState(false);
   const displayName = user?.displayName ?? user?.username ?? "player";
   const dashboardPath =
         user?.role === "admin" ? "/admin/dashboard" : "/dashboard";
+
+  useEffect(() => {
+    if (user?.role !== "player") {
+      setIsPremiumActive(false);
+      return;
+    }
+
+    (async () => {
+      try {
+        const subscription = await getPremiumMe();
+        setIsPremiumActive(Boolean(subscription?.isPremium));
+      } catch {
+        setIsPremiumActive(false);
+      }
+    })();
+  }, [user?.role, location.pathname]);
 
   function shouldBlockNavigation(to) {
     if (typeof onNavigate !== "function") return false;
@@ -97,8 +117,12 @@ export default function NavBar({ onNavigate }) {
             </ul>
 
                         <div className="d-flex align-items-center gap-3 ms-lg-auto">
-                            <span className="badge rounded-pill text-bg-warning text-dark px-3 py-2">
-                                PREMIUM
+                            <span
+                                className={`badge rounded-pill px-3 py-2 ${
+                                  isPremiumActive ? "text-bg-warning text-dark" : "text-bg-secondary"
+                                }`}
+                            >
+                                {isPremiumActive ? "PREMIUM" : "FREE"}
                             </span>
                             <span className="text-secondary small">
                                 {displayName}

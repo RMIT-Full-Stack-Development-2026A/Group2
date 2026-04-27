@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const routes = require("./routes");
+const premiumController = require("./modules/premium/premium.controller");
 
 const app = express();
 
@@ -14,6 +15,11 @@ app.use(
   }),
 );
 app.use(cookieParser());
+app.post(
+  "/api/premium/stripe-webhook",
+  express.raw({ type: "application/json" }),
+  premiumController.stripeWebhook,
+);
 app.use(express.json());
 
 app.get("/", (_req, res) => {
@@ -24,4 +30,5 @@ app.use("/api/auth", routes.authRouter);
 app.use("/api/admin", routes.adminRouter);
 app.use("/api/profile", routes.profileRouter);
 app.use("/api/game", routes.gameRouter);
+app.use("/api/premium", routes.premiumRouter);
 module.exports = app;

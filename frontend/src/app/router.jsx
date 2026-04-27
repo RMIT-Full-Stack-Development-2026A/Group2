@@ -8,6 +8,8 @@ import ProfilePage from "../modules/profile/pages/ProfilePage";
 import EditProfilePage from "../modules/profile/pages/EditProfilePage";
 import App from "../App";
 import PremiumPage from "../modules/premium/pages/PremiumPage";
+import PremiumSuccessPage from "../modules/premium/pages/PremiumSuccessPage";
+import PremiumCancelPage from "../modules/premium/pages/PremiumCancelPage";
 import OnlineArenaPage from "../modules/game/pages/OnlineArenaPage";
 import LocalGameSetupPage from "../modules/game/pages/LocalGameSetupPage";
 import AIGameSetupPage from "../modules/game/pages/AIGameSetupPage";
@@ -52,6 +54,8 @@ const router = createBrowserRouter([
                     { path: "/game/ai", element: <AIGameSetupPage /> },
                     { path: "/game/play", element: <GamePlayPage /> },
                     { path: "/premium", element: <PremiumPage /> },
+                    { path: "/premium/success", element: <PremiumSuccessPage /> },
+                    { path: "/premium/cancel", element: <PremiumCancelPage /> },
                 ],
             },
             {

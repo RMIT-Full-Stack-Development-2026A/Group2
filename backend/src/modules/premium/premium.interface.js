@@ -1,0 +1,9 @@
+const PREMIUM_PRICE_USD = 10;
+const PREMIUM_DURATION_MONTHS = 1;
+const PREMIUM_PLAN_NAME = "Premium Subscription";
+
+module.exports = {
+  PREMIUM_PRICE_USD,
+  PREMIUM_DURATION_MONTHS,
+  PREMIUM_PLAN_NAME,
+};

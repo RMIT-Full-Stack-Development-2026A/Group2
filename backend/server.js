@@ -2,7 +2,7 @@ const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const app = require("./src/app");
 
-dotenv.config();
+dotenv.config({ override: true });
 
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI;
