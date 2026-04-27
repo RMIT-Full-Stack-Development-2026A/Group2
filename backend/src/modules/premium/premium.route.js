@@ -8,6 +8,7 @@ router.use(authenticate);
 router.get("/me", premiumController.getMe);
 router.post("/pay-wallet", premiumController.payWithWallet);
 router.post("/create-checkout-session", premiumController.createCheckoutSession);
+router.post("/create-test-checkout-session", premiumController.createTestCheckoutSession);
 router.post("/confirm-session", premiumController.confirmCheckoutSession);
 router.post("/test-email", premiumController.sendTestEmail);
 

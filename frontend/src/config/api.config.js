@@ -36,6 +36,7 @@ export const API_ENDPOINTS = {
     me: "/premium/me",
     payWallet: "/premium/pay-wallet",
     createCheckoutSession: "/premium/create-checkout-session",
+    createTestCheckoutSession: "/premium/create-test-checkout-session",
     confirmSession: "/premium/confirm-session",
     testEmail: "/premium/test-email",
   },

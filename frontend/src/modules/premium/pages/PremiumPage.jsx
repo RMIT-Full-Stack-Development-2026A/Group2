@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   createPremiumCheckoutSession,
+  createPremiumTestCheckoutSession,
   getPremiumMe,
   sendPremiumTestEmail,
 } from "../services/premium.service";
@@ -63,6 +64,22 @@ export default function PremiumPage() {
     }
   }
 
+  async function handleTestStripePayment() {
+    try {
+      setBusy(true);
+      setError("");
+      setMessage("");
+      const session = await createPremiumTestCheckoutSession();
+      if (!session?.url) {
+        throw new Error("Stripe test checkout URL was not returned.");
+      }
+      window.location.href = session.url;
+    } catch (err) {
+      setBusy(false);
+      setError(err.message || "Stripe test checkout failed.");
+    }
+  }
+
   async function handleSendTestEmail() {
     try {
       setEmailBusy(true);
@@ -100,22 +117,34 @@ export default function PremiumPage() {
             <strong>{accountEmail || "No email found on this account"}</strong>
           </p>
           <p className="mb-3">Expiry: {formatDate(subscription?.expiryDate)}</p>
-          <button
-            type="button"
-            className="btn btn-outline-primary"
-            onClick={handlePayStripe}
-            disabled={busy || isPremiumActive}
-          >
-            Pay with Stripe ($10)
-          </button>
-          <button
-            type="button"
-            className="btn btn-outline-secondary ms-2"
-            onClick={handleSendTestEmail}
-            disabled={emailBusy}
-          >
-            {emailBusy ? "Sending..." : "Send Test Email"}
-          </button>
+          <div className="mb-2">
+            <button
+              type="button"
+              className="btn btn-outline-primary"
+              onClick={handlePayStripe}
+              disabled={busy || isPremiumActive}
+            >
+              Pay with Stripe ($10)
+            </button>
+          </div>
+          <div className="d-flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="btn btn-outline-dark"
+              onClick={handleTestStripePayment}
+              disabled={busy}
+            >
+              Test Stripe Payment
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline-secondary"
+              onClick={handleSendTestEmail}
+              disabled={emailBusy}
+            >
+              {emailBusy ? "Sending..." : "Send Test Email"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

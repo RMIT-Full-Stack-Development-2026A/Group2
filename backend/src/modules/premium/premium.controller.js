@@ -54,6 +54,20 @@ async function createCheckoutSession(req, res) {
   }
 }
 
+async function createTestCheckoutSession(req, res) {
+  const errors = validateCreateCheckoutSessionBody(req.body);
+  if (errors.length) {
+    return sendError(res, 400, "VALIDATION_ERROR", "Validation failed.", errors);
+  }
+
+  try {
+    const session = await premiumService.createTestCheckoutSession(String(req.user.id));
+    return res.status(200).json({ status: "success", session });
+  } catch (err) {
+    return handleControllerError(res, err);
+  }
+}
+
 async function confirmCheckoutSession(req, res) {
   try {
     const sessionId = req.body?.sessionId;
@@ -110,6 +124,7 @@ module.exports = {
   getMe,
   payWithWallet,
   createCheckoutSession,
+  createTestCheckoutSession,
   confirmCheckoutSession,
   sendTestEmail,
   stripeWebhook,

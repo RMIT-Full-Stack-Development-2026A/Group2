@@ -97,6 +97,14 @@ async function payWithWallet() {
 
 async function createCheckoutSession(userId) {
   await ensureNoActiveSubscription(userId);
+  return createStripeCheckoutSession(userId, false);
+}
+
+async function createTestCheckoutSession(userId) {
+  return createStripeCheckoutSession(userId, true);
+}
+
+async function createStripeCheckoutSession(userId, isTestPayment) {
   const stripe = getStripeClient();
 
   const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
@@ -115,6 +123,7 @@ async function createCheckoutSession(userId) {
     ],
     metadata: {
       userId: String(userId),
+      isTestPayment: isTestPayment ? "true" : "false",
     },
     success_url: `${clientUrl}/premium/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${clientUrl}/premium/cancel`,
@@ -157,27 +166,49 @@ async function confirmCheckoutSession(userId, sessionId) {
 
 async function handleStripeCheckoutCompleted(session) {
   const userId = session?.metadata?.userId;
+  const isTestPayment = session?.metadata?.isTestPayment === "true";
   if (!userId) {
     return;
   }
 
   const existing = await premiumRepository.findActiveSubscription(userId);
-  if (existing) {
+  if (existing && !isTestPayment) {
     return;
   }
+  let granted;
+  let provider = "stripe";
 
-  const granted = await grantPremiumSubscription(userId, "stripe");
+  if (existing && isTestPayment) {
+    const plan = await premiumRepository.findOrCreatePremiumPlan(
+      PREMIUM_PLAN_NAME,
+      PREMIUM_PRICE_USD,
+      PREMIUM_DURATION_MONTHS,
+    );
+    const startDate = existing.endDate > new Date() ? existing.endDate : new Date();
+    const endDate = addMonths(startDate, PREMIUM_DURATION_MONTHS);
+    const subscription = await premiumRepository.upsertActiveSubscription(
+      userId,
+      plan._id,
+      startDate,
+      endDate,
+    );
+    granted = { subscription, endDate };
+    provider = "stripe-test";
+  } else {
+    granted = await grantPremiumSubscription(userId, "stripe");
+  }
+
   await premiumRepository.createTransaction({
     userID: userId,
     walletID: null,
     userSubscriptionID: granted.subscription._id,
     amount: PREMIUM_PRICE_USD,
     currency: "USD",
-    provider: "stripe",
+    provider,
     status: "success",
   });
 
-  notifyPaymentEmailSafely(userId, "stripe", granted.endDate);
+  notifyPaymentEmailSafely(userId, provider, granted.endDate);
 }
 
 async function sendTestPaymentEmail(userId) {
@@ -191,6 +222,7 @@ module.exports = {
   getPremiumStatus,
   payWithWallet,
   createCheckoutSession,
+  createTestCheckoutSession,
   confirmCheckoutSession,
   sendTestPaymentEmail,
   getStripeClient,

@@ -13,6 +13,14 @@ export async function createPremiumCheckoutSession() {
   return data?.session ?? null;
 }
 
+export async function createPremiumTestCheckoutSession() {
+  const data = await apiRequest(API_ENDPOINTS.premium.createTestCheckoutSession, {
+    method: "POST",
+    body: JSON.stringify({}),
+  });
+  return data?.session ?? null;
+}
+
 export async function confirmPremiumCheckoutSession(sessionId) {
   const data = await apiRequest(API_ENDPOINTS.premium.confirmSession, {
     method: "POST",
