@@ -1,7 +1,7 @@
 const { v4: uuidv4 } = require("uuid");
+const multiplayerService = require("../application/services/multiplayer.service");
 
 const rooms = new Map();
-const gameService = require("../../game/application/services/game.service");
 
 function broadcastRoomList(io) {
   const openRooms = [...rooms.values()].filter(r => r.status === "waiting");
@@ -14,17 +14,22 @@ function roomSocketHandler(io, socket) {
     socket.emit("roomListUpdated", openRooms);
   });
 
-  socket.on("createRoom", ({ boardSize, boardStyle, marker1, marker2 }) => {
+  socket.on("createRoom", async ({ boardSize, boardStyle, marker1, marker2 }) => {
     const roomCode = uuidv4().slice(0, 6).toUpperCase();
+      
+    await multiplayerService.createRoom(socket.user, {
+      roomCode, boardSize, boardStyle, marker1, marker2
+    });
+
     rooms.set(roomCode, {
       roomCode, 
       boardSize, 
       boardStyle, 
       marker1, 
       marker2,
-      player1: socket.id, 
+      player1: socket.id,
       player1User: socket.user,
-      player2: null, 
+      player2: null,
       status: "waiting"
     });
     socket.join(roomCode);
@@ -41,23 +46,21 @@ function roomSocketHandler(io, socket) {
     if (room.player2) { socket.emit("joinError", { message: "Room is full." }); return; }
 
     room.player2 = socket.id;
-    room.player2User = socket.user; 
+    room.player2User = socket.user;
     room.status = "active";
     socket.join(roomCode);
 
     try {
-      
-      const dto = await gameService.createOnlineGame(
-        room.player1User,  
-        room.player2User,
-        {
-          boardSize: room.boardSize,
-          marker1: room.marker1,
-          marker2: room.marker2
-        }
+      const dto = await multiplayerService.joinRoom(
+      socket.user,
+      roomCode.toUpperCase(),
+      room.player1User,
+      { boardSize: room.boardSize, 
+        marker1: room.marker1, 
+        marker2: room.marker2 }
       );
 
-      room.sessionId = dto.session.id;  
+      room.sessionId = dto.session.id;
 
       io.to(roomCode).emit("gameStart", {
         roomCode,
@@ -69,7 +72,7 @@ function roomSocketHandler(io, socket) {
         player2SocketId: room.player2,
         player1Name: room.player1User.username,
         player2Name: room.player2User.username,
-        sessionId: dto.session.id,      
+        sessionId: dto.session.id,
         backendSession: dto
       });
 
@@ -92,14 +95,13 @@ function roomSocketHandler(io, socket) {
       socket.join(availableRoom.roomCode);
 
       try {
-        const dto = await gameService.createOnlineGame(
+        const dto = await multiplayerService.joinRoom(
+          socket.user,
+          availableRoom.roomCode,
           availableRoom.player1User,
-          availableRoom.player2User,
-          {
-            boardSize: availableRoom.boardSize,
-            marker1: availableRoom.marker1,
-            marker2: availableRoom.marker2
-          }
+          { boardSize: availableRoom.boardSize, 
+            marker1: availableRoom.marker1, 
+            marker2: availableRoom.marker2 }
         );
 
         availableRoom.sessionId = dto.session.id;
@@ -115,7 +117,7 @@ function roomSocketHandler(io, socket) {
           player1Name: availableRoom.player1User.username,
           player2Name: availableRoom.player2User.username,
           sessionId: dto.session.id,
-          backendSession: dto
+          backendSession: dto,
         });
 
         broadcastRoomList(io);
@@ -125,6 +127,15 @@ function roomSocketHandler(io, socket) {
       }
     } else {
       const roomCode = uuidv4().slice(0, 6).toUpperCase();
+
+      await multiplayerService.createRoom(socket.user, {
+        roomCode, 
+        boardSize, 
+        boardStyle, 
+        marker1, 
+        marker2
+      });
+
       rooms.set(roomCode, {
         roomCode, boardSize, boardStyle, marker1, marker2,
         player1: socket.id,
@@ -142,7 +153,7 @@ function roomSocketHandler(io, socket) {
     for(const [code, room] of rooms) {
       if (room.player1 === socket.id || room.player2 === socket.id) {
         io.to(code).emit("playerDisconnected");
-        
+
         if (room.sessionId) {
           try {
             await gameService.abortGame(socket.user, room.sessionId);
@@ -151,14 +162,13 @@ function roomSocketHandler(io, socket) {
           }
         }
 
+        await multiplayerService.closeRoom(code);
         rooms.delete(code);
         broadcastRoomList(io);
       }
     }
   });
+}
 
-};
-
-roomSocketHandler.rooms = rooms;  
-
+roomSocketHandler.rooms = rooms;
 module.exports = roomSocketHandler;

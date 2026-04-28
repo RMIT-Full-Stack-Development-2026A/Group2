@@ -31,4 +31,5 @@ app.get("/", (_req, res) => {
 
 app.use("/api/auth", routes.authRouter);
 app.use("/api/game", routes.gameRouter);
+app.use("/api/multiplayer", routes.multiplayerRouter);
 module.exports = app;
