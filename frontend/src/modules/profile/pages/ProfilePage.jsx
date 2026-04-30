@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import GameHistoryTable from "../components/GameHistoryTable/GameHistoryTable";
 import ProfileCard from "../components/ProfileCard/ProfileCard";
@@ -8,8 +8,16 @@ import "../styles/profile.css";
 export default function ProfilePage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("profile");
+  const initialTab = new URLSearchParams(location.search).get("tab") === "history"
+    ? "history"
+    : "profile";
+  const [activeTab, setActiveTab] = useState(initialTab);
   const successMessage = location.state?.successMessage ?? "";
+
+  useEffect(() => {
+    const tabFromQuery = new URLSearchParams(location.search).get("tab");
+    setActiveTab(tabFromQuery === "history" ? "history" : "profile");
+  }, [location.search]);
 
   function dismissSuccessMessage() {
     navigate(location.pathname, { replace: true, state: null });

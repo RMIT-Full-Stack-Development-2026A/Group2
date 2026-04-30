@@ -30,3 +30,10 @@ export async function postChangePassword(data) {
 export async function patchProfileLogo(formData) {
   return httpPatchFormData("/api/profile/logo", formData);
 }
+
+/**
+ * GET match history for the authenticated player.
+ */
+export async function fetchMatchHistoryRequest() {
+  return httpGet("/api/profile/history");
+}
