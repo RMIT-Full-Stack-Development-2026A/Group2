@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
 const AppError = require("../../shared/errors/AppError");
 const profileRepository = require("./profile.repository");
-const authRepository = require("../auth/auth.repository");
+const { createAuthInterface } = require("../auth/auth.interface");
 const {
   uploadBufferToCloudinary,
   destroyCloudinaryAsset,
@@ -16,6 +16,7 @@ const {
 
 const gameInterface = createGameInterface();
 const premiumInterface = createPremiumInterface();
+const authInterface = createAuthInterface();
 
 function throwValidation(errors) {
   throw new AppError("Validation failed.", {
@@ -52,7 +53,7 @@ function profileResponseDto(authUserDoc) {
 }
 
 async function getProfile(userId) {
-  const user = await authRepository.findById(userId);
+  const user = await authInterface.findUserById(userId);
   if (!user) {
     throw new AppError("User not found.", {
       code: "USER_NOT_FOUND",
@@ -74,7 +75,7 @@ async function updateProfile(userId, body) {
   const avatarURL =
     body.avatarURL === undefined ? undefined : body.avatarURL?.trim() || null;
 
-  const existing = await authRepository.findById(userId);
+  const existing = await authInterface.findUserById(userId);
   if (!existing) {
     throw new AppError("User not found.", {
       code: "USER_NOT_FOUND",
@@ -83,14 +84,14 @@ async function updateProfile(userId, body) {
   }
 
   try {
-    await authRepository.updateUser(userId, { username: trimmedUsername });
+    await authInterface.updateUserById(userId, { username: trimmedUsername });
     await profileRepository.updateByUserId(userId, {
       displayName: trimmedDisplayName,
       email: trimmedEmail,
       country: body.country,
       ...(avatarURL !== undefined ? { avatarURL } : {}),
     });
-    const updated = await authRepository.findById(userId);
+    const updated = await authInterface.findUserById(userId);
     return profileResponseDto(updated);
   } catch (e) {
     if (e?.code === 11000) {
@@ -122,7 +123,7 @@ async function changePassword(userId, body) {
   }
 
   const passwordHash = await bcrypt.hash(newPassword, 10);
-  const updated = await authRepository.updateUser(userId, { passwordHash });
+  const updated = await authInterface.updateUserById(userId, { passwordHash });
   if (!updated) {
     throw new AppError("User not found.", {
       code: "USER_NOT_FOUND",
@@ -155,7 +156,7 @@ async function uploadProfileLogo(userId, file) {
     });
   }
 
-  const user = await authRepository.findById(userId);
+  const user = await authInterface.findUserById(userId);
   if (!user) {
     throw new AppError("User not found.", {
       code: "USER_NOT_FOUND",
@@ -205,7 +206,7 @@ async function uploadProfileLogo(userId, file) {
     await destroyCloudinaryAsset(existingProfile.avatarPublicId);
   }
 
-  const updated = await authRepository.findById(userId);
+  const updated = await authInterface.findUserById(userId);
   return profileResponseDto(updated);
 }
 
