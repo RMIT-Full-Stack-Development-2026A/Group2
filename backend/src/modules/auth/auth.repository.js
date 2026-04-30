@@ -96,25 +96,26 @@ async function updateUser(id, update) {
 }
 
 function mapAuthUser(user, profile) {
-    if (!user) {
-        return null;
-    }
-    return {
-        _id: user._id,
-        username: user.username,
-        role: user.role,
-        accountStatus: user.accountStatus,
-        passwordHash: user.passwordHash,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-        profile: profile ?? null,
-        email: profile?.email ?? null,
-        country: profile?.country ?? null,
-        avatarURL: profile?.avatarURL ?? null,
-        displayName: profile?.displayName ?? user.username,
-        profileCreatedAt: profile?.createdAt ?? null,
-        profileUpdatedAt: profile?.updatedAt ?? null,
-    };
+  if (!user) {
+    return null;
+  }
+  return {
+    _id: user._id,
+    username: user.username,
+    role: user.role,
+    accountStatus: user.accountStatus,
+    passwordHash: user.passwordHash,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+    profile: profile ?? null,
+    email: profile?.email ?? null,
+    country: profile?.country ?? null,
+    avatarURL: profile?.avatarURL ?? null,
+    avatarPublicId: profile?.avatarPublicId ?? null,
+    displayName: profile?.displayName ?? user.username,
+    profileCreatedAt: profile?.createdAt ?? null,
+    profileUpdatedAt: profile?.updatedAt ?? null,
+  };
 }
 
 async function findAllUsers() {

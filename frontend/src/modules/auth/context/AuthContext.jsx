@@ -91,6 +91,11 @@ export function AuthProvider({ children }) {
         persistSession("", null);
     }, [persistSession]);
 
+    /** Re-fetch GET /api/profile without mutating auth session identity. */
+    const refreshUser = useCallback(async () => {
+        return getProfile();
+    }, []);
+
     const value = useMemo(
         () => ({
             accessToken,

@@ -1,4 +1,4 @@
-import { httpGet, httpPatch, httpPost } from "../../../lib/httpClient";
+import { httpGet, httpPatch, httpPatchFormData, httpPost } from "../../../lib/httpClient";
 
 /**
  * Raw GET for the authenticated user's profile (expects JSON body with `user`).
@@ -21,4 +21,12 @@ export async function patchProfile(data) {
  */
 export async function postChangePassword(data) {
   return httpPost("/api/profile/change-password", data);
+}
+
+/**
+ * PATCH profile logo (multipart/form-data with `logo` file field).
+ * @param {FormData} formData
+ */
+export async function patchProfileLogo(formData) {
+  return httpPatchFormData("/api/profile/logo", formData);
 }
