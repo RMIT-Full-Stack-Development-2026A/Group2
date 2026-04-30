@@ -4,10 +4,9 @@ import { useAuth } from "../../auth/hooks/useAuth";
 import { getProfileResult, uploadProfileLogo } from "../services/profile.service";
 
 export function useProfileCard() {
-  const { logout } = useAuth();
+  const { logout, user: authUser } = useAuth();
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(authUser ?? null);
   const [error, setError] = useState(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadLogoSuccess, setUploadLogoSuccess] = useState("");
@@ -16,7 +15,6 @@ export function useProfileCard() {
     let cancelled = false;
 
     (async () => {
-      setLoading(true);
       setError(null);
       try {
         const result = await getProfileResult();
@@ -38,12 +36,7 @@ export function useProfileCard() {
         }
       } catch {
         if (!cancelled) {
-          setUser(null);
           setError("Could not load profile.");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
         }
       }
     })();
@@ -77,7 +70,6 @@ export function useProfileCard() {
 
   return {
     user,
-    loading,
     error,
     handleLogoUpload,
     uploadingLogo,

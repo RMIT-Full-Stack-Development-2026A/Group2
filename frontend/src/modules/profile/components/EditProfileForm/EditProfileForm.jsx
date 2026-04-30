@@ -44,6 +44,10 @@ export default function EditProfileForm({ initialUser }) {
                 alt="Current logo"
                 className="rounded border border-secondary-subtle d-block mb-3"
                 style={{ width: 72, height: 72, objectFit: "cover" }}
+                width="72"
+                height="72"
+                loading="eager"
+                decoding="sync"
               />
             ) : (
               <div

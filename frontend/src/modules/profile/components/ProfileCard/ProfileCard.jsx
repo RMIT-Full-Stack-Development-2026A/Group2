@@ -8,7 +8,6 @@ export default function ProfileCard({ embedded = false }) {
   const logoInputRef = useRef(null);
   const {
     user,
-    loading,
     error,
     handleLogoUpload,
     uploadingLogo,
@@ -25,27 +24,11 @@ export default function ProfileCard({ embedded = false }) {
 
   const bodyClass = embedded ? "p-0" : "card-body p-4";
 
-  if (loading) {
-    return shell(
-      <div className={bodyClass}>
-        <p className="text-secondary small mb-0">Loading…</p>
-      </div>,
-    );
-  }
-
-  if (error || !user) {
-    return (
-      <p className="text-danger mb-0" role="alert">
-        {error ?? "Could not load profile."}
-      </p>
-    );
-  }
-
-  const initial = getAvatarInitials(user.displayName || user.username);
-  const country = user.profile?.country?.trim() ? user.profile.country : "—";
-  const memberSince = formatMemberSince(user.createdAt);
-  const avatarSrc = user.profile?.avatarURL?.trim() ? user.profile.avatarURL : null;
-  const logoSrc = user.profile?.avatarURL?.trim() ? user.profile.avatarURL : null;
+  const safeUser = user ?? {};
+  const initial = getAvatarInitials(safeUser.displayName || safeUser.username || "U");
+  const country = safeUser.profile?.country?.trim() ? safeUser.profile.country : "—";
+  const memberSince = formatMemberSince(safeUser.createdAt);
+  const avatarSrc = safeUser.profile?.avatarURL?.trim() ? safeUser.profile.avatarURL : null;
   const onLogoButtonClick = () => {
     logoInputRef.current?.click();
   };
@@ -68,6 +51,11 @@ export default function ProfileCard({ embedded = false }) {
           Edit
         </Link>
       </header>
+      {error ? (
+        <p className="text-danger small mb-3" role="alert">
+          {error}
+        </p>
+      ) : null}
 
       <div className="d-flex flex-wrap align-items-start gap-4 mb-4">
         <div className="position-relative flex-shrink-0">
@@ -76,7 +64,16 @@ export default function ProfileCard({ embedded = false }) {
             aria-hidden={!!avatarSrc}
           >
             {avatarSrc ? (
-              <img className="w-100 h-100 object-fit-cover" src={avatarSrc} alt="" />
+              <img
+                className="w-100 h-100 object-fit-cover"
+                src={avatarSrc}
+                width="96"
+                height="96"
+                loading="eager"
+                decoding="sync"
+                fetchPriority="high"
+                alt=""
+              />
             ) : (
               initial
             )}
@@ -102,14 +99,14 @@ export default function ProfileCard({ embedded = false }) {
 
         <div className="flex-grow-1 profile-identity-text">
           <p className="fs-5 fw-bold text-dark mb-1">
-            {user.profile?.displayName || user.username}
+            {safeUser.profile?.displayName || safeUser.username || "—"}
           </p>
-          <p className="text-secondary small mb-1">username: {user.username}</p>
-          <p className="text-secondary small mb-3">email: {user.profile?.email}</p>
+          <p className="text-secondary small mb-1">username: {safeUser.username || "—"}</p>
+          <p className="text-secondary small mb-3">email: {safeUser.profile?.email || "—"}</p>
           <div className="d-flex flex-wrap gap-2">
             <span className="badge rounded-pill bg-white text-dark border border-secondary-subtle d-inline-flex align-items-center gap-1 px-2 py-2 fw-semibold">
               <Hexagon size={14} strokeWidth={2} aria-hidden />
-              {user.role}
+              {safeUser.role || "player"}
             </span>
             <span className="badge rounded-pill bg-warning text-dark d-inline-flex align-items-center gap-1 px-2 py-2 fw-semibold">
               <Folder size={14} strokeWidth={2} aria-hidden />
