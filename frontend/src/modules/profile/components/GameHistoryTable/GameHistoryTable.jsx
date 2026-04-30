@@ -1,8 +1,8 @@
-import { Calendar, Clock3 } from "lucide-react";
+import { Calendar, Clock3, Search } from "lucide-react";
 import { useGameHistoryTable } from "../../hooks/useGameHistoryTable";
 
 export default function GameHistoryTable({ embedded = false }) {
-  const { items, loading, error } = useGameHistoryTable();
+  const { items, loading, error, search, setSearch } = useGameHistoryTable();
 
   function formatDateTime(value) {
     if (!value) {
@@ -41,6 +41,20 @@ export default function GameHistoryTable({ embedded = false }) {
     <div>
       <h2 className="h3 fw-bold text-dark mb-3">Match History</h2>
 
+      <div className="input-group mb-3">
+        <span className="input-group-text bg-white border-end-0">
+          <Search size={16} aria-hidden />
+        </span>
+        <input
+          type="search"
+          className="form-control border-start-0 ps-0"
+          placeholder="Search session # or Player 2..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          aria-label="Search session number or player 2 name"
+        />
+      </div>
+
       {loading ? (
         <p className="text-secondary mb-0">Loading match history...</p>
       ) : null}
@@ -52,7 +66,9 @@ export default function GameHistoryTable({ embedded = false }) {
       ) : null}
 
       {!loading && !error && items.length === 0 ? (
-        <p className="text-secondary mb-0">No past sessions found.</p>
+        <p className="text-secondary mb-0">
+          {search.trim() ? "No matching sessions found." : "No past sessions found."}
+        </p>
       ) : null}
 
       {!loading && !error && items.length > 0 ? (

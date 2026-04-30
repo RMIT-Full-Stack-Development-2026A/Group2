@@ -5,16 +5,18 @@ export function useGameHistoryTable() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+
+  const normalizedSearch = search.trim();
 
   useEffect(() => {
     let cancelled = false;
-
-    (async () => {
+    const timer = setTimeout(async () => {
       setLoading(true);
       setError("");
 
       try {
-        const result = await getMatchHistoryResult();
+        const result = await getMatchHistoryResult(normalizedSearch);
         if (cancelled) {
           return;
         }
@@ -36,16 +38,19 @@ export function useGameHistoryTable() {
           setLoading(false);
         }
       }
-    })();
+    }, 250);
 
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
-  }, []);
+  }, [normalizedSearch]);
 
   return {
     items,
     loading,
     error,
+    search,
+    setSearch,
   };
 }

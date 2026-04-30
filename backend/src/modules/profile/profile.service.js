@@ -216,7 +216,16 @@ async function getMatchHistory(userId, filters = {}) {
 
   return {
     items: items.map((item) => ({
-      ...item,
+      sessionId: item.sessionId,
+      sessionNumber: item.sessionNumber,
+      gameType: item.gameType,
+      gameTypeLabel: item.gameTypeLabel,
+      result: item.result,
+      startTime: item.startTime,
+      endTime: item.endTime,
+      opponentName: item.opponentName,
+      opponentType: item.opponentType,
+      aiDifficulty: item.aiDifficulty,
       canReplay: isPremium,
     })),
     isPremium,

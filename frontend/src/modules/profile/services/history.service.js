@@ -32,8 +32,8 @@ function normalizeHistoryItem(item) {
   };
 }
 
-export async function getMatchHistoryResult() {
-  const response = await fetchMatchHistoryRequest();
+export async function getMatchHistoryResult(search = "") {
+  const response = await fetchMatchHistoryRequest(search);
 
   let body = {};
   try {

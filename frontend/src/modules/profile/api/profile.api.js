@@ -34,6 +34,15 @@ export async function patchProfileLogo(formData) {
 /**
  * GET match history for the authenticated player.
  */
-export async function fetchMatchHistoryRequest() {
-  return httpGet("/api/profile/history");
+export async function fetchMatchHistoryRequest(search = "") {
+  const params = new URLSearchParams();
+  const trimmedSearch = String(search || "").trim();
+
+  if (trimmedSearch) {
+    params.set("search", trimmedSearch);
+  }
+
+  const query = params.toString();
+  const url = query ? `/api/profile/history?${query}` : "/api/profile/history";
+  return httpGet(url);
 }
