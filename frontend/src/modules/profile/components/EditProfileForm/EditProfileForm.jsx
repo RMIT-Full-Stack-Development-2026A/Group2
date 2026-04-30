@@ -155,39 +155,14 @@ export default function EditProfileForm({ initialUser }) {
             </select>
           </div>
 
-          <fieldset className="border rounded-3 p-3 mb-4">
-            <legend className="w-auto px-1 fs-6 fw-semibold mb-3">
-              Change password{" "}
-              <span className="fw-normal text-secondary">(optional)</span>
-            </legend>
-            <p className="small text-muted mb-3">
-              Leave fields blank to keep your current password.
-            </p>
+          
 
-            <div className="mb-3">
-              <label
-                htmlFor="edit-current-password"
-                className="form-label fw-semibold"
-              >
-                Current password
-              </label>
-              <input
-                id="edit-current-password"
-                type="password"
-                name="currentPassword"
-                className="form-control"
-                autoComplete="current-password"
-                value={formData.currentPassword}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div className="mb-3">
+            <div className="mb-4">
               <label
                 htmlFor="edit-new-password"
                 className="form-label fw-semibold"
               >
-                New password
+                New Password (optional)
               </label>
               <input
                 id="edit-new-password"
@@ -197,15 +172,16 @@ export default function EditProfileForm({ initialUser }) {
                 autoComplete="new-password"
                 value={formData.newPassword}
                 onChange={handleChange}
+                placeholder="Leave blank to keep current"
               />
             </div>
 
-            <div className="mb-0">
+            <div className="mb-4">
               <label
                 htmlFor="edit-confirm-password"
                 className="form-label fw-semibold"
               >
-                Confirm new password
+                Confirm Password
               </label>
               <input
                 id="edit-confirm-password"
@@ -217,7 +193,6 @@ export default function EditProfileForm({ initialUser }) {
                 onChange={handleChange}
               />
             </div>
-          </fieldset>
 
           <FormErrorAlert issues={errorIssues} message={error} />
 

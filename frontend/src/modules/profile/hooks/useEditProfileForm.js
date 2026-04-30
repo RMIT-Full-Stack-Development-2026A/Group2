@@ -13,7 +13,6 @@ const emptyForm = {
   email: "",
   country: "",
   avatarURL: "",
-  currentPassword: "",
   newPassword: "",
   confirmNewPassword: "",
 };
@@ -56,7 +55,6 @@ export function useEditProfileForm(initialUser) {
       email: initialUser.profile?.email ?? "",
       country,
       avatarURL: initialUser.profile?.avatarURL ?? "",
-      currentPassword: "",
       newPassword: "",
       confirmNewPassword: "",
     });
@@ -77,15 +75,13 @@ export function useEditProfileForm(initialUser) {
       setError("");
       setErrorIssues(null);
 
-      const currentPw = formData.currentPassword.trim();
       const newPw = formData.newPassword.trim();
       const confirmPw = formData.confirmNewPassword.trim();
-      const anyPw = currentPw || newPw || confirmPw;
-      const allPw = currentPw && newPw && confirmPw;
+      const anyPw = newPw || confirmPw;
 
-      if (anyPw && !allPw) {
+      if (anyPw && (!newPw || !confirmPw)) {
         setError(
-          "To change your password, fill in current password, new password, and confirmation.",
+          "To change your password, fill in both new password and confirmation.",
         );
         return;
       }
@@ -97,9 +93,8 @@ export function useEditProfileForm(initialUser) {
 
       setLoading(true);
       try {
-        if (allPw) {
+        if (anyPw) {
           const pwdResult = await changePassword({
-            currentPassword: currentPw,
             newPassword: newPw,
             confirmNewPassword: confirmPw,
           });
@@ -127,7 +122,7 @@ export function useEditProfileForm(initialUser) {
         navigate("/profile", {
           replace: true,
           state: {
-            successMessage: allPw
+            successMessage: anyPw
               ? "Profile and password updated successfully."
               : "Profile updated successfully.",
           },

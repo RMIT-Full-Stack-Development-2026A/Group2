@@ -109,35 +109,9 @@ async function updateProfile(userId, body) {
 
 async function changePassword(userId, body) {
   const payload = body ?? {};
-  const { currentPassword, newPassword } = payload;
+  const { newPassword } = payload;
 
-  // Require current password first, then verify it before other password validations.
-  if (typeof currentPassword !== "string" || !currentPassword.length) {
-    const errors = validateChangePasswordBody(payload).filter(
-      (error) => error.field === "currentPassword",
-    );
-    throwValidation(errors);
-  }
-
-  const user = await authRepository.findByIdWithPasswordHash(userId);
-  if (!user?.passwordHash) {
-    throw new AppError("User not found.", {
-      code: "USER_NOT_FOUND",
-      statusCode: 404,
-    });
-  }
-
-  const ok = await bcrypt.compare(currentPassword, user.passwordHash);
-  if (!ok) {
-    throw new AppError("Current password is incorrect.", {
-      code: "INVALID_CURRENT_PASSWORD",
-      statusCode: 401,
-    });
-  }
-
-  const errors = validateChangePasswordBody(payload).filter(
-    (error) => error.field !== "currentPassword",
-  );
+  const errors = validateChangePasswordBody(payload);
   if (errors.length) {
     throwValidation(errors);
   }
