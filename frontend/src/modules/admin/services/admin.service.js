@@ -17,3 +17,9 @@ export async function toggleUserAccountStatus(userId) {
 
     return data;
 }
+
+export async function getSystemStats() {
+    const response = await httpGet("/api/admin/stats");
+    const data = await response.json();
+    return data.stats;
+}

@@ -48,7 +48,21 @@ async function toggleUserAccountStatus(req, res) {
     }
 }
 
+async function getSystemStats(req, res) {
+    try {
+        const stats = await adminService.getSystemStats();
+
+        return res.status(200).json({
+            status: "success",
+            stats,
+        })
+    } catch (err) {
+        return handleControllerError(res, err);
+    }
+}
+
 module.exports = {
     getAllUsers,
     toggleUserAccountStatus,
+    getSystemStats,
 };

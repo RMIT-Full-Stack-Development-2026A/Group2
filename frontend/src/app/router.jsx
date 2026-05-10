@@ -1,4 +1,4 @@
-  import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import LoginPage from "../modules/auth/pages/LoginPage";
 import RegisterPage from "../modules/auth/pages/RegisterPage";
 import DashboardPage from "../modules/auth/pages/DashBoardPage";
@@ -12,6 +12,7 @@ import OnlineArenaPage from "../modules/game/pages/OnlineArenaPage";
 import LocalGamePage from "../modules/game/pages/LocalGamePage";
 import AdminDashboardPage from "../modules/admin/pages/AdminDashboardPage";
 import PlayerManagementPage from "../modules/admin/pages/PlayerManagementPage";
+import OnlineRoomsPage from "../modules/admin/pages/OnlineRoomsPage";
 
 const router = createBrowserRouter([
     {
@@ -62,6 +63,10 @@ const router = createBrowserRouter([
                     {
                         path: "/admin/players",
                         element: <PlayerManagementPage />,
+                    },
+                    {
+                        path: "/admin/rooms",
+                        element: <OnlineRoomsPage />,
                     },
                 ],
             },

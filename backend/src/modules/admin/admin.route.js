@@ -7,6 +7,8 @@ const router = express.Router();
 
 router.use(authMiddleware, roleMiddleware("admin"));
 
+router.get("/stats", adminController.getSystemStats);
+
 router.get("/users", adminController.getAllUsers);
 
 router.get("/users/change-status/:userId", adminController.toggleUserAccountStatus);
