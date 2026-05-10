@@ -1,6 +1,7 @@
 import {
   fetchProfileRequest,
   patchProfile,
+  patchProfileLogo,
   postChangePassword,
 } from "../api/profile.api";
 
@@ -68,12 +69,16 @@ async function parseApiResponse(response, fallbackMessage) {
 }
 
 export async function getProfile() {
-  const response = await fetchProfileRequest();
-  if (!response.ok) {
+  const result = await getProfileResult();
+  if (!result.ok) {
     return null;
   }
-  const data = await response.json();
-  return normalizeProfileUser(data.user);
+  return result.user;
+}
+
+export async function getProfileResult() {
+  const response = await fetchProfileRequest();
+  return parseApiResponse(response, "Could not load profile.");
 }
 
 /**
@@ -99,4 +104,18 @@ export async function updateProfile(data) {
 export async function changePassword(data) {
   const response = await postChangePassword(data);
   return parseApiResponse(response, "Could not change password.");
+}
+
+/**
+ * @param {File} file
+ * @returns {Promise<
+ *   | { ok: true; user: object; message?: string }
+ *   | { ok: false; status: number; code?: string; message: string; errors: Array<{ field?: string; message?: string; example?: string }> }
+ * >}
+ */
+export async function uploadProfileLogo(file) {
+  const formData = new FormData();
+  formData.append("logo", file);
+  const response = await patchProfileLogo(formData);
+  return parseApiResponse(response, "Could not upload logo.");
 }

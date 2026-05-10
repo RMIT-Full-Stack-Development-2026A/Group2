@@ -3,6 +3,7 @@ const { sendError } = require("../../../../shared/utils/httpResponse");
 const gameService = require("../../application/services/game.service");
 const {
   validateCreateLocalGame,
+  validateCreateSinglePlayerGame,
   validateMoveInput,
 } = require("../../application/validators/game.validation");
 
@@ -28,6 +29,23 @@ async function createLocalGame(req, res) {
 
   try {
     const data = await gameService.createLocalGame(req.user, req.body);
+    return res.status(201).json({
+      status: "success",
+      data,
+    });
+  } catch (err) {
+    return handleControllerError(res, err);
+  }
+}
+
+async function createSinglePlayerGame(req, res) {
+  const errors = validateCreateSinglePlayerGame(req.body);
+  if (errors.length) {
+    return sendError(res, 400, "VALIDATION_ERROR", "Validation failed.", errors);
+  }
+
+  try {
+    const data = await gameService.createSinglePlayerGame(req.user, req.body);
     return res.status(201).json({
       status: "success",
       data,
@@ -80,6 +98,7 @@ async function getSession(req, res) {
 
 module.exports = {
   createLocalGame,
+  createSinglePlayerGame,
   makeMove,
   abortGame,
   getSession,

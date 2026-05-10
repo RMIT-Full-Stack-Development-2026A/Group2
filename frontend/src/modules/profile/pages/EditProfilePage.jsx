@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import EditProfileForm from "../components/EditProfileForm/EditProfileForm";
 import { useAuth } from "../../auth/hooks/useAuth";
+import { getProfile } from "../services/profile.service";
+import "../styles/profile.css";
 
 export default function EditProfilePage() {
-  const { user, refreshUser } = useAuth();
+  const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -23,7 +25,7 @@ export default function EditProfilePage() {
       setLoading(true);
       setLoadError("");
       try {
-        const nextUser = await refreshUser();
+        const nextUser = await getProfile();
         if (!cancelled) {
           if (!nextUser) {
             setLoadError("Could not load your profile. Try signing in again.");
@@ -41,7 +43,7 @@ export default function EditProfilePage() {
     return () => {
       cancelled = true;
     };
-  }, [refreshUser, user]);
+  }, [user]);
 
   if (loading) {
     return (
@@ -51,7 +53,6 @@ export default function EditProfilePage() {
             Back to profile
           </Link>
         </div>
-        <p className="text-secondary mb-0">Loading…</p>
       </div>
     );
   }

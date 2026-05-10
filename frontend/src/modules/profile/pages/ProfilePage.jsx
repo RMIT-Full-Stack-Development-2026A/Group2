@@ -1,14 +1,23 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import GameHistoryTable from "../components/GameHistoryTable/GameHistoryTable";
 import ProfileCard from "../components/ProfileCard/ProfileCard";
 import ProfileTabs from "../components/ProfileTabs/ProfileTabs";
+import "../styles/profile.css";
 
 export default function ProfilePage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("profile");
+  const initialTab = new URLSearchParams(location.search).get("tab") === "history"
+    ? "history"
+    : "profile";
+  const [activeTab, setActiveTab] = useState(initialTab);
   const successMessage = location.state?.successMessage ?? "";
+
+  useEffect(() => {
+    const tabFromQuery = new URLSearchParams(location.search).get("tab");
+    setActiveTab(tabFromQuery === "history" ? "history" : "profile");
+  }, [location.search]);
 
   function dismissSuccessMessage() {
     navigate(location.pathname, { replace: true, state: null });
@@ -32,15 +41,15 @@ export default function ProfilePage() {
         <ProfileTabs active={activeTab} onChange={setActiveTab} />
       </div>
 
-      <div className="card bg-white border border-secondary-subtle shadow-sm rounded-3">
-        <div className="card-body p-4">
-          {activeTab === "history" ? (
+      {activeTab === "history" ? (
+        <div className="card bg-white border border-secondary-subtle shadow-sm rounded-3">
+          <div className="card-body p-4">
             <GameHistoryTable embedded />
-          ) : (
-            <ProfileCard embedded />
-          )}
+          </div>
         </div>
-      </div>
+      ) : (
+        <ProfileCard />
+      )}
     </div>
   );
 }

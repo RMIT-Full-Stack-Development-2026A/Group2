@@ -46,15 +46,7 @@ function mapPasswordErrorsToField(errors, fieldName) {
 
 function validateChangePasswordBody(body) {
   const errors = [];
-  const { currentPassword, newPassword, confirmNewPassword } = body ?? {};
-
-  if (typeof currentPassword !== "string" || !currentPassword.length) {
-    errors.push({
-      field: "currentPassword",
-      message: "Current password is required to change your password.",
-      example: "Example: the password you use to sign in",
-    });
-  }
+  const { newPassword, confirmNewPassword } = body ?? {};
 
   errors.push(
     ...mapPasswordErrorsToField(validatePassword(newPassword), "newPassword"),

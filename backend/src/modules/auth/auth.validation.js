@@ -118,16 +118,11 @@ function getStrictEmailViolations(trimmed) {
 
 const EXAMPLES = {
   username: "Example: player_one or Player-99",
-  displayName: "Example: Player Alpha",
   email: "Example: you@example.com",
   password:
     "Example: MyP@ssw0rd (8+ chars, 1 uppercase, 1 number, 1 special character)",
-  newPassword:
-    "Example: MyP@ssw0rd (8+ chars, 1 uppercase, 1 number, 1 special character)",
   country: "Choose a country from the dropdown.",
   confirmPassword: "Example: type the same password twice",
-  confirmNewPassword: "Example: type the new password twice",
-  currentPassword: "Example: the password you use to sign in",
   identifier: "Example: player_one or you@example.com",
 };
 
@@ -254,7 +249,6 @@ function validateRegisterBody(body) {
   const errors = [];
   const {
     username,
-    displayName,
     email,
     password,
     confirmPassword,
@@ -262,7 +256,6 @@ function validateRegisterBody(body) {
   } = body ?? {};
 
   errors.push(...validateUsername(username));
-  errors.push(...validateDisplayName(displayName));
   errors.push(...validateEmail(email));
   errors.push(...validatePassword(password));
 
@@ -306,61 +299,9 @@ function validateLoginBody(body) {
   return errors;
 }
 
-/** PATCH profile: username, email, country (all required). */
-function validateProfileUpdateBody(body) {
-  const errors = [];
-  const { username, email, country } = body ?? {};
-
-  errors.push(...validateUsername(username));
-  errors.push(...validateEmail(email));
-  errors.push(...validateCountry(country));
-
-  return errors;
-}
-
-function mapPasswordErrorsToField(errors, fieldName) {
-  return errors.map((e) =>
-    e.field === "password"
-      ? { ...e, field: fieldName, example: EXAMPLES[fieldName] ?? e.example }
-      : e,
-  );
-}
-
-/** POST change-password: current + new + confirm. */
-function validateChangePasswordBody(body) {
-  const errors = [];
-  const { currentPassword, newPassword, confirmNewPassword } = body ?? {};
-
-  if (typeof currentPassword !== "string" || !currentPassword.length) {
-    errors.push(
-      err(
-        "currentPassword",
-        "Current password is required to change your password.",
-      ),
-    );
-  }
-
-  errors.push(
-    ...mapPasswordErrorsToField(validatePassword(newPassword), "newPassword"),
-  );
-
-  if (typeof confirmNewPassword !== "string" || confirmNewPassword !== newPassword) {
-    errors.push(
-      err(
-        "confirmNewPassword",
-        "Confirm new password must match the new password exactly.",
-      ),
-    );
-  }
-
-  return errors;
-}
-
 module.exports = {
   validateRegisterBody,
   validateLoginBody,
-  validateProfileUpdateBody,
-  validateChangePasswordBody,
   ALLOWED_COUNTRIES,
   validateUsername,
   validateDisplayName,

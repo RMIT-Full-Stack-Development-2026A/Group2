@@ -1,3 +1,4 @@
+import { useCallback, useState } from "react";
 import { Outlet } from "react-router-dom";
 import NavBar from "./components/NavBar/NavBar";
 /**
@@ -5,12 +6,18 @@ import NavBar from "./components/NavBar/NavBar";
  * Used for dashboard, profile, online arena, premium, etc. (see router.)
  */
 export default function App() {
+  const [onNavigate, setOnNavigate] = useState(null);
+
+  const registerNavigationGuard = useCallback((guard) => {
+    setOnNavigate(() => guard ?? null);
+  }, []);
+
   return (
     <div className="app-shell min-vh-100 d-flex flex-column bg-light">
-      <NavBar />
+      <NavBar onNavigate={onNavigate} />
       <main className="flex-grow-1 w-100">
         <div className="container app-page py-4 py-lg-5">
-          <Outlet />
+          <Outlet context={{ registerNavigationGuard }} />
         </div>
       </main>
     </div>

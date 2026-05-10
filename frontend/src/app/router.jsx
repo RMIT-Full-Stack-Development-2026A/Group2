@@ -9,10 +9,14 @@ import EditProfilePage from "../modules/profile/pages/EditProfilePage";
 import App from "../App";
 import PremiumPage from "../modules/premium/pages/PremiumPage";
 import OnlineArenaPage from "../modules/game/pages/OnlineArenaPage";
-import LocalGamePage from "../modules/game/pages/LocalGamePage";
+import LocalGameSetupPage from "../modules/game/pages/LocalGameSetupPage";
+import AIGameSetupPage from "../modules/game/pages/AIGameSetupPage";
+import GamePlayPage from "../modules/game/pages/GamePlayPage";
 import AdminDashboardPage from "../modules/admin/pages/AdminDashboardPage";
 import PlayerManagementPage from "../modules/admin/pages/PlayerManagementPage";
 import OnlineRoomsPage from "../modules/admin/pages/OnlineRoomsPage";
+
+
 
 const router = createBrowserRouter([
     {
@@ -45,7 +49,9 @@ const router = createBrowserRouter([
                     { path: "/profile", element: <ProfilePage /> },
                     { path: "/profile/edit", element: <EditProfilePage /> },
                     { path: "/online", element: <OnlineArenaPage /> },
-                    { path: "/game/local", element: <LocalGamePage /> },
+                    { path: "/game/local", element: <LocalGameSetupPage /> },
+                    { path: "/game/ai", element: <AIGameSetupPage /> },
+                    { path: "/game/play", element: <GamePlayPage /> },
                     { path: "/premium", element: <PremiumPage /> },
                 ],
             },

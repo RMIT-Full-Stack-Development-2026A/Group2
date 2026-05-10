@@ -1,0 +1,32 @@
+.profile-page-shell {
+  max-width: 980px;
+}
+
+.profile-tab-btn {
+  min-height: 40px;
+}
+
+.profile-avatar {
+  width: 76px;
+  height: 76px;
+  font-size: 1.5rem;
+  letter-spacing: 0.02em;
+}
+
+.profile-upload-overlay {
+  width: 26px;
+  height: 26px;
+  position: absolute;
+  right: -4px;
+  bottom: -2px;
+}
+
+.profile-identity-text {
+  min-width: 220px;
+}
+
+.profile-history-blurb {
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+}

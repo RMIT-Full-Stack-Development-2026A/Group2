@@ -31,12 +31,10 @@ function handleControllerError(res, err) {
 
 async function signUp(req, res) {
   try {
-    const { username, displayName, email, password, confirmPassword, country } =
-      req.body;
+    const { username, email, password, confirmPassword, country } = req.body;
 
     const user = await authService.signUp(
       username,
-      displayName,
       email,
       password,
       confirmPassword,

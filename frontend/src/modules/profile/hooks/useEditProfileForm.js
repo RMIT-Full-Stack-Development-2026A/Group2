@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../auth/hooks/useAuth";
 import { ALLOWED_COUNTRIES } from "../../auth/utils/auth.validation";
-import { changePassword, updateProfile } from "../services/profile.service";
+import {
+  changePassword,
+  updateProfile,
+  uploadProfileLogo,
+} from "../services/profile.service";
 
 const emptyForm = {
   username: "",
@@ -10,7 +13,6 @@ const emptyForm = {
   email: "",
   country: "",
   avatarURL: "",
-  currentPassword: "",
   newPassword: "",
   confirmNewPassword: "",
 };
@@ -32,9 +34,11 @@ function mapApiErrorsToIssues(errors) {
  */
 export function useEditProfileForm(initialUser) {
   const navigate = useNavigate();
-  const { accessToken, login, refreshUser } = useAuth();
   const [formData, setFormData] = useState(emptyForm);
   const [loading, setLoading] = useState(false);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoError, setLogoError] = useState("");
+  const [logoSuccess, setLogoSuccess] = useState("");
   const [error, setError] = useState("");
   const [errorIssues, setErrorIssues] = useState(null);
 
@@ -51,12 +55,13 @@ export function useEditProfileForm(initialUser) {
       email: initialUser.profile?.email ?? "",
       country,
       avatarURL: initialUser.profile?.avatarURL ?? "",
-      currentPassword: "",
       newPassword: "",
       confirmNewPassword: "",
     });
     setError("");
     setErrorIssues(null);
+    setLogoError("");
+    setLogoSuccess("");
   }, [initialUser]);
 
   const handleChange = useCallback((event) => {
@@ -70,15 +75,13 @@ export function useEditProfileForm(initialUser) {
       setError("");
       setErrorIssues(null);
 
-      const currentPw = formData.currentPassword.trim();
       const newPw = formData.newPassword.trim();
       const confirmPw = formData.confirmNewPassword.trim();
-      const anyPw = currentPw || newPw || confirmPw;
-      const allPw = currentPw && newPw && confirmPw;
+      const anyPw = newPw || confirmPw;
 
-      if (anyPw && !allPw) {
+      if (anyPw && (!newPw || !confirmPw)) {
         setError(
-          "To change your password, fill in current password, new password, and confirmation.",
+          "To change your password, fill in both new password and confirmation.",
         );
         return;
       }
@@ -90,10 +93,8 @@ export function useEditProfileForm(initialUser) {
 
       setLoading(true);
       try {
-        let latestUser = null;
-        if (allPw) {
+        if (anyPw) {
           const pwdResult = await changePassword({
-            currentPassword: currentPw,
             newPassword: newPw,
             confirmNewPassword: confirmPw,
           });
@@ -102,7 +103,6 @@ export function useEditProfileForm(initialUser) {
             setErrorIssues(mapApiErrorsToIssues(pwdResult.errors));
             return;
           }
-          latestUser = pwdResult.user ?? null;
         }
 
         const profileResult = await updateProfile({
@@ -119,17 +119,10 @@ export function useEditProfileForm(initialUser) {
           return;
         }
 
-        latestUser = profileResult.user ?? latestUser;
-
-        const synced = await refreshUser();
-        if (!synced && latestUser && accessToken) {
-          login(accessToken, latestUser);
-        }
-
         navigate("/profile", {
           replace: true,
           state: {
-            successMessage: allPw
+            successMessage: anyPw
               ? "Profile and password updated successfully."
               : "Profile updated successfully.",
           },
@@ -138,14 +131,45 @@ export function useEditProfileForm(initialUser) {
         setLoading(false);
       }
     },
-    [accessToken, formData, login, navigate, refreshUser],
+    [formData, navigate],
   );
+
+  async function handleLogoUpload(event) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) {
+      return;
+    }
+
+    setLogoError("");
+    setLogoSuccess("");
+    setLogoUploading(true);
+    try {
+      const result = await uploadProfileLogo(file);
+      if (!result.ok) {
+        setLogoError(result.message);
+        return;
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        avatarURL: result.user?.profile?.avatarURL ?? prev.avatarURL,
+      }));
+      setLogoSuccess("Logo uploaded successfully.");
+    } finally {
+      setLogoUploading(false);
+    }
+  }
 
   return {
     formData,
     handleChange,
     handleSubmit,
+    handleLogoUpload,
     loading,
+    logoUploading,
+    logoError,
+    logoSuccess,
     error,
     errorIssues,
   };

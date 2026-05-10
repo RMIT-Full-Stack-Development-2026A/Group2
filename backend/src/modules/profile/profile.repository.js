@@ -7,8 +7,8 @@ async function findByUserId(userId) {
 async function updateByUserId(userId, update) {
   return Profile.findOneAndUpdate(
     { userID: userId },
-    { $set: update },
-    { new: true, runValidators: true },
+    { $set: update, $setOnInsert: { userID: userId } },
+    { new: true, runValidators: true, upsert: true },
   );
 }
 

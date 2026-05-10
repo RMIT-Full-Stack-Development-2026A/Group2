@@ -7,11 +7,21 @@ import { useEditProfileForm } from "../../hooks/useEditProfileForm";
  * @param {{ initialUser: object | null }} props — null while parent loads profile
  */
 export default function EditProfileForm({ initialUser }) {
-  const { formData, handleChange, handleSubmit, loading, error, errorIssues } =
-    useEditProfileForm(initialUser);
+  const {
+    formData,
+    handleChange,
+    handleSubmit,
+    handleLogoUpload,
+    loading,
+    logoUploading,
+    logoError,
+    logoSuccess,
+    error,
+    errorIssues,
+  } = useEditProfileForm(initialUser);
 
   if (!initialUser) {
-    return <p className="text-secondary mb-0">Loading profile…</p>;
+    return null;
   }
 
   return (
@@ -25,6 +35,58 @@ export default function EditProfileForm({ initialUser }) {
         </div>
 
         <form onSubmit={handleSubmit} noValidate>
+          <div className="mb-4">
+            <label className="form-label fw-semibold d-block">Player Logo</label>
+
+            {formData?.avatarURL ? (
+              <img
+                src={formData.avatarURL}
+                alt="Current logo"
+                className="rounded border border-secondary-subtle d-block mb-3"
+                style={{ width: 72, height: 72, objectFit: "cover" }}
+                width="72"
+                height="72"
+                loading="eager"
+                decoding="sync"
+              />
+            ) : (
+              <div
+                className="rounded border border-secondary-subtle d-flex align-items-center justify-content-center text-muted small mb-3"
+                style={{ width: 72, height: 72, backgroundColor: "#f8f9fa" }}
+              >
+                No logo
+              </div>
+            )}
+
+            <label
+              htmlFor="edit-logo-upload"
+              className={`btn btn-outline-secondary btn-sm ${logoUploading || loading ? "disabled" : ""}`}
+            >
+              {logoUploading ? "Uploading..." : "Choose file"}
+            </label>
+
+            <input
+              id="edit-logo-upload"
+              type="file"
+              accept="image/png,image/jpeg,image/jpg,image/webp"
+              className="d-none"
+              onChange={handleLogoUpload}
+              disabled={logoUploading || loading}
+            />
+
+            <small className="text-muted d-block mt-2">
+              Upload JPG, JPEG, PNG, or WEBP (max 2MB). The image is automatically
+              resized to 256 × 256.
+            </small>
+
+            {logoSuccess ? (
+              <p className="small text-success mb-0 mt-2">{logoSuccess}</p>
+            ) : null}
+            {logoError ? (
+              <p className="small text-danger mb-0 mt-2">{logoError}</p>
+            ) : null}
+          </div>
+
           <div className="mb-3">
             <label htmlFor="edit-username" className="form-label fw-semibold">
               Username
@@ -72,23 +134,6 @@ export default function EditProfileForm({ initialUser }) {
             />
           </div>
 
-          <div className="mb-3">
-            <label htmlFor="edit-avatar-url" className="form-label fw-semibold">
-              Avatar URL
-            </label>
-            <input
-              id="edit-avatar-url"
-              type="url"
-              name="avatarURL"
-              className="form-control"
-              value={formData.avatarURL}
-              onChange={handleChange}
-            />
-            <small className="text-muted">
-              Leave blank to remove your avatar.
-            </small>
-          </div>
-
           <div className="mb-4">
             <label htmlFor="edit-country" className="form-label fw-semibold">
               Country
@@ -110,37 +155,14 @@ export default function EditProfileForm({ initialUser }) {
             </select>
           </div>
 
-          <fieldset className="border rounded-3 p-3 mb-4">
-            <legend className=" w-auto px-1 fs-6 fw-semibold mb-3">
-              Change password{" "}
-              <span className="fw-normal text-secondary">(optional)</span>
-            </legend>
-            <p className="small text-muted mb-3">
-              Leave fields blank to keep your current password.
-            </p>
-            <div className="mb-3">
-              <label
-                htmlFor="edit-current-password"
-                className="form-label fw-semibold"
-              >
-                Current password
-              </label>
-              <input
-                id="edit-current-password"
-                type="password"
-                name="currentPassword"
-                className="form-control"
-                autoComplete="current-password"
-                value={formData.currentPassword}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="mb-3">
+          
+
+            <div className="mb-4">
               <label
                 htmlFor="edit-new-password"
                 className="form-label fw-semibold"
               >
-                New password
+                New Password (optional)
               </label>
               <input
                 id="edit-new-password"
@@ -150,14 +172,16 @@ export default function EditProfileForm({ initialUser }) {
                 autoComplete="new-password"
                 value={formData.newPassword}
                 onChange={handleChange}
+                placeholder="Leave blank to keep current"
               />
             </div>
-            <div className="mb-0">
+
+            <div className="mb-4">
               <label
                 htmlFor="edit-confirm-password"
                 className="form-label fw-semibold"
               >
-                Confirm new password
+                Confirm Password
               </label>
               <input
                 id="edit-confirm-password"
@@ -169,7 +193,6 @@ export default function EditProfileForm({ initialUser }) {
                 onChange={handleChange}
               />
             </div>
-          </fieldset>
 
           <FormErrorAlert issues={errorIssues} message={error} />
 

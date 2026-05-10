@@ -1,0 +1,74 @@
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge,
+.secondaryBadge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.secondaryBadge {
+  background: #f1f5f9;
+}
+
+.timer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.timerIcon {
+  font-size: 14px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ghostBtn,
+.secondaryBtn,
+.dangerBtn {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #d8dee9;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ghostBtn {
+  background: #fff;
+}
+
+.secondaryBtn {
+  background: #f8fafc;
+}
+
+.dangerBtn {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: white;
+}

@@ -1,0 +1,65 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.styleCard {
+  min-height: 72px;
+  padding: 12px;
+  border: 1px solid #d8dee9;
+  border-radius: 12px;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.styleCard:hover {
+  background: #f8fafc;
+}
+
+.styleCard.compact {
+  min-height: auto;
+  padding: 10px 14px;
+  text-align: center;
+}
+
+.active {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.styleTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.styleDesc {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.uploadWrap {
+  min-height: 72px;
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

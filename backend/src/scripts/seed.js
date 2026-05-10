@@ -1,16 +1,13 @@
 /**
- * Seed script for non-test database with split User/Profile schema.
- *
- * Usage:
- * - npm run seed
- * - or: SEED_DB_NAME=tictactoang npm run seed
+ * Gold dataset seed for TicTacToang (MongoDB).
+ * Run from backend root: npm run seed
+ * Requires MONGO_URI in .env
  */
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
 const User = require("../modules/auth/model/user.model");
-const Profile = require("../modules/profile/model/profile.model");
 const Wallet = require("../modules/wallet/model/wallet.model");
 const Transaction = require("../modules/wallet/model/transaction.model");
 const SubscriptionPlan = require("../modules/premium/model/subscriptionPlan.model");
@@ -27,7 +24,9 @@ const DEFAULT_SEED_PASSWORD = "SeedPassword12@";
 const TESTER_PASSWORD = "Cheeseburger12@";
 const ADMIN_SEED_PASSWORD = "AdminPortal12@";
 
+/** Deterministic 24-hex ObjectIds (readable prefixes in comments). */
 const o = (hex24) => new mongoose.Types.ObjectId(hex24);
+
 const I = {
   userAdmin: o("010101010101010101010101"),
   userAlpha: o("010101010101010101010102"),
@@ -74,22 +73,45 @@ function moveId(i) {
   return o(`0a0a0a0a0a0a0a0a0a0a0a${hex}`);
 }
 
-async function connectSeedDb() {
+/** 3×3 cell (row, col) → single rowIndex for current Move schema */
+function cell(row, col) {
+  return row * 3 + col;
+}
+
+async function clearAll() {
+  const order = [
+    Move,
+    GameParticipant,
+    MatchLobby,
+    GameSession,
+    Transaction,
+    Wallet,
+    UserSubscription,
+    SubscriptionPlan,
+    User,
+  ];
+  for (const Model of order) {
+    await Model.deleteMany({});
+  }
+  for (const name of ["boardstyles", "markers", "onlinegamerooms", "messages"]) {
+    try {
+      await mongoose.connection.collection(name).deleteMany({});
+    } catch {
+      /* collection may not exist */
+    }
+  }
+}
+
+async function seed() {
   const uri = process.env.MONGO_URI;
   if (!uri) {
-    throw new Error("Missing MONGO_URI in environment.");
-  }
-  if (TARGET_DB.toLowerCase() === "test") {
-    throw new Error("Refusing to seed 'test' database. Set SEED_DB_NAME to a non-test database.");
+    console.error("Missing MONGO_URI in environment.");
+    process.exit(1);
   }
 
-  await mongoose.connect(uri, { dbName: TARGET_DB });
-  const connectedDb = mongoose.connection?.db?.databaseName;
-  if (!connectedDb || connectedDb.toLowerCase() === "test") {
-    throw new Error("Safety stop: connected database is 'test'.");
-  }
-  console.log(`Connected to database: ${connectedDb}`);
-}
+  await mongoose.connect(uri);
+  console.log("Connected. Clearing collections…");
+  await clearAll();
 
 async function clearAllCollections() {
   await mongoose.connection.db.dropDatabase();
@@ -110,6 +132,7 @@ async function insertSeedData(hashes) {
     {
       _id: I.userAdmin,
       role: "admin",
+      country: "US",
       accountStatus: "active",
       username: "AdminRoot",
       passwordHash: hashes.defaultHash,
@@ -119,6 +142,7 @@ async function insertSeedData(hashes) {
     {
       _id: I.userAlpha,
       role: "player",
+      country: "CA",
       accountStatus: "active",
       username: "PlayerAlpha",
       passwordHash: hashes.defaultHash,
@@ -128,6 +152,7 @@ async function insertSeedData(hashes) {
     {
       _id: I.userBeta,
       role: "player",
+      country: "GB",
       accountStatus: "active",
       username: "PlayerBeta",
       passwordHash: hashes.defaultHash,
@@ -179,6 +204,7 @@ async function insertSeedData(hashes) {
       avatarURL: null,
       country: "United Kingdom",
       email: "beta.player@email.com",
+      avatarURL: null,
       createdAt: new Date("2026-02-18T09:15:00.000Z"),
       updatedAt: new Date("2026-04-02T11:45:00.000Z"),
     },
@@ -400,8 +426,6 @@ async function insertSeedData(hashes) {
       participantType: "player",
       isWinner: true,
       displayName: "PlayerAlpha",
-      marker: "X",
-      turnOrder: 1,
     },
     {
       _id: I.gp2,
@@ -410,8 +434,6 @@ async function insertSeedData(hashes) {
       participantType: "ai",
       isWinner: false,
       displayName: "CPU Easy",
-      marker: "O",
-      turnOrder: 2,
     },
     {
       _id: I.gp3,
@@ -420,8 +442,6 @@ async function insertSeedData(hashes) {
       participantType: "player",
       isWinner: false,
       displayName: "PlayerAlpha",
-      marker: "X",
-      turnOrder: 1,
     },
     {
       _id: I.gp4,
@@ -430,8 +450,6 @@ async function insertSeedData(hashes) {
       participantType: "ai",
       isWinner: true,
       displayName: "CPU Medium",
-      marker: "O",
-      turnOrder: 2,
     },
     {
       _id: I.gp5,
@@ -440,8 +458,6 @@ async function insertSeedData(hashes) {
       participantType: "player",
       isWinner: true,
       displayName: "PlayerAlpha",
-      marker: "X",
-      turnOrder: 1,
     },
     {
       _id: I.gp6,
@@ -450,8 +466,6 @@ async function insertSeedData(hashes) {
       participantType: "player",
       isWinner: false,
       displayName: "PlayerBeta",
-      marker: "O",
-      turnOrder: 2,
     },
     {
       _id: I.gp7,
@@ -563,17 +577,15 @@ async function insertSeedData(hashes) {
     [I.gs6, I.gp12, 4, 5, 5, "2026-04-15T14:15:55.000Z"],
   ];
 
-  const moves = moveRows.map(
-    ([sessionID, participantID, moveNumber, row, col, iso], idx) => ({
-      _id: moveId(idx + 1),
-      sessionID,
-      participantID,
-      moveNumber,
-      rowIndex: row,
-      colIndex: col,
-      playedAt: new Date(iso),
-    }),
-  );
+  const moves = moveRows.map(([sessionID, participantID, moveNumber, r, c, iso], idx) => ({
+    _id: moveId(idx + 1),
+    sessionID,
+    participantID,
+    moveNumber,
+    rowIndex: cell(r, c),
+    playedAt: new Date(iso),
+  }));
+
   await Move.insertMany(moves);
 
   await MatchLobby.insertMany([
@@ -598,6 +610,9 @@ async function insertSeedData(hashes) {
       createdAt: new Date("2026-04-15T14:12:00.000Z"),
     },
   ]);
+
+  console.log("Seed completed successfully.");
+  await mongoose.disconnect();
 }
 
 async function runSeed() {

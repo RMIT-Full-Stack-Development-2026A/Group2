@@ -1,41 +1,42 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/hooks/useAuth";
+import { getProfileResult, uploadProfileLogo } from "../services/profile.service";
 
 export function useProfileCard() {
-  const { user: authUser, refreshUser } = useAuth();
-  const [user, setUser] = useState(authUser?.profile ? authUser : null);
-  const [loading, setLoading] = useState(true);
+  const { logout, user: authUser } = useAuth();
+  const navigate = useNavigate();
+  const [user, setUser] = useState(authUser ?? null);
   const [error, setError] = useState(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadLogoSuccess, setUploadLogoSuccess] = useState("");
 
   useEffect(() => {
-    if (authUser?.profile) {
-      setUser(authUser);
-      setError(null);
-      setLoading(false);
-      return;
-    }
-
     let cancelled = false;
 
     (async () => {
-      setLoading(true);
       setError(null);
       try {
-        const next = await refreshUser();
+        const result = await getProfileResult();
         if (!cancelled) {
-          setUser(next);
-          if (!next) {
-            setError("Could not load profile.");
+          if (result.ok && result.user) {
+            setUser(result.user);
+          } else {
+            setUser(null);
+            setError(result.message || "Could not load profile.");
+            if (
+              result.code === "ACCOUNT_INACTIVE" ||
+              result.status === 401 ||
+              result.status === 403
+            ) {
+              await logout();
+              navigate("/login", { replace: true });
+            }
           }
         }
       } catch {
         if (!cancelled) {
-          setUser(null);
           setError("Could not load profile.");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
         }
       }
     })();
@@ -43,7 +44,35 @@ export function useProfileCard() {
     return () => {
       cancelled = true;
     };
-  }, [authUser, refreshUser]);
+  }, [logout, navigate]);
 
-  return { user, loading, error };
+  const handleLogoUpload = useCallback(
+    async (file) => {
+      if (!file) {
+        return;
+      }
+      setUploadLogoSuccess("");
+      setUploadingLogo(true);
+      try {
+        const result = await uploadProfileLogo(file);
+        if (!result.ok) {
+          return;
+        }
+
+        setUser(result.user);
+        setUploadLogoSuccess("Logo uploaded successfully.");
+      } finally {
+        setUploadingLogo(false);
+      }
+    },
+    [],
+  );
+
+  return {
+    user,
+    error,
+    handleLogoUpload,
+    uploadingLogo,
+    uploadLogoSuccess,
+  };
 }

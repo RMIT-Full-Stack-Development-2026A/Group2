@@ -1,15 +1,108 @@
-import { Trophy } from "lucide-react";
+import { Calendar, Clock3, Search } from "lucide-react";
+import { useGameHistoryTable } from "../../hooks/useGameHistoryTable";
 
 export default function GameHistoryTable({ embedded = false }) {
+  const { items, loading, error, search, setSearch } = useGameHistoryTable();
+
+  function formatDateTime(value) {
+    if (!value) {
+      return "-";
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return "-";
+    }
+    return new Intl.DateTimeFormat(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(date);
+  }
+
+  function resultClassName(result) {
+    const normalized = String(result || "").toLowerCase();
+    const base = "badge rounded-pill text-uppercase fw-bold px-3 py-2";
+    if (normalized === "win") return `${base} text-bg-primary`;
+    if (normalized === "lose") return `${base} text-bg-danger`;
+    if (normalized === "draw") return `${base} text-bg-secondary`;
+    if (normalized === "aborted") return `${base} bg-body-secondary text-secondary`;
+    return `${base} text-bg-secondary`;
+  }
+
+  function resultLabel(result) {
+    const normalized = String(result || "").toLowerCase();
+    if (normalized === "win") return "Win";
+    if (normalized === "lose") return "Lose";
+    if (normalized === "draw") return "Draw";
+    if (normalized === "aborted") return "Aborted";
+    return "Aborted";
+  }
+
   const inner = (
-    <div className={embedded ? "text-center" : "text-center py-5 px-3"}>
-      <div className="d-inline-flex rounded-circle bg-light p-3 mb-3">
-        <Trophy size={40} strokeWidth={1.75} className="text-secondary" aria-hidden />
+    <div>
+      <h2 className="h3 fw-bold text-dark mb-3">Match History</h2>
+
+      <div className="input-group mb-3">
+        <span className="input-group-text bg-white border-end-0">
+          <Search size={16} aria-hidden />
+        </span>
+        <input
+          type="search"
+          className="form-control border-start-0 ps-0"
+          placeholder="Search session # or Player 2..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          aria-label="Search session number or player 2 name"
+        />
       </div>
-      <h2 className="h5 fw-semibold mb-2 text-dark">Match history</h2>
-      <p className="text-secondary mb-0 profile-history-blurb small">
-        We&apos;re building this right now — coming soon.
-      </p>
+
+      {loading ? (
+        <p className="text-secondary mb-0">Loading match history...</p>
+      ) : null}
+
+      {error ? (
+        <p className="text-danger mb-0" role="alert">
+          {error}
+        </p>
+      ) : null}
+
+      {!loading && !error && items.length === 0 ? (
+        <p className="text-secondary mb-0">
+          {search.trim() ? "No matching sessions found." : "No past sessions found."}
+        </p>
+      ) : null}
+
+      {!loading && !error && items.length > 0 ? (
+        <div className="d-grid gap-3">
+          {items.map((item) => (
+            <article
+              key={item.sessionId}
+              className="border border-secondary-subtle rounded-3 bg-white p-3"
+            >
+              <div className="d-flex align-items-start justify-content-between gap-3">
+                <div className="d-flex gap-3">
+                  <div className="fw-bold text-secondary">{item.sessionNumber || "#"}</div>
+                  <div>
+                    <p className="fw-bold text-dark mb-1">{item.playersLabel}</p>
+                    <div className="d-flex flex-wrap gap-2 column-gap-3 text-secondary small">
+                      <span className="d-inline-flex align-items-center gap-1">
+                        <Calendar size={14} aria-hidden />
+                        Start: {formatDateTime(item.startTime)}
+                      </span>
+                      <span className="d-inline-flex align-items-center gap-1">
+                        <Clock3 size={14} aria-hidden />
+                        End: {formatDateTime(item.endTime)}
+                      </span>
+                      <span>Type: {item.gameType}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <span className={resultClassName(item.result)}>{resultLabel(item.result)}</span>
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 
@@ -19,7 +112,7 @@ export default function GameHistoryTable({ embedded = false }) {
 
   return (
     <div className="card w-100 shadow-sm border border-secondary-subtle rounded-3">
-      {inner}
+      <div className="card-body p-4">{inner}</div>
     </div>
   );
 }
