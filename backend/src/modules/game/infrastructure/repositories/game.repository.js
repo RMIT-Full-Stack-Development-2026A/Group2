@@ -77,11 +77,11 @@ async function createMove(data) {
 }
 
 async function updateSession(id, updates) {
-  return GameSession.findByIdAndUpdate(id, updates, { new: true });
+  return GameSession.findByIdAndUpdate(id, updates, { returnDocument: "after" });
 }
 
 async function updateParticipant(id, updates) {
-  return GameParticipant.findByIdAndUpdate(id, updates, { new: true });
+  return GameParticipant.findByIdAndUpdate(id, updates, { returnDocument: "after" });
 }
 
 async function findLobbyBySessionId(sessionId) {

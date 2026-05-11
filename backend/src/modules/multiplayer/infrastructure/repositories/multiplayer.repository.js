@@ -1,0 +1,33 @@
+const MatchLobby = require("../../model/matchLobby.model");
+
+async function createLobby(data) {
+    return MatchLobby.create(data);
+}
+
+async function findLobbyByCode(lobbyCode) {
+    return MatchLobby.findOne({ lobbyCode });
+}
+
+async function findWaitingLobbies() {
+    return MatchLobby.find({ status: "waiting" });
+}
+
+async function updateLobby(id, updates) {
+    return MatchLobby.findByIdAndUpdate(id, updates, { returnDocument: "after" });
+}
+
+async function closeLobby(id) {
+    return MatchLobby.findByIdAndUpdate(
+        id,
+        { status: "closed", endedAt: new Date() },
+        { returnDocument: "after" }
+    );
+}
+
+module.exports = {
+    createLobby,
+    findLobbyByCode,
+    findWaitingLobbies,
+    updateLobby,
+    closeLobby,
+};
