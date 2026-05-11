@@ -32,7 +32,7 @@ async function findSessionsByIds(ids) {
 }
 
 async function findParticipantsBySession(sessionID) {
-  return GameParticipant.find({ sessionID }).sort({ turnOrder: 1, createdAt: 1 });
+  return await GameParticipant.find({ sessionID }).sort({ turnOrder: 1, createdAt: 1 });
 }
 
 async function findParticipantsBySessionIds(sessionIds) {

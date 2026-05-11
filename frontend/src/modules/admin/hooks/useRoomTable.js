@@ -10,9 +10,11 @@ export default function useRoomTable() {
         const searchLower = query.toLowerCase();
 
         return rooms.filter((room) => {
-            const roomId = (room.id || "").toLowerCase();
+            const roomNum = (room.roomNumber || "").toLowerCase();
+            const player1 = room.players[0].toLowerCase();
+            const player2 = room.players.length == 2 ? room.players[1].toLowerCase() : "";
 
-            return roomId.includes(searchLower);
+            return roomNum.includes(searchLower) || player1.includes(searchLower) || player2.includes(searchLower);
         });
     }
 
@@ -22,14 +24,14 @@ export default function useRoomTable() {
 
         if (status === "active") {
             return rooms.filter(
-                (r) => (r.status || "").toLowerCase() === "ongoing",
+                (r) => (r.status || "").toLowerCase() === "active",
             );
         }
 
         if (status === "closed") {
             return rooms.filter((r) => {
                 const s = (r.status || "").toLowerCase();
-                return s === "finished" || s === "aborted" || s === "closed";
+                return s === "finished" || s === "closed";
             });
         }
 

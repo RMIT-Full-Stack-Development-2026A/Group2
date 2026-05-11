@@ -23,3 +23,9 @@ export async function getSystemStats() {
     const data = await response.json();
     return data.stats;
 }
+
+export async function getAllLobbies() {
+    const response = await httpGet("/api/admin/online-lobbies");
+    const data = await response.json();
+    return data.lobbies;
+}

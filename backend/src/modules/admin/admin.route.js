@@ -13,4 +13,8 @@ router.get("/users", adminController.getAllUsers);
 
 router.get("/users/change-status/:userId", adminController.toggleUserAccountStatus);
 
+router.get("/online-lobbies", adminController.getAllLobbies);
+
+// router.get("/online-lobbies/close/:roomId", adminController.closeLobby);
+
 module.exports = router;

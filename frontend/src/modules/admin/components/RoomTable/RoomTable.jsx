@@ -1,18 +1,32 @@
 import React from "react";
 import { XCircle } from "lucide-react";
 
-const RoomTable = ({ filtered, statusColor, closeRoom }) => {
+const RoomTable = ({ filtered, closeRoom }) => {
+    const formatDateTime = (value) => {
+        const date = new Date(value);
+
+        if (Number.isNaN(date.getTime())) {
+            return "—";
+        }
+
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+
+        return `${year}-${month}-${day}, ${hours}:${minutes}`;
+    };
+
     const getStatusBadgeClass = (status) => {
         switch (status) {
-            case "ongoing":
+            case "active":
                 return "badge bg-success px-2 py-2 text-white";
-            case "aborted":
+            case "closed":
                 return "badge bg-danger px-2 py-2 text-white";
             case "finished":
                 return "badge bg-warning px-2 py-2 text-dark";
-            case "closed":
-                return "badge bg-secondary px-2 py-2 text-dark";
-            default:
+            case "waiting":
                 return "badge bg-secondary px-2 py-2 text-dark";
         }
     };
@@ -40,17 +54,15 @@ const RoomTable = ({ filtered, statusColor, closeRoom }) => {
                     {filtered.map((r) => (
                         <tr key={r.id} className="border-bottom">
                             <td className="p-3 fw-500">{r.roomNumber}</td>
-                            <td className="p-3">{r.player1}</td>
-                            <td className="p-3">{r.player2 || "—"}</td>
-                            <td className="p-3 text-muted d-none d-sm-table-cell">
-                                {r.startTime
-                                    ? new Date(r.startTime).toLocaleTimeString()
-                                    : "—"}
+                            <td className="p-3">{r.players?.[0] || "—"}</td>
+                            <td className="p-3">
+                                {r.players?.length === 2 ? r.players[1] : "—"}
                             </td>
                             <td className="p-3 text-muted d-none d-sm-table-cell">
-                                {r.endTime
-                                    ? new Date(r.endTime).toLocaleTimeString()
-                                    : "—"}
+                                {formatDateTime(r.startTime)}
+                            </td>
+                            <td className="p-3 text-muted d-none d-sm-table-cell">
+                                {formatDateTime(r.endTime)}
                             </td>
                             <td className="p-3">
                                 <span

@@ -257,9 +257,15 @@ function createGameInterface() {
     };
   }
 
+  async function listPlayersInLobby(sessionId) {
+      const participants = await gameRepository.findParticipantsBySession(sessionId);
+      return participants.map((participant) => participant.userID); // Return only the userID 
+  }
+
   return {
     listHistoryForUser,
     getReplayForUser,
+    listPlayersInLobby,
   };
 }
 
