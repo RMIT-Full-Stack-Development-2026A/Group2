@@ -36,3 +36,11 @@ export async function sendPremiumTestEmail() {
   });
   return data?.message || "Test email request sent.";
 }
+
+export async function resetPremiumStatus() {
+  const data = await apiRequest(API_ENDPOINTS.premium.reset, {
+    method: "POST",
+    body: JSON.stringify({}),
+  });
+  return data?.message || "Premium status has been reset.";
+}

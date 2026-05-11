@@ -11,5 +11,6 @@ router.post("/create-checkout-session", premiumController.createCheckoutSession)
 router.post("/create-test-checkout-session", premiumController.createTestCheckoutSession);
 router.post("/confirm-session", premiumController.confirmCheckoutSession);
 router.post("/test-email", premiumController.sendTestEmail);
+router.post("/reset", premiumController.resetPremium);
 
 module.exports = router;

@@ -81,6 +81,19 @@ async function confirmCheckoutSession(req, res) {
   }
 }
 
+async function resetPremium(req, res) {
+  try {
+    const result = await premiumService.resetPremiumStatus(String(req.user.id));
+    return res.status(200).json({
+      status: "success",
+      message: "Premium status has been reset.",
+      ...result,
+    });
+  } catch (err) {
+    return handleControllerError(res, err);
+  }
+}
+
 async function sendTestEmail(req, res) {
   try {
     await premiumService.sendTestPaymentEmail(String(req.user.id));
@@ -127,5 +140,6 @@ module.exports = {
   createTestCheckoutSession,
   confirmCheckoutSession,
   sendTestEmail,
+  resetPremium,
   stripeWebhook,
 };

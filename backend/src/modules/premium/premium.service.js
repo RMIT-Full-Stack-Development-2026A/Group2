@@ -8,6 +8,17 @@ const {
 } = require("./premium.interface");
 const { sendSubscriptionPaymentSuccessEmail } = require("../../shared/utils/email");
 
+const processedSessionIds = new Set();
+
+function markSessionProcessed(sessionId) {
+  if (!sessionId) return false;
+  if (processedSessionIds.has(sessionId)) {
+    return false;
+  }
+  processedSessionIds.add(sessionId);
+  return true;
+}
+
 function getStripeClient() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
   if (!secretKey) {
@@ -171,6 +182,10 @@ async function handleStripeCheckoutCompleted(session) {
     return;
   }
 
+  if (!markSessionProcessed(session?.id)) {
+    return;
+  }
+
   const existing = await premiumRepository.findActiveSubscription(userId);
   if (existing && !isTestPayment) {
     return;
@@ -211,6 +226,14 @@ async function handleStripeCheckoutCompleted(session) {
   notifyPaymentEmailSafely(userId, provider, granted.endDate);
 }
 
+async function resetPremiumStatus(userId) {
+  const result = await premiumRepository.cancelAllSubscriptionsForUser(userId);
+  return {
+    reset: true,
+    affected: result?.modifiedCount ?? 0,
+  };
+}
+
 async function sendTestPaymentEmail(userId) {
   const subscription = await getPremiumStatus(userId);
   const fallbackEndDate = addMonths(new Date(), PREMIUM_DURATION_MONTHS);
@@ -225,6 +248,7 @@ module.exports = {
   createTestCheckoutSession,
   confirmCheckoutSession,
   sendTestPaymentEmail,
+  resetPremiumStatus,
   getStripeClient,
   handleStripeCheckoutCompleted,
 };

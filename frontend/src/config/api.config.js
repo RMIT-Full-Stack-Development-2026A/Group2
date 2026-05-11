@@ -39,6 +39,7 @@ export const API_ENDPOINTS = {
     createTestCheckoutSession: "/premium/create-test-checkout-session",
     confirmSession: "/premium/confirm-session",
     testEmail: "/premium/test-email",
+    reset: "/premium/reset",
   },
   admin: {
     getPlayers: "/admin/players",

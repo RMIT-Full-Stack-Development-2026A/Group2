@@ -35,6 +35,13 @@ async function createTransaction(payload) {
   return Transaction.create(payload);
 }
 
+async function cancelAllSubscriptionsForUser(userId) {
+  return UserSubscription.updateMany(
+    { userID: userId, status: "active" },
+    { $set: { status: "cancelled", endDate: new Date() } },
+  );
+}
+
 async function findUserById(userId) {
   const [user, profile] = await Promise.all([
     User.findById(userId).lean(),
@@ -56,5 +63,6 @@ module.exports = {
   findOrCreatePremiumPlan,
   upsertActiveSubscription,
   createTransaction,
+  cancelAllSubscriptionsForUser,
   findUserById,
 };
