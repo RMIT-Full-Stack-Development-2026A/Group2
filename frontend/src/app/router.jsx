@@ -2,6 +2,8 @@
 import LoginPage from "../modules/auth/pages/LoginPage";
 import RegisterPage from "../modules/auth/pages/RegisterPage";
 import DashboardPage from "../modules/auth/pages/DashBoardPage";
+import PublicLayout from "../components/PublicLayout";
+import AuthLayout from "../components/AuthLayout";
 import ProtectedRoute from "../routes/ProtectedRoute";
 import RoleRoute from "../routes/RoleRoute";
 import ProfilePage from "../modules/profile/pages/ProfilePage";
@@ -19,16 +21,26 @@ import PlayerManagementPage from "../modules/admin/pages/PlayerManagementPage";
 
 const router = createBrowserRouter([
     {
-        path: "/",
-        element: <Navigate to="/login" replace />,
+        element: <PublicLayout />,
+        children: [
+            {
+                path: "/",
+                element: <DashboardPage />,
+            },
+        ],
     },
     {
-        path: "/login",
-        element: <LoginPage />,
-    },
-    {
-        path: "/register",
-        element: <RegisterPage />,
+        element: <AuthLayout />,
+        children: [
+            {
+                path: "/login",
+                element: <LoginPage />,
+            },
+            {
+                path: "/register",
+                element: <RegisterPage />,
+            },
+        ],
     },
     {
         element: (

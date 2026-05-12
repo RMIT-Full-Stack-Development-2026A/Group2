@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
     Crown,
     Gamepad2,
@@ -13,12 +13,16 @@ import { useAuth } from "../../modules/auth/hooks/useAuth";
 const navClass = ({ isActive }) =>
     `nav-link rounded-3 px-3 py-2 ${isActive ? "active fw-semibold bg-light" : "text-secondary"}`;
 
-export default function NavBar({ onNavigate }) {
+export default function NavBar({ onNavigate, onShowAuthModal }) {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const location = useLocation();
+  const { user, logout, isAuthenticated } = useAuth();
   const displayName = user?.displayName ?? user?.username ?? "player";
   const dashboardPath =
         user?.role === "admin" ? "/admin/dashboard" : "/dashboard";
+
+  // Check if we're on guest dashboard (root path) and not authenticated
+  const isOnGuestDashboard = location.pathname === "/" && !isAuthenticated;
 
   function shouldBlockNavigation(to) {
     if (typeof onNavigate !== "function") return false;
@@ -33,6 +37,15 @@ export default function NavBar({ onNavigate }) {
 
   function handleNavLinkClick(to) {
     return (event) => {
+      // If guest tries to access protected route, show auth modal
+      if (!isAuthenticated && (to === dashboardPath || to === "/profile" || to === "/online" || to === "/premium")) {
+        event.preventDefault();
+        if (typeof onShowAuthModal === "function") {
+          onShowAuthModal();
+        }
+        return;
+      }
+      
       if (shouldBlockNavigation(to)) {
         event.preventDefault();
       }
@@ -63,12 +76,21 @@ export default function NavBar({ onNavigate }) {
           <div className="collapse navbar-collapse" id="appMainNav">
             <ul className="navbar-nav mx-auto mb-2 mb-lg-0 gap-lg-1">
               <li className="nav-item">
-                <NavLink to={dashboardPath} className={navClass} end onClick={handleNavLinkClick(dashboardPath)}>
-                  <span className="d-inline-flex align-items-center gap-2">
-                    <LayoutDashboard size={18} strokeWidth={2} aria-hidden />
-                    Dashboard
+                {isOnGuestDashboard ? (
+                  <span className="nav-link rounded-3 px-3 py-2 active fw-semibold bg-light" style={{ cursor: "default" }}>
+                    <span className="d-inline-flex align-items-center gap-2">
+                      <LayoutDashboard size={18} strokeWidth={2} aria-hidden />
+                      Dashboard
+                    </span>
                   </span>
-                </NavLink>
+                ) : (
+                  <NavLink to={dashboardPath} className={navClass} end onClick={handleNavLinkClick(dashboardPath)}>
+                    <span className="d-inline-flex align-items-center gap-2">
+                      <LayoutDashboard size={18} strokeWidth={2} aria-hidden />
+                      Dashboard
+                    </span>
+                  </NavLink>
+                )}
               </li>
               <li className="nav-item">
                 <NavLink to="/profile" className={navClass} onClick={handleNavLinkClick("/profile")}>
@@ -97,20 +119,33 @@ export default function NavBar({ onNavigate }) {
             </ul>
 
                         <div className="d-flex align-items-center gap-3 ms-lg-auto">
-                            <span className="badge rounded-pill text-bg-warning text-dark px-3 py-2">
-                                PREMIUM
-                            </span>
-                            <span className="text-secondary small">
-                                {displayName}
-                            </span>
-                            <button
-                                type="button"
-                                className="btn btn-outline-dark btn-sm d-inline-flex align-items-center gap-1"
-                                onClick={handleLogout}
-                            >
-                                <LogOut size={16} strokeWidth={2} aria-hidden />
-                                Logout
-                            </button>
+                            {!isAuthenticated && (
+                                <button
+                                    type="button"
+                                    className="btn btn-primary btn-sm"
+                                    onClick={() => navigate("/login")}
+                                >
+                                    Login / Sign Up
+                                </button>
+                            )}
+                            {isAuthenticated && (
+                                <>
+                                    <span className="badge rounded-pill text-bg-warning text-dark px-3 py-2">
+                                        PREMIUM
+                                    </span>
+                                    <span className="text-secondary small">
+                                        {displayName}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-dark btn-sm d-inline-flex align-items-center gap-1"
+                                        onClick={handleLogout}
+                                    >
+                                        <LogOut size={16} strokeWidth={2} aria-hidden />
+                                        Logout
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
