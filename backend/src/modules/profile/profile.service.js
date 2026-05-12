@@ -211,11 +211,11 @@ async function uploadProfileLogo(userId, file) {
 }
 
 async function getMatchHistory(userId, filters = {}) {
-  const items = await gameInterface.listHistoryForUser(userId, filters);
+  const history = await gameInterface.listHistoryForUser(userId, filters);
   const isPremium = await premiumInterface.hasActiveSubscription(userId);
 
   return {
-    items: items.map((item) => ({
+    items: history.items.map((item) => ({
       sessionId: item.sessionId,
       sessionNumber: item.sessionNumber,
       gameType: item.gameType,
@@ -228,6 +228,7 @@ async function getMatchHistory(userId, filters = {}) {
       aiDifficulty: item.aiDifficulty,
       canReplay: isPremium,
     })),
+    totalCount: history.totalCount,
     isPremium,
   };
 }

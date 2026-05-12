@@ -32,8 +32,8 @@ function normalizeHistoryItem(item) {
   };
 }
 
-export async function getMatchHistoryResult(search = "") {
-  const response = await fetchMatchHistoryRequest(search);
+export async function getMatchHistoryResult(filters = {}) {
+  const response = await fetchMatchHistoryRequest(filters);
 
   let body = {};
   try {
@@ -62,5 +62,6 @@ export async function getMatchHistoryResult(search = "") {
   return {
     ok: true,
     items,
+    totalCount: Number(body?.history?.totalCount) || items.length,
   };
 }

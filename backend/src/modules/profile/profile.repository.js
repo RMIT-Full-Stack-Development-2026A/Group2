@@ -1,4 +1,4 @@
-const Profile = require("./model/profile.model");
+const Profile = require("./profile.model");
 
 async function findByUserId(userId) {
   return Profile.findOne({ userID: userId });

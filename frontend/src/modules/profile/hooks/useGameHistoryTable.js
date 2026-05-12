@@ -3,9 +3,15 @@ import { getMatchHistoryResult } from "../services/history.service";
 
 export function useGameHistoryTable() {
   const [items, setItems] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
+  const [result, setResult] = useState("");
+  const [gameType, setGameType] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [sort, setSort] = useState("desc");
 
   const normalizedSearch = search.trim();
 
@@ -16,21 +22,31 @@ export function useGameHistoryTable() {
       setError("");
 
       try {
-        const result = await getMatchHistoryResult(normalizedSearch);
+        const historyResult = await getMatchHistoryResult({
+          search: normalizedSearch,
+          result,
+          gameType,
+          dateFrom,
+          dateTo,
+          sort,
+        });
         if (cancelled) {
           return;
         }
 
-        if (!result.ok) {
+        if (!historyResult.ok) {
           setItems([]);
-          setError(result.message || "Could not load match history.");
+          setTotalCount(0);
+          setError(historyResult.message || "Could not load match history.");
           return;
         }
 
-        setItems(result.items);
+        setItems(historyResult.items);
+        setTotalCount(historyResult.totalCount);
       } catch {
         if (!cancelled) {
           setItems([]);
+          setTotalCount(0);
           setError("Could not load match history.");
         }
       } finally {
@@ -44,13 +60,34 @@ export function useGameHistoryTable() {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [normalizedSearch]);
+  }, [normalizedSearch, result, gameType, dateFrom, dateTo, sort]);
+
+  function clearFilters() {
+    setSearch("");
+    setResult("");
+    setGameType("");
+    setDateFrom("");
+    setDateTo("");
+    setSort("desc");
+  }
 
   return {
     items,
+    totalCount,
     loading,
     error,
     search,
     setSearch,
+    result,
+    setResult,
+    gameType,
+    setGameType,
+    dateFrom,
+    setDateFrom,
+    dateTo,
+    setDateTo,
+    sort,
+    setSort,
+    clearFilters,
   };
 }

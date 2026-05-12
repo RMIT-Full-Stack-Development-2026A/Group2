@@ -10,7 +10,7 @@ function normalizeGameType(gameMode) {
 
 function mapReplayGameType(gameMode) {
   if (gameMode === "single_player") return "Single Player";
-  if (gameMode === "two_player") return "Two Players";
+  if (gameMode === "two_player") return "Two Player";
   if (gameMode === "online_match") return "Online Match";
   return gameMode;
 }
@@ -19,6 +19,17 @@ function parseDateOrNull(value) {
   if (!value) return null;
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function parseDateToEndOfDayOrNull(value) {
+  const date = parseDateOrNull(value);
+  if (!date) return null;
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(String(value))) {
+    date.setHours(23, 59, 59, 999);
+  }
+
+  return date;
 }
 
 function toSessionMap(items) {
@@ -85,7 +96,14 @@ function matchesSearch(historyRow, rawSearch) {
 
 function matchesResult(historyRow, result) {
   if (!result) return true;
-  return String(historyRow.result).toLowerCase() === String(result).toLowerCase();
+  const normalizedRowResult = String(historyRow.result || "aborted").toLowerCase();
+  const normalizedFilter = String(result).toLowerCase();
+
+  if (normalizedFilter === "aborted") {
+    return normalizedRowResult === "aborted" || normalizedRowResult === "unknown";
+  }
+
+  return normalizedRowResult === normalizedFilter;
 }
 
 function matchesGameType(historyRow, gameType) {
@@ -103,7 +121,7 @@ function matchesDateRange(historyRow, dateFrom, dateTo) {
   }
 
   if (dateTo) {
-    const to = parseDateOrNull(dateTo);
+    const to = parseDateToEndOfDayOrNull(dateTo);
     if (to && startedAt > to) return false;
   }
 
@@ -153,7 +171,7 @@ function createGameInterface() {
     const myParticipants = await gameRepository.findParticipantsByUser(userId);
 
     if (!myParticipants.length) {
-      return [];
+      return { items: [], totalCount: 0 };
     }
 
     const sessionIds = [...new Set(myParticipants.map((item) => String(item.sessionID)))];
@@ -205,7 +223,10 @@ function createGameInterface() {
       );
     });
 
-    return sortHistoryRows(filtered, filters.sort);
+    return {
+      items: sortHistoryRows(filtered, filters.sort),
+      totalCount: historyRows.length,
+    };
   }
 
   async function getReplayForUser(userId, sessionId) {

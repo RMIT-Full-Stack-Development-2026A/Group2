@@ -1,5 +1,5 @@
 const User = require("./model/user.model");
-const Profile = require("../profile/model/profile.model");
+const Profile = require("../profile/profile.model");
 
 function escapeRegex(s) {
     return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
