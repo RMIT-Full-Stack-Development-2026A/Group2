@@ -17,6 +17,15 @@ function roomSocketHandler(io, socket) {
   socket.on("createRoom", async ({ boardSize, boardStyle, marker1 }) => {
     const roomCode = uuidv4().slice(0, 6).toUpperCase();
 
+    const existingRoom = [...rooms.values()].find(
+      r => r.player1 === socket.id && r.status === "waiting"
+    );
+
+    if(existingRoom) {
+      socket.emit("joinError", {message: "You are currently in a room"});
+      return;
+    }
+
     await multiplayerService.createRoom(socket.user, {
       roomCode, boardSize, boardStyle, marker1,
     });
@@ -87,7 +96,15 @@ function roomSocketHandler(io, socket) {
 
       broadcastRoomList(io);
     } else {
-      const roomCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const existingRoom = [...rooms.values()].find(
+        r => r.player1 === socket.id && r.status === "waiting"
+      );
+
+      if(existingRoom) {
+        socket.emit("joinError", {message: "You are currently in a room"});
+        return;
+      }
+      const roomCode = uuidv4().slice(0, 6).toUpperCase();
 
       await multiplayerService.createRoom(socket.user, {
         roomCode, boardSize, boardStyle, marker1,
