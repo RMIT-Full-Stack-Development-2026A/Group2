@@ -24,10 +24,16 @@ async function closeLobby(id) {
     );
 }
 
+async function getAllLobbies() {
+    const lobbies = await MatchLobby.find({});
+    return lobbies;
+}
+
 module.exports = {
     createLobby,
     findLobbyByCode,
     findWaitingLobbies,
     updateLobby,
     closeLobby,
+    getAllLobbies
 };

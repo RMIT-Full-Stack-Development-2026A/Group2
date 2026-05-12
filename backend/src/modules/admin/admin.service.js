@@ -1,10 +1,12 @@
 const { createAuthInterface } = require("../auth/auth.interface");
 const {
     createMultiplayerInterface,
-} = require("../multiplayer/multiplayer.interface");
+} = require("../multiplayer/domain/interfaces/multiplayer.interface");
 const {
     createGameInterface,
 } = require("../game/domain/interfaces/game.interface");
+const { getIO } = require("../multiplayer/socket/socketServer");
+const roomSocketHandler = require("../multiplayer/socket/roomSocketHandler");
 
 const authInterface = createAuthInterface();
 const multiplayerInterface = createMultiplayerInterface();
@@ -54,6 +56,7 @@ async function getAllLobbies() {
                 );
 
                 return {
+                    lobbyId: lobby.id,
                     roomNumber: lobby.roomNumber,
                     status: lobby.status,
                     startTime: lobby.startTime,
@@ -65,6 +68,7 @@ async function getAllLobbies() {
                 const owner = await authInterface.findUserById(ownerId);
 
                 return {
+                    lobbyId: lobby.id,
                     roomNumber: lobby.roomNumber,
                     status: lobby.status,
                     startTime: lobby.startTime,
@@ -80,8 +84,19 @@ async function getAllLobbies() {
 
 async function closeLobby(roomId) {
     // Use multiplayer interface to modify room status on db
+    const closedLobby = await multiplayerInterface.closeLobbyForAdmin(roomId);
 
-    // Emit socket event 
+    // Emit socket event so connected players leave immediately without refresh.
+    const io = getIO();
+    roomSocketHandler.emitRoomClosed(io, closedLobby?.roomNumber || roomId);
+
+    return {
+        lobbyId: closedLobby.id,
+        roomNumber: closedLobby.roomNumber,
+        status: closedLobby.status,
+        startTime: closedLobby.startTime,
+        endTime: closedLobby.endTime,
+    };
 }
 
 module.exports = {
@@ -89,4 +104,5 @@ module.exports = {
     toggleUserAccountStatus,
     getSystemStats,
     getAllLobbies,
+    closeLobby,
 };

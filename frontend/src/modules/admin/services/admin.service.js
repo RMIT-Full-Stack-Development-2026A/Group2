@@ -29,3 +29,11 @@ export async function getAllLobbies() {
     const data = await response.json();
     return data.lobbies;
 }
+
+export async function closeLobby(lobbyId) {
+    const response = await httpGet(
+        `/api/admin/online-lobbies/close/${lobbyId}`,
+    );
+    const data = await response.json();
+    return data.lobby;
+}

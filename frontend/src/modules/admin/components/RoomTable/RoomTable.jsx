@@ -1,7 +1,23 @@
 import React from "react";
 import { XCircle } from "lucide-react";
+import { closeLobby } from "../../services/admin.service";
 
-const RoomTable = ({ filtered, closeRoom }) => {
+const RoomTable = ({ filtered, setRooms }) => {
+    async function closeRoom(lobbyId) {
+        const closedLobby = await closeLobby(lobbyId);
+
+        setRooms((currentRooms) =>
+            currentRooms.map((room) =>
+                room.lobbyId === lobbyId
+                    ? {
+                          ...room,
+                          ...closedLobby,
+                      }
+                    : room,
+            ),
+        );
+    }
+
     const formatDateTime = (value) => {
         const date = new Date(value);
 
@@ -27,7 +43,7 @@ const RoomTable = ({ filtered, closeRoom }) => {
             case "finished":
                 return "badge bg-warning px-2 py-2 text-dark";
             case "waiting":
-                return "badge bg-secondary px-2 py-2 text-dark";
+                return "badge bg-primary px-2 py-2 text-white";
         }
     };
 
@@ -80,7 +96,7 @@ const RoomTable = ({ filtered, closeRoom }) => {
                                     r.status !== "finished" && (
                                         <button
                                             className={`btn btn-sm d-flex align-items-center gap-2 btn-danger`}
-                                            onClick={() => closeRoom(r.id)}
+                                            onClick={() => closeRoom(r.lobbyId)}
                                         >
                                             <XCircle
                                                 style={{

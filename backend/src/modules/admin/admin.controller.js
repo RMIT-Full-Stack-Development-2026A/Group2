@@ -74,23 +74,24 @@ async function getAllLobbies(req, res) {
     }
 }
 
-// async function closeLobby(req, res) {
-//     try {
-//         const roomId = req.params.roomId;
-//         const lobby = await adminService.closeLobby(roomId);
+async function closeLobby(req, res) {
+    try {
+        const roomId = req.params.roomId;
+        const lobby = await adminService.closeLobby(roomId);
 
-//         return res.status(200).json({
-//             status: "success",
-//             lobby,
-//         });
-//     } catch (err) {
-//         return handleControllerError(res, err);
-//     }
-// }
+        return res.status(200).json({
+            status: "success",
+            lobby,
+        });
+    } catch (err) {
+        return handleControllerError(res, err);
+    }
+}
 
 module.exports = {
     getAllUsers,
     toggleUserAccountStatus,
     getSystemStats,
     getAllLobbies,
+    closeLobby,
 };

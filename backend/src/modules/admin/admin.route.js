@@ -15,6 +15,6 @@ router.get("/users/change-status/:userId", adminController.toggleUserAccountStat
 
 router.get("/online-lobbies", adminController.getAllLobbies);
 
-// router.get("/online-lobbies/close/:roomId", adminController.closeLobby);
+router.get("/online-lobbies/close/:roomId", adminController.closeLobby);
 
 module.exports = router;

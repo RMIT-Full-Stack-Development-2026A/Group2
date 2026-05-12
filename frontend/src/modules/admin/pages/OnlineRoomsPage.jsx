@@ -93,7 +93,7 @@ const OnlineRoomsPage = () => {
                     </div>
 
                     <div className="table-responsive">
-                        <RoomTable filtered={filtered} />
+                        <RoomTable filtered={filtered} setRooms={setRooms} />
                     </div>
                 </div>
             ) : (
