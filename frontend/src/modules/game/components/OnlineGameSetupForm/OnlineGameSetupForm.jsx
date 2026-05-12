@@ -1,9 +1,10 @@
-import { useNavigate } from "react-router-dom";
+import socket from "@/lib/socket";
 import useOnlineGameSetupForm from "./OnlineGameSetupForm.hook";
 import {
   emitCreateRoom,
   emitJoinRoom,
   emitFindMatch,
+  emitStartGame,
 } from "./OnlineGameSetupForm.service";
 import SetupBoardSizeSelector from "../shared/SetupBoardSizeSelector/SetupBoardSizeSelector";
 import SetupBoardStyleSelector from "../shared/SetupBoardStyleSelector/SetupBoardStyleSelector";
@@ -13,25 +14,28 @@ import styles from "./OnlineGameSetupForm.module.css";
 export default function OnlineGameSetupForm() {
   const {
     rooms,
-    waiting,
+    waiting, 
     waitingRoomCode,
-    joinCode, 
+    waitForStart,
+    joinCode,
     boardSize, 
-    boardStyle, 
+    boardStyle,
     marker1, 
-    marker2, 
-    error, 
+    marker2,
+    error,
     setJoinCode,
-    setBoardSize,
+    setBoardSize, 
     setBoardStyle,
-    setMarker1,
+    setMarker1, 
     setMarker2,
-    setError
+    setError,
   } = useOnlineGameSetupForm();
+
+  console.log("waitForStart state:", waitForStart);
 
   function handleCreateRoom() {
     setError("");
-    emitCreateRoom({ boardSize, boardStyle, marker1, marker2 });
+    emitCreateRoom({ boardSize, boardStyle, marker1 });
   }
 
   function handleJoinRoom() {
@@ -47,7 +51,44 @@ export default function OnlineGameSetupForm() {
 
   function handleFindMatch() {
     setError("");
-    emitFindMatch({ boardSize, boardStyle, marker1, marker2 });
+    emitFindMatch({ boardSize, boardStyle, marker1 });
+  }
+
+  if (waitForStart) {
+    const isPlayer2 = waitForStart.player2SocketId === socket.id;
+
+    return (
+      <div className={styles.root}>
+        <div className={styles.container}>
+          <div className={styles.shell}>
+            <div className={styles.header}>
+              <h2 className={styles.title}>
+                {isPlayer2 ? "Choose Your Marker" : "Opponent Joined!"}
+              </h2>
+              <p className={styles.subtitle}>
+                {isPlayer2
+                  ? `${waitForStart.player1Name} is playing as ${waitForStart.marker1}`
+                  : `${waitForStart.player2Name} has joined! Waiting for them to pick a marker...`}
+              </p>
+            </div>
+
+            {isPlayer2 && (
+              <div className={styles.stack}>
+                <SetupMarkerSelector
+                  label="Your Marker"
+                  selectedMarker={marker2}
+                  blockedMarker={waitForStart.marker1}
+                  onSelect={(marker) => {
+                    setMarker2(marker);
+                    emitStartGame({ roomCode: waitForStart.roomCode, marker2: marker });
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -109,16 +150,7 @@ export default function OnlineGameSetupForm() {
               <SetupMarkerSelector
                 label="Your Marker"
                 selectedMarker={marker1}
-                onSelect={(marker) => {
-                  setMarker1(marker);
-                  if (marker === marker2) setMarker2("O");
-                }}
-              />
-              <SetupMarkerSelector
-                label="Opponent Marker"
-                selectedMarker={marker2}
-                blockedMarker={marker1}
-                onSelect={setMarker2}
+                onSelect={setMarker1}
               />
             </div>
 

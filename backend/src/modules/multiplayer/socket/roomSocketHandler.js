@@ -14,30 +14,29 @@ function roomSocketHandler(io, socket) {
     socket.emit("roomListUpdated", openRooms);
   });
 
-  socket.on("createRoom", async ({ boardSize, boardStyle, marker1, marker2 }) => {
+  socket.on("createRoom", async ({ boardSize, boardStyle, marker1 }) => {
     const roomCode = uuidv4().slice(0, 6).toUpperCase();
-      
+
     await multiplayerService.createRoom(socket.user, {
-      roomCode, boardSize, boardStyle, marker1, marker2
+      roomCode, boardSize, boardStyle, marker1,
     });
 
     rooms.set(roomCode, {
-      roomCode, 
-      boardSize, 
-      boardStyle, 
-      marker1, 
-      marker2,
+      roomCode, boardSize, boardStyle, marker1,
       player1: socket.id,
       player1User: socket.user,
       player2: null,
-      status: "waiting"
+      status: "waiting",
     });
+
     socket.join(roomCode);
-    socket.emit("roomCreated", { roomCode });
+    socket.emit("waitingForOpponent", { roomCode });
     broadcastRoomList(io);
   });
 
   socket.on("joinRoom", async ({ roomCode }) => {
+    console.log("joinRoom received:", roomCode);
+    console.log("room found:", rooms.get(roomCode.toUpperCase()));
     const room = rooms.get(roomCode.toUpperCase());
 
     if (!room) { socket.emit("joinError", { message: "Room not found." }); return; }
@@ -50,14 +49,74 @@ function roomSocketHandler(io, socket) {
     room.status = "active";
     socket.join(roomCode);
 
+    io.to(roomCode).emit("waitForStart", {
+      roomCode,
+      boardSize: room.boardSize,
+      boardStyle: room.boardStyle,
+      marker1: room.marker1,
+      player1Name: room.player1User.username,
+      player2Name: socket.user.username,
+      player2SocketId: socket.id,
+    });
+
+    broadcastRoomList(io);
+  });
+
+  socket.on("findMatch", async ({ boardSize, boardStyle, marker1 }) => {
+    const availableRoom = [...rooms.values()].find(
+      r => r.status === "waiting" &&
+      r.boardSize === boardSize &&
+      r.player1 !== socket.id
+    );
+
+    if (availableRoom) {
+      availableRoom.player2 = socket.id;
+      availableRoom.player2User = socket.user;
+      availableRoom.status = "active";
+      socket.join(availableRoom.roomCode);
+
+      io.to(availableRoom.roomCode).emit("waitForStart", {
+        roomCode: availableRoom.roomCode,
+        boardSize: availableRoom.boardSize,
+        boardStyle: availableRoom.boardStyle,
+        marker1: availableRoom.marker1,
+        player1Name: availableRoom.player1User.username,
+        player2Name: socket.user.username,
+        player2SocketId: socket.id,
+      });
+
+      broadcastRoomList(io);
+    } else {
+      const roomCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+      await multiplayerService.createRoom(socket.user, {
+        roomCode, boardSize, boardStyle, marker1,
+      });
+
+      rooms.set(roomCode, {
+        roomCode, boardSize, boardStyle, marker1,
+        player1: socket.id,
+        player1User: socket.user,
+        player2: null,
+        status: "waiting",
+      });
+
+      socket.join(roomCode);
+      socket.emit("waitingForOpponent", { roomCode });
+      broadcastRoomList(io);
+    }
+  });
+
+  socket.on("startGame", async ({ roomCode, marker2 }) => {
+    const room = rooms.get(roomCode.toUpperCase());
+    if (!room) return;
+
     try {
       const dto = await multiplayerService.joinRoom(
-      socket.user,
-      roomCode.toUpperCase(),
-      room.player1User,
-      { boardSize: room.boardSize, 
-        marker1: room.marker1, 
-        marker2: room.marker2 }
+        room.player2User,
+        roomCode.toUpperCase(),
+        room.player1User,
+        { boardSize: room.boardSize, marker1: room.marker1, marker2 }
       );
 
       room.sessionId = dto.session.id;
@@ -67,102 +126,33 @@ function roomSocketHandler(io, socket) {
         boardSize: room.boardSize,
         boardStyle: room.boardStyle,
         marker1: room.marker1,
-        marker2: room.marker2,
+        marker2,
         player1SocketId: room.player1,
         player2SocketId: room.player2,
         player1Name: room.player1User.username,
         player2Name: room.player2User.username,
         sessionId: dto.session.id,
-        backendSession: dto
+        backendSession: dto,
       });
 
       broadcastRoomList(io);
     } catch (error) {
-      console.error("Failed to create online game session:", error.message);
-      socket.emit("joinError", { message: "Failed to create game session." });
-    }
-  });
-
-  socket.on("findMatch", async ({ boardSize, boardStyle, marker1, marker2 }) => {
-    const availableRoom = [...rooms.values()].find(
-      r => r.status === "waiting" && r.boardSize === boardSize
-    );
-
-    if (availableRoom) {
-      availableRoom.player2 = socket.id;
-      availableRoom.player2User = socket.user;
-      availableRoom.status = "active";
-      socket.join(availableRoom.roomCode);
-
-      try {
-        const dto = await multiplayerService.joinRoom(
-          socket.user,
-          availableRoom.roomCode,
-          availableRoom.player1User,
-          { boardSize: availableRoom.boardSize, 
-            marker1: availableRoom.marker1, 
-            marker2: availableRoom.marker2 }
-        );
-
-        availableRoom.sessionId = dto.session.id;
-
-        io.to(availableRoom.roomCode).emit("gameStart", {
-          roomCode: availableRoom.roomCode,
-          boardSize: availableRoom.boardSize,
-          boardStyle: availableRoom.boardStyle,
-          marker1: availableRoom.marker1,
-          marker2: availableRoom.marker2,
-          player1SocketId: availableRoom.player1,
-          player2SocketId: availableRoom.player2,
-          player1Name: availableRoom.player1User.username,
-          player2Name: availableRoom.player2User.username,
-          sessionId: dto.session.id,
-          backendSession: dto,
-        });
-
-        broadcastRoomList(io);
-      } catch (error) {
-        console.error("Failed to create online game session:", error.message);
-        socket.emit("joinError", { message: "Failed to create game session." });
-      }
-    } else {
-      const roomCode = uuidv4().slice(0, 6).toUpperCase();
-
-      await multiplayerService.createRoom(socket.user, {
-        roomCode, 
-        boardSize, 
-        boardStyle, 
-        marker1, 
-        marker2
-      });
-
-      rooms.set(roomCode, {
-        roomCode, boardSize, boardStyle, marker1, marker2,
-        player1: socket.id,
-        player1User: socket.user,
-        player2: null,
-        status: "waiting"
-      });
-      socket.join(roomCode);
-      socket.emit("waitingForOpponent", { roomCode });
-      broadcastRoomList(io);
+      console.error("Failed to start game:", error.message);
+      io.to(roomCode).emit("joinError", { message: "Failed to start game." });
     }
   });
 
   socket.on("disconnect", async () => {
-    for(const [code, room] of rooms) {
+    for (const [code, room] of rooms) {
       if (room.player1 === socket.id || room.player2 === socket.id) {
         io.to(code).emit("playerDisconnected");
-
         if (room.sessionId) {
           try {
-            await gameService.abortGame(socket.user, room.sessionId);
+            await multiplayerService.closeRoom(code);
           } catch (error) {
-            console.error("Failed to abort game on disconnect:", error.message);
+            console.error("Failed to close room:", error.message);
           }
         }
-
-        await multiplayerService.closeRoom(code);
         rooms.delete(code);
         broadcastRoomList(io);
       }

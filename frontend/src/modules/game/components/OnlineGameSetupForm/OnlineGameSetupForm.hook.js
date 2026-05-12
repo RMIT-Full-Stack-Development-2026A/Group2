@@ -10,6 +10,7 @@ export default function useOnlineGameSetupForm() {
   const [rooms, setRooms] = useState([]);
   const [waiting, setWaiting] = useState(false);
   const [waitingRoomCode, setWaitingRoomCode] = useState(null);
+  const [waitForStart, setWaitForStart] = useState(null);
   const [joinCode, setJoinCode] = useState("");
   const [boardSize, setBoardSize] = useState(10);
   const [boardStyle, setBoardStyle] = useState("classic");
@@ -19,28 +20,15 @@ export default function useOnlineGameSetupForm() {
 
   useEffect(() => {
     if (!socket.connected) socket.connect();
-
     socket.emit("getRooms");
 
-    socket.on("roomListUpdated", (updatedRooms) => {
-      setRooms(updatedRooms);
-    });
+    socket.on("roomListUpdated", (updatedRooms) => setRooms(updatedRooms));
 
     socket.on("gameStart", (config) => {
       const myRole = config.player1SocketId === socket.id ? "player1" : "player2";
       const state = buildOnlineGameNavigationState({
         username: user?.username || "Player",
-        roomCode: config.roomCode,
-        boardSize: config.boardSize,
-        boardStyle: config.boardStyle,
-        marker1: config.marker1,
-        marker2: config.marker2,
-        player1SocketId: config.player1SocketId,
-        player2SocketId: config.player2SocketId,
-        player1Name: config.player1Name,
-        player2Name: config.player2Name,
-        sessionId: config.sessionId,
-        backendSession: config.backendSession,
+        ...config,
         myRole,
       });
       navigate("/game/play", { state });
@@ -51,14 +39,19 @@ export default function useOnlineGameSetupForm() {
       setWaitingRoomCode(roomCode);
     });
 
-    socket.on("joinError", ({ message }) => {
-      setError(message);
+    socket.on("waitForStart", (config) => {
+      console.log("waitForStart received:", config);
+      setWaitForStart(config);
+      setWaiting(false);
     });
+
+    socket.on("joinError", ({ message }) => setError(message));
 
     return () => {
       socket.off("roomListUpdated");
       socket.off("gameStart");
       socket.off("waitingForOpponent");
+      socket.off("waitForStart");
       socket.off("joinError");
     };
   }, []);
@@ -67,6 +60,7 @@ export default function useOnlineGameSetupForm() {
     rooms,
     waiting,
     waitingRoomCode,
+    waitForStart,
     joinCode, setJoinCode,
     boardSize, setBoardSize,
     boardStyle, setBoardStyle,
