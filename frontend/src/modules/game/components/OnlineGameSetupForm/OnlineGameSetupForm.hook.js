@@ -10,6 +10,7 @@ export default function useOnlineGameSetupForm() {
     const [rooms, setRooms] = useState([]);
     const [waiting, setWaiting] = useState(false);
     const [waitingRoomCode, setWaitingRoomCode] = useState(null);
+    const [waitForStart, setWaitForStart] = useState(null);
     const [joinCode, setJoinCode] = useState("");
     const [boardSize, setBoardSize] = useState(10);
     const [boardStyle, setBoardStyle] = useState("classic");
@@ -18,35 +19,28 @@ export default function useOnlineGameSetupForm() {
     const [error, setError] = useState("");
     const [showRoomClosedPopup, setShowRoomClosedPopup] = useState(false);
     const [roomClosedMessage, setRoomClosedMessage] = useState("");
+    const [preparingGame, setPreparingGame] = useState(null);
 
     useEffect(() => {
         if (!socket.connected) socket.connect();
-
         socket.emit("getRooms");
 
-        socket.on("roomListUpdated", (updatedRooms) => {
-            setRooms(updatedRooms);
-        });
+        socket.on("roomListUpdated", (updatedRooms) => setRooms(updatedRooms));
 
         socket.on("gameStart", (config) => {
             const myRole =
                 config.player1SocketId === socket.id ? "player1" : "player2";
             const state = buildOnlineGameNavigationState({
                 username: user?.username || "Player",
-                roomCode: config.roomCode,
-                boardSize: config.boardSize,
-                boardStyle: config.boardStyle,
-                marker1: config.marker1,
-                marker2: config.marker2,
-                player1SocketId: config.player1SocketId,
-                player2SocketId: config.player2SocketId,
-                player1Name: config.player1Name,
-                player2Name: config.player2Name,
-                sessionId: config.sessionId,
-                backendSession: config.backendSession,
+                ...config,
                 myRole,
             });
-            navigate("/game/play", { state });
+
+            // Clear waitForStart so component doesn't return early
+            setWaitForStart(null);
+            // Instead of navigating immediately, expose the prepared state
+            // to the component so it can show a Bootstrap modal/countdown.
+            setPreparingGame(state);
         });
 
         socket.on("waitingForOpponent", ({ roomCode }) => {
@@ -54,9 +48,13 @@ export default function useOnlineGameSetupForm() {
             setWaitingRoomCode(roomCode);
         });
 
-        socket.on("joinError", ({ message }) => {
-            setError(message);
+        socket.on("waitForStart", (config) => {
+            console.log("waitForStart received:", config);
+            setWaitForStart(config);
+            setWaiting(false);
         });
+
+        socket.on("joinError", ({ message }) => setError(message));
 
         socket.on("roomClosed", ({ roomCode, reason }) => {
             const closedRoomCode = String(roomCode || "").toUpperCase();
@@ -76,15 +74,17 @@ export default function useOnlineGameSetupForm() {
             socket.off("roomListUpdated");
             socket.off("gameStart");
             socket.off("waitingForOpponent");
+            socket.off("waitForStart");
             socket.off("joinError");
             socket.off("roomClosed");
         };
-    }, [navigate, user?.username]);
+    }, []);
 
     return {
         rooms,
         waiting,
         waitingRoomCode,
+        waitForStart,
         showRoomClosedPopup,
         roomClosedMessage,
         setShowRoomClosedPopup,
@@ -100,5 +100,7 @@ export default function useOnlineGameSetupForm() {
         setMarker2,
         error,
         setError,
+        preparingGame,
+        setPreparingGame,
     };
 }

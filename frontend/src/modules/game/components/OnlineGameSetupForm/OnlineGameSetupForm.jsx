@@ -1,8 +1,12 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import socket from "@/lib/socket";
 import useOnlineGameSetupForm from "./OnlineGameSetupForm.hook";
 import {
     emitCreateRoom,
     emitJoinRoom,
     emitFindMatch,
+    emitStartGame,
 } from "./OnlineGameSetupForm.service";
 import SetupBoardSizeSelector from "../shared/SetupBoardSizeSelector/SetupBoardSizeSelector";
 import SetupBoardStyleSelector from "../shared/SetupBoardStyleSelector/SetupBoardStyleSelector";
@@ -16,6 +20,9 @@ export default function OnlineGameSetupForm() {
         waitingRoomCode,
         showRoomClosedPopup,
         roomClosedMessage,
+        waitForStart,
+        preparingGame,
+        setPreparingGame,
         joinCode,
         boardSize,
         boardStyle,
@@ -31,9 +38,32 @@ export default function OnlineGameSetupForm() {
         setError,
     } = useOnlineGameSetupForm();
 
+    const navigate = useNavigate();
+    const [countdown, setCountdown] = useState(3);
+
+    useEffect(() => {
+        if (!preparingGame) return;
+
+        setCountdown(3);
+        const timer = setInterval(() => {
+            setCountdown((c) => c - 1);
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [preparingGame]);
+
+    useEffect(() => {
+        if (!preparingGame || countdown > 0) return;
+
+        navigate("/game/play", { state: preparingGame });
+        setPreparingGame(null);
+    }, [countdown, preparingGame, navigate, setPreparingGame]);
+
+    console.log("waitForStart state:", waitForStart);
+
     function handleCreateRoom() {
         setError("");
-        emitCreateRoom({ boardSize, boardStyle, marker1, marker2 });
+        emitCreateRoom({ boardSize, boardStyle, marker1 });
     }
 
     function handleJoinRoom() {
@@ -52,7 +82,49 @@ export default function OnlineGameSetupForm() {
 
     function handleFindMatch() {
         setError("");
-        emitFindMatch({ boardSize, boardStyle, marker1, marker2 });
+        emitFindMatch({ boardSize, boardStyle, marker1 });
+    }
+
+    if (waitForStart) {
+        const isPlayer2 = waitForStart.player2SocketId === socket.id;
+
+        return (
+            <div className={styles.root}>
+                <div className={styles.container}>
+                    <div className={styles.shell}>
+                        <div className={styles.header}>
+                            <h2 className={styles.title}>
+                                {isPlayer2
+                                    ? "Choose Your Marker"
+                                    : "Opponent Joined!"}
+                            </h2>
+                            <p className={styles.subtitle}>
+                                {isPlayer2
+                                    ? `${waitForStart.player1Name} is playing as ${waitForStart.marker1}`
+                                    : `${waitForStart.player2Name} has joined! Waiting for them to pick a marker...`}
+                            </p>
+                        </div>
+
+                        {isPlayer2 && (
+                            <div className={styles.stack}>
+                                <SetupMarkerSelector
+                                    label="Your Marker"
+                                    selectedMarker={marker2}
+                                    blockedMarker={waitForStart.marker1}
+                                    onSelect={(marker) => {
+                                        setMarker2(marker);
+                                        emitStartGame({
+                                            roomCode: waitForStart.roomCode,
+                                            marker2: marker,
+                                        });
+                                    }}
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -118,6 +190,7 @@ export default function OnlineGameSetupForm() {
                                 <div className="modal-backdrop fade show" />
                             </>
                         )}
+
                         <div className={styles.actionRow}>
                             <button
                                 type="button"
@@ -171,16 +244,7 @@ export default function OnlineGameSetupForm() {
                             <SetupMarkerSelector
                                 label="Your Marker"
                                 selectedMarker={marker1}
-                                onSelect={(marker) => {
-                                    setMarker1(marker);
-                                    if (marker === marker2) setMarker2("O");
-                                }}
-                            />
-                            <SetupMarkerSelector
-                                label="Opponent Marker"
-                                selectedMarker={marker2}
-                                blockedMarker={marker1}
-                                onSelect={setMarker2}
+                                onSelect={setMarker1}
                             />
                         </div>
 
@@ -231,6 +295,43 @@ export default function OnlineGameSetupForm() {
                     </div>
                 </div>
             </div>
+
+            {preparingGame && (
+                <>
+                    <div
+                        className="modal fade show d-flex align-items-center justify-content-center"
+                        style={{ display: "block", zIndex: 9999 }}
+                        tabIndex={-1}
+                        role="dialog"
+                        aria-modal="true"
+                    >
+                        <div
+                            className="modal-dialog modal-dialog-centered"
+                            role="document"
+                        >
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title">
+                                        Preparing Game
+                                    </h5>
+                                </div>
+                                <div className="modal-body text-center">
+                                    <p className="mb-3">
+                                        The game is being prepared.
+                                    </p>
+                                    <p className="display-4 fw-bold text-primary mb-0">
+                                        {countdown}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        className="modal-backdrop fade show"
+                        style={{ zIndex: 9998 }}
+                    />
+                </>
+            )}
         </div>
     );
 }
