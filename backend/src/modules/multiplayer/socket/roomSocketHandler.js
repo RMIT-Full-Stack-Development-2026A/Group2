@@ -34,7 +34,7 @@ function roomSocketHandler(io, socket) {
     socket.emit("roomListUpdated", openRooms);
   });
 
-  socket.on("createRoom", async ({ boardSize, boardStyle, marker1 }) => {
+  socket.on("createRoom", async ({ boardSize, boardStyle, marker1, customBoardImage }) => {
     const roomCode = uuidv4().slice(0, 6).toUpperCase();
 
     const existingRoom = [...rooms.values()].find(
@@ -52,6 +52,7 @@ function roomSocketHandler(io, socket) {
 
     rooms.set(roomCode, {
       roomCode, boardSize, boardStyle, marker1,
+      customBoardImage: customBoardImage || null, 
       player1: socket.id,
       player1User: socket.user,
       player2: null,
@@ -64,8 +65,6 @@ function roomSocketHandler(io, socket) {
   });
 
   socket.on("joinRoom", async ({ roomCode }) => {
-    console.log("joinRoom received:", roomCode);
-    console.log("room found:", rooms.get(roomCode.toUpperCase()));
     const room = rooms.get(roomCode.toUpperCase());
 
     if (!room) { socket.emit("joinError", { message: "Room not found." }); return; }
@@ -82,6 +81,7 @@ function roomSocketHandler(io, socket) {
       roomCode,
       boardSize: room.boardSize,
       boardStyle: room.boardStyle,
+      customBoardImage: room.customBoardImage,
       marker1: room.marker1,
       player1Name: room.player1User.username,
       player2Name: socket.user.username,
@@ -91,7 +91,7 @@ function roomSocketHandler(io, socket) {
     broadcastRoomList(io);
   });
 
-  socket.on("findMatch", async ({ boardSize, boardStyle, marker1 }) => {
+  socket.on("findMatch", async ({ boardSize, boardStyle, marker1, customBoardImage }) => {
     const availableRoom = [...rooms.values()].find(
       r => r.status === "waiting" &&
       r.boardSize === boardSize &&
@@ -108,6 +108,7 @@ function roomSocketHandler(io, socket) {
         roomCode: availableRoom.roomCode,
         boardSize: availableRoom.boardSize,
         boardStyle: availableRoom.boardStyle,
+        customBoardImage: availableRoom.customBoardImage,
         marker1: availableRoom.marker1,
         player1Name: availableRoom.player1User.username,
         player2Name: socket.user.username,
@@ -132,6 +133,7 @@ function roomSocketHandler(io, socket) {
 
       rooms.set(roomCode, {
         roomCode, boardSize, boardStyle, marker1,
+        customBoardImage: customBoardImage || null,
         player1: socket.id,
         player1User: socket.user,
         player2: null,
@@ -162,6 +164,7 @@ function roomSocketHandler(io, socket) {
         roomCode,
         boardSize: room.boardSize,
         boardStyle: room.boardStyle,
+        customBoardImage: room.customBoardImage,
         marker1: room.marker1,
         marker2,
         player1SocketId: room.player1,

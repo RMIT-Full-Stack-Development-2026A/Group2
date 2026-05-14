@@ -60,6 +60,13 @@ function GamePlayViewContent({ config, navigate }) {
     abortCurrentGame,
   } = useGamePlayView(config);
 
+  const isOnline = config.gameType === "online";
+  const myRole = config.myRole;
+
+  const myPlayerIndex = myRole === "player1" ? 1 : 2;
+  const isMyTurn = currentPlayer === myPlayerIndex && !winner && !aborted;
+  const isOpponentTurn = currentPlayer !== myPlayerIndex && !winner && !aborted;
+
   const [pauseDialogOpen, setPauseDialogOpen] = useState(false);
   const [abortDialogOpen, setAbortDialogOpen] = useState(false);
   const pendingNavRef = useRef(null);
@@ -125,12 +132,6 @@ function GamePlayViewContent({ config, navigate }) {
     };
   }, [handleNavIntercept, registerNavigationGuard]);
 
-  const isOnline = config.gameType === "online";
-  const myRole = config.myRole;
-
-  const myPlayerIndex = myRole === "player1" ? 1 : 2;
-  const isMyTurn = currentPlayer === myPlayerIndex && !winner && !aborted;
-  const isOpponentTurn = currentPlayer !== myPlayerIndex && !winner && !aborted;
 
   return (
     <AppLayout>
@@ -235,7 +236,7 @@ function GamePlayViewContent({ config, navigate }) {
           </div>
 
           {isOnline ? (
-            <div className="{styles.chatPanel}">
+            <div className={styles.chatPanel}>
               <GameChat roomCode={config.roomCode} />
             </div>
           ) : null}

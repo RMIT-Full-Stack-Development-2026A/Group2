@@ -14,6 +14,8 @@ export default function useOnlineGameSetupForm() {
     const [joinCode, setJoinCode] = useState("");
     const [boardSize, setBoardSize] = useState(10);
     const [boardStyle, setBoardStyle] = useState("classic");
+    const [customBoardImage, setCustomBoardImage] = useState(null);
+    const [useCustomBoard, setUseCustomBoard] = useState(false);
     const [marker1, setMarker1] = useState("X");
     const [marker2, setMarker2] = useState("O");
     const [error, setError] = useState("");
@@ -49,7 +51,6 @@ export default function useOnlineGameSetupForm() {
         });
 
         socket.on("waitForStart", (config) => {
-            console.log("waitForStart received:", config);
             setWaitForStart(config);
             setWaiting(false);
         });
@@ -94,6 +95,10 @@ export default function useOnlineGameSetupForm() {
         setBoardSize,
         boardStyle,
         setBoardStyle,
+        customBoardImage,
+        setCustomBoardImage,
+        useCustomBoard,
+        setUseCustomBoard,
         marker1,
         setMarker1,
         marker2,

@@ -26,12 +26,16 @@ export default function OnlineGameSetupForm() {
         joinCode,
         boardSize,
         boardStyle,
+        customBoardImage,
+        useCustomBoard,
         marker1,
         marker2,
         error,
         setJoinCode,
         setBoardSize,
         setBoardStyle,
+        setCustomBoardImage,
+        setUseCustomBoard,
         setMarker1,
         setMarker2,
         setShowRoomClosedPopup,
@@ -59,11 +63,9 @@ export default function OnlineGameSetupForm() {
         setPreparingGame(null);
     }, [countdown, preparingGame, navigate, setPreparingGame]);
 
-    console.log("waitForStart state:", waitForStart);
-
     function handleCreateRoom() {
         setError("");
-        emitCreateRoom({ boardSize, boardStyle, marker1 });
+        emitCreateRoom({ boardSize, boardStyle, marker1, customBoardImage, useCustomBoard});
     }
 
     function handleJoinRoom() {
@@ -82,7 +84,7 @@ export default function OnlineGameSetupForm() {
 
     function handleFindMatch() {
         setError("");
-        emitFindMatch({ boardSize, boardStyle, marker1 });
+        emitFindMatch({ boardSize, boardStyle, marker1, customBoardImage, useCustomBoard});
     }
 
     if (waitForStart) {
@@ -237,6 +239,10 @@ export default function OnlineGameSetupForm() {
                         <SetupBoardStyleSelector
                             boardStyle={boardStyle}
                             setBoardStyle={setBoardStyle}
+                            customBoardImage={customBoardImage}
+                            setCustomBoardImage={setCustomBoardImage}
+                            useCustomBoard={useCustomBoard}
+                            setUseCustomBoard={setUseCustomBoard}
                             compact={false}
                         />
 
