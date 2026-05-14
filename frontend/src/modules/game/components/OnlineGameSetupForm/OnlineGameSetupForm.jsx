@@ -44,6 +44,8 @@ export default function OnlineGameSetupForm() {
 
     const navigate = useNavigate();
     const [countdown, setCountdown] = useState(3);
+    const [setupMode, setSetupMode] = useState(false);
+    const [createRoom, setCreateRoom] = useState(false);
 
     useEffect(() => {
         if (!preparingGame) return;
@@ -63,16 +65,32 @@ export default function OnlineGameSetupForm() {
         setPreparingGame(null);
     }, [countdown, preparingGame, navigate, setPreparingGame]);
 
+
     function handleCreateRoom() {
         setError("");
-        emitCreateRoom({ boardSize, boardStyle, marker1, customBoardImage, useCustomBoard});
+        setCreateRoom(true);
+        setSetupMode(true);
+    }
+
+    function handleFindMatch() {
+        setError("");
+        
+        if (rooms.length > 0) {
+            emitFindMatch({ boardSize, boardStyle, marker1, customBoardImage, useCustomBoard });
+        } else {
+            setCreateRoom(true);
+            setSetupMode(true);
+        }
+    }
+
+    function handleConfirmSetup() {
+        setError("");
+        emitCreateRoom({ boardSize, boardStyle, marker1, customBoardImage, useCustomBoard });
+        setSetupMode(false);
     }
 
     function handleJoinRoom() {
-        if (!joinCode.trim()) {
-            setError("Please enter a room code");
-            return;
-        }
+        if (!joinCode.trim()) { setError("Please enter a room code"); return; }
         setError("");
         emitJoinRoom(joinCode);
     }
@@ -80,11 +98,6 @@ export default function OnlineGameSetupForm() {
     function handleJoinByCard(roomCode) {
         setError("");
         emitJoinRoom(roomCode);
-    }
-
-    function handleFindMatch() {
-        setError("");
-        emitFindMatch({ boardSize, boardStyle, marker1, customBoardImage, useCustomBoard});
     }
 
     if (waitForStart) {
@@ -129,6 +142,69 @@ export default function OnlineGameSetupForm() {
         );
     }
 
+    if (setupMode) {
+
+        return (
+            <div className={styles.root}>
+                <div className={styles.container}>
+                    <div className={styles.shell}>
+                        <div className={styles.header}>
+                            <h2 className={styles.title}>
+                                {createRoom ? "Create Room" : "Find Match"}
+                            </h2>
+                            <p className={styles.subtitle}>Configure your game settings</p>
+                        </div>
+
+                        <div className={styles.stack}>
+                            {error && <p className={styles.errorText}>{error}</p>}
+
+                            <SetupBoardSizeSelector
+                                value={boardSize}
+                                onChange={setBoardSize}
+                                compact={false}
+                                name="online-board-size"
+                            />
+
+                            <SetupBoardStyleSelector
+                                boardStyle={boardStyle}
+                                setBoardStyle={setBoardStyle}
+                                customBoardImage={customBoardImage}
+                                setCustomBoardImage={setCustomBoardImage}
+                                useCustomBoard={useCustomBoard}
+                                setUseCustomBoard={setUseCustomBoard}
+                                compact={false}
+                            />
+
+                            <div className={styles.markerGrid}>
+                                <SetupMarkerSelector
+                                    label="Your Marker"
+                                    selectedMarker={marker1}
+                                    onSelect={setMarker1}
+                                />
+                            </div>
+
+                            <button
+                                type="button"
+                                className={styles.startButton}
+                                onClick={handleConfirmSetup}
+                            >
+                                {createRoom ? "Create Room" : "Find Match"}
+                            </button>
+
+                            <button
+                                type="button"
+                                className={styles.backButton}
+                                onClick={() => setSetupMode(false)}
+                            >
+                                ← Back to Arena
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className={styles.root}>
             <div className={styles.container}>
@@ -140,19 +216,15 @@ export default function OnlineGameSetupForm() {
                         </p>
                     </div>
 
-                    <div className={styles.stack}>
-                        {waiting && (
-                            <div className={styles.waitingBanner}>
-                                <p>Waiting for opponent...</p>
-                                <p>
-                                    Room code:{" "}
-                                    <strong>{waitingRoomCode}</strong>
-                                </p>
-                                <small>Share this code with a friend!</small>
-                            </div>
-                        )}
+                    {waiting && (
+                        <div className={styles.waitingBanner}>
+                            <p>Waiting for opponent...</p>
+                            <p>Room code: <strong>{waitingRoomCode}</strong></p>
+                            <small>Share this code with a friend!</small>
+                        </div>
+                    )}
 
-                        {error && <p className={styles.errorText}>{error}</p>}
+                    {error && <p className={styles.errorText}>{error}</p>}
 
                         {showRoomClosedPopup && (
                             <>
@@ -193,105 +265,54 @@ export default function OnlineGameSetupForm() {
                             </>
                         )}
 
-                        <div className={styles.actionRow}>
-                            <button
-                                type="button"
-                                className={styles.startButton}
-                                onClick={handleFindMatch}
-                            >
-                                🎮 Find Match
-                            </button>
-                            <button
-                                type="button"
-                                className={styles.secondaryButton}
-                                onClick={handleCreateRoom}
-                            >
+                        <div className={styles.arenaLayout}>
+                            <div className={styles.actionsPanel}>
+                                <button type="button" className={styles.startButton} onClick={handleFindMatch}>
+                                    🎮 Find Match
+                                </button>
+
+                            <button type="button" className={styles.secondaryButton} onClick={handleCreateRoom}>
                                 ➕ Create Room
                             </button>
-                        </div>
 
-                        <div className={styles.joinRow}>
-                            <input
+                            <hr className={styles.divider} />
+
+                            <p className={styles.sectionLabel}>Join by code</p>
+
+                            <div className={styles.joinRow}>
+                                <input
                                 className={styles.input}
-                                placeholder="Enter room code"
+                                placeholder="Room code"
                                 value={joinCode}
-                                onChange={(e) =>
-                                    setJoinCode(e.target.value.toUpperCase())
-                                }
+                                onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
                                 maxLength={6}
-                            />
-                            <button
-                                type="button"
-                                className={styles.secondaryButton}
-                                onClick={handleJoinRoom}
-                            >
+                                />
+                                <button type="button" className={styles.joinButton} onClick={handleJoinRoom}>
                                 Join
-                            </button>
+                                </button>
+                            </div>
                         </div>
 
-                        <SetupBoardSizeSelector
-                            value={boardSize}
-                            onChange={setBoardSize}
-                            compact={false}
-                            name="online-board-size"
-                        />
-
-                        <SetupBoardStyleSelector
-                            boardStyle={boardStyle}
-                            setBoardStyle={setBoardStyle}
-                            customBoardImage={customBoardImage}
-                            setCustomBoardImage={setCustomBoardImage}
-                            useCustomBoard={useCustomBoard}
-                            setUseCustomBoard={setUseCustomBoard}
-                            compact={false}
-                        />
-
-                        <div className={styles.markerGrid}>
-                            <SetupMarkerSelector
-                                label="Your Marker"
-                                selectedMarker={marker1}
-                                onSelect={setMarker1}
-                            />
-                        </div>
-
-                        <div>
-                            <h5 className={styles.sectionLabel}>
-                                Open Rooms ({rooms.length})
-                            </h5>
+                        <div className={styles.roomsPanel}>
+                            <p className={styles.sectionLabel}>Open Rooms ({rooms.length})</p>
                             {rooms.length === 0 ? (
-                                <p className={styles.subtitle}>
-                                    No open rooms yet. Create one!
-                                </p>
+                                <p className={styles.emptyRooms}>No open rooms yet. Create one or find a match!</p>
                             ) : (
                                 <div className={styles.roomList}>
                                     {rooms.map((room) => (
-                                        <div
-                                            key={room.roomCode}
-                                            className={styles.roomCard}
-                                        >
+                                        <div key={room.roomCode} className={styles.roomCard}>
                                             <div>
                                                 <strong>{room.roomCode}</strong>
-                                                <span
-                                                    className={styles.subtitle}
-                                                >
-                                                    {" "}
-                                                    · {room.boardSize}×
-                                                    {room.boardSize} ·{" "}
-                                                    {room.boardStyle}
+                                                <span className={styles.subtitle}>
+                                                {" "}· {room.boardSize}×{room.boardSize} · {room.boardStyle}
                                                 </span>
                                             </div>
                                             <button
                                                 type="button"
-                                                className={
-                                                    styles.secondaryButton
-                                                }
-                                                onClick={() =>
-                                                    handleJoinByCard(
-                                                        room.roomCode,
-                                                    )
-                                                }
+                                                className={styles.roomCardJoinBtn}
+                                                onClick={() => handleJoinByCard(room.roomCode)}
                                             >
-                                                Join
+                                                Join →
                                             </button>
                                         </div>
                                     ))}
@@ -299,8 +320,9 @@ export default function OnlineGameSetupForm() {
                             )}
                         </div>
                     </div>
-                </div>
-            </div>
+                </div> 
+            </div>             
+
 
             {preparingGame && (
                 <>
