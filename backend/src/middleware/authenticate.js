@@ -1,6 +1,10 @@
 const jwt = require("jsonwebtoken");
 const userRepository = require("../modules/auth/auth.repository");
 
+function toIso(value) {
+  return value ? value.toISOString() : null;
+}
+
 // Safe user object for req.user (no password hash).
 function toAuthUserDto(userDoc) {
   if (!userDoc) return null;
@@ -10,6 +14,14 @@ function toAuthUserDto(userDoc) {
     email: userDoc.email,
     role: userDoc.role,
     accountStatus: userDoc.accountStatus,
+    profile: {
+      email: userDoc.email,
+      country: userDoc.country ?? null,
+      avatarURL: userDoc.avatarURL ?? null,
+      createdAt: toIso(userDoc.profileCreatedAt),
+      updatedAt: toIso(userDoc.profileUpdatedAt),
+    },
+    createdAt: toIso(userDoc.createdAt),
   };
 }
 

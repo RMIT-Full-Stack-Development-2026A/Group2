@@ -200,7 +200,7 @@ function GamePlayViewContent({ config, navigate }) {
           open={showWinnerModal}
           winner={winner}
           onOpenChange={setShowWinnerModal}
-          onHistory={() => navigate("/profile?tab=history")}
+          onHistory={() => navigate("/profile/history")}
           onPlayAgain={resetGame}
         />
 

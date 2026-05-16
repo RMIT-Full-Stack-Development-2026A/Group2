@@ -14,6 +14,14 @@ function toExternalUserDto(userData) {
 }
 
 function createAuthInterface() {
+    async function findUserById(userId) {
+        return userReposistory.findById(userId);
+    }
+
+    async function updateUserById(userId, update) {
+        return userReposistory.updateUser(userId, update);
+    }
+
     async function listUsersForAdmin() {
         const users = await userReposistory.findAllUsers();
 
@@ -26,6 +34,8 @@ function createAuthInterface() {
     }
 
     return {
+        findUserById,
+        updateUserById,
         listUsersForAdmin,
         toggleUserAccountStatus,
     };

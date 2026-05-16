@@ -136,6 +136,18 @@ export async function httpPatch(url, body, options = {}) {
     });
 }
 
+/** PATCH multipart/form-data request */
+export async function httpPatchFormData(url, formData, options = {}) {
+    return httpFetch(url, {
+        ...options,
+        method: "PATCH",
+        headers: {
+            ...options.headers,
+        },
+        body: formData,
+    });
+}
+
 /** DELETE request */
 export async function httpDelete(url, options = {}) {
     return httpFetch(url, {

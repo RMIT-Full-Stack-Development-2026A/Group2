@@ -7,6 +7,7 @@ import AuthLayout from "../components/AuthLayout";
 import ProtectedRoute from "../routes/ProtectedRoute";
 import RoleRoute from "../routes/RoleRoute";
 import ProfilePage from "../modules/profile/pages/ProfilePage";
+import GameHistoryPage from "../modules/profile/pages/GameHistoryPage";
 import EditProfilePage from "../modules/profile/pages/EditProfilePage";
 import App from "../App";
 import PremiumPage from "../modules/premium/pages/PremiumPage";
@@ -58,6 +59,7 @@ const router = createBrowserRouter([
                 children: [
                     { path: "/dashboard", element: <DashboardPage /> },
                     { path: "/profile", element: <ProfilePage /> },
+                    { path: "/profile/history", element: <GameHistoryPage /> },
                     { path: "/profile/edit", element: <EditProfilePage /> },
                     { path: "/online", element: <OnlineArenaPage /> },
                     { path: "/game/local", element: <LocalGameSetupPage /> },

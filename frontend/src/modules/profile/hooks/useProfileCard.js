@@ -1,48 +1,42 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/hooks/useAuth";
-import { getProfile } from "../services/profile.service";
+import { getProfileResult, uploadProfileLogo } from "../services/profile.service";
 
 export function useProfileCard() {
-  const { user: authUser } = useAuth();
+  const { logout, user: authUser } = useAuth();
+  const navigate = useNavigate();
   const [user, setUser] = useState(authUser ?? null);
-  const [loading, setLoading] = useState(!authUser);
   const [error, setError] = useState(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadLogoSuccess, setUploadLogoSuccess] = useState("");
 
   useEffect(() => {
-    if (authUser) {
-      // Show available auth user data immediately to avoid UI flash.
-      setUser(authUser);
-      setLoading(false);
-      setError(null);
-    }
-
     let cancelled = false;
 
     (async () => {
-      if (!authUser) {
-        setLoading(true);
-        setError(null);
-      }
+      setError(null);
       try {
-        const next = await getProfile();
+        const result = await getProfileResult();
         if (!cancelled) {
-          if (next) {
-            setUser(next);
-            setError(null);
-          } else if (!authUser) {
-            setError("Could not load profile.");
+          if (result.ok && result.user) {
+            setUser(result.user);
+          } else {
+            setUser(null);
+            setError(result.message || "Could not load profile.");
+            if (
+              result.code === "ACCOUNT_INACTIVE" ||
+              result.status === 401 ||
+              result.status === 403
+            ) {
+              await logout();
+              navigate("/login", { replace: true });
+            }
           }
         }
       } catch {
         if (!cancelled) {
-          if (!authUser) {
-            setUser(null);
-            setError("Could not load profile.");
-          }
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
+          setError("Could not load profile.");
         }
       }
     })();
@@ -50,7 +44,35 @@ export function useProfileCard() {
     return () => {
       cancelled = true;
     };
-  }, [authUser]);
+  }, [logout, navigate]);
 
-  return { user, loading, error };
+  const handleLogoUpload = useCallback(
+    async (file) => {
+      if (!file) {
+        return;
+      }
+      setUploadLogoSuccess("");
+      setUploadingLogo(true);
+      try {
+        const result = await uploadProfileLogo(file);
+        if (!result.ok) {
+          return;
+        }
+
+        setUser(result.user);
+        setUploadLogoSuccess("Logo uploaded successfully.");
+      } finally {
+        setUploadingLogo(false);
+      }
+    },
+    [],
+  );
+
+  return {
+    user,
+    error,
+    handleLogoUpload,
+    uploadingLogo,
+    uploadLogoSuccess,
+  };
 }

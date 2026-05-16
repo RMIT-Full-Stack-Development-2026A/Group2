@@ -1,4 +1,4 @@
-import { httpGet, httpPatch, httpPost } from "../../../lib/httpClient";
+import { httpGet, httpPatch, httpPatchFormData, httpPost } from "../../../lib/httpClient";
 
 /**
  * Raw GET for the authenticated user's profile (expects JSON body with `user`).
@@ -21,4 +21,48 @@ export async function patchProfile(data) {
  */
 export async function postChangePassword(data) {
   return httpPost("/api/profile/change-password", data);
+}
+
+/**
+ * PATCH profile logo (multipart/form-data with `logo` file field).
+ * @param {FormData} formData
+ */
+export async function patchProfileLogo(formData) {
+  return httpPatchFormData("/api/profile/logo", formData);
+}
+
+/**
+ * GET match history for the authenticated player.
+ */
+export async function fetchMatchHistoryRequest(filters = {}) {
+  const params = new URLSearchParams();
+  const trimmedSearch = String(filters.search || "").trim();
+
+  if (trimmedSearch) {
+    params.set("search", trimmedSearch);
+  }
+
+  if (filters.result) {
+    params.set("result", filters.result);
+  }
+
+  if (filters.gameType) {
+    params.set("gameType", filters.gameType);
+  }
+
+  if (filters.dateFrom) {
+    params.set("dateFrom", filters.dateFrom);
+  }
+
+  if (filters.dateTo) {
+    params.set("dateTo", filters.dateTo);
+  }
+
+  if (filters.sort) {
+    params.set("sort", filters.sort);
+  }
+
+  const query = params.toString();
+  const url = query ? `/api/profile/history?${query}` : "/api/profile/history";
+  return httpGet(url);
 }
