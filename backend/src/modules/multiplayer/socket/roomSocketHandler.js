@@ -94,7 +94,6 @@ function roomSocketHandler(io, socket) {
   socket.on("findMatch", async ({ boardSize, boardStyle, marker1, customBoardImage }) => {
     const availableRoom = [...rooms.values()].find(
       r => r.status === "waiting" &&
-      r.boardSize === boardSize &&
       r.player1 !== socket.id
     );
 

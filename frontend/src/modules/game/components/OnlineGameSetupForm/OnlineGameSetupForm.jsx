@@ -76,7 +76,7 @@ export default function OnlineGameSetupForm() {
         setError("");
         
         if (rooms.length > 0) {
-            emitFindMatch({ boardSize, boardStyle, marker1, customBoardImage, useCustomBoard });
+            emitFindMatch({ boardStyle, marker1, customBoardImage, useCustomBoard });
         } else {
             setCreateRoom(true);
             setSetupMode(true);

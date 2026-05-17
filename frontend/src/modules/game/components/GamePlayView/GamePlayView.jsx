@@ -251,7 +251,7 @@ function GamePlayViewContent({ config, navigate }) {
           winner={winner}
           onOpenChange={setShowWinnerModal}
           onHistory={() => navigate("/profile?tab=history")}
-          onPlayAgain={isOnline ? () => navigate("/online") : resetGame}
+          onPlayAgain={isOnline ? () => { socket.disconnect(); navigate("/online") } : resetGame}
         />
 
         <LeaveGameDialog
