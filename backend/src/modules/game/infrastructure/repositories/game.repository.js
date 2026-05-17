@@ -32,7 +32,7 @@ async function findSessionsByIds(ids) {
 }
 
 async function findParticipantsBySession(sessionID) {
-  return GameParticipant.find({ sessionID }).sort({ turnOrder: 1, createdAt: 1 });
+  return await GameParticipant.find({ sessionID }).sort({ turnOrder: 1, createdAt: 1 });
 }
 
 async function findParticipantsBySessionIds(sessionIds) {
@@ -77,11 +77,11 @@ async function createMove(data) {
 }
 
 async function updateSession(id, updates) {
-  return GameSession.findByIdAndUpdate(id, updates, { new: true });
+  return GameSession.findByIdAndUpdate(id, updates, { returnDocument: "after" });
 }
 
 async function updateParticipant(id, updates) {
-  return GameParticipant.findByIdAndUpdate(id, updates, { new: true });
+  return GameParticipant.findByIdAndUpdate(id, updates, { returnDocument: "after" });
 }
 
 async function findLobbyBySessionId(sessionId) {

@@ -3,6 +3,7 @@ const adminRouter = require("../modules/admin/admin.route");
 const gameRouter = require("../modules/game/api/routes/game.route");
 const profileRouter = require("../modules/profile/profile.route");
 const premiumRouter = require("../modules/premium/premium.route");
+const multiplayerRouter = require("../modules/multiplayer/api/routes/multiplayer.route");
 
 module.exports = {
   authRouter,
@@ -10,4 +11,7 @@ module.exports = {
   gameRouter,
   profileRouter,
   premiumRouter,
+  multiplayerRouter
 };
+
+

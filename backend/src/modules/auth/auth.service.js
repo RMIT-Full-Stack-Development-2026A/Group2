@@ -184,6 +184,7 @@ async function refresh(refreshToken) {
     }
 
     if (user.accountStatus !== "active") {
+        console.log("Inactive account attempted token refresh")
         throw new AppError("This account is deactivated.", {
             code: "ACCOUNT_INACTIVE",
             statusCode: 403,

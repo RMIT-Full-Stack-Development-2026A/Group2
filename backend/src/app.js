@@ -31,4 +31,5 @@ app.use("/api/admin", routes.adminRouter);
 app.use("/api/profile", routes.profileRouter);
 app.use("/api/game", routes.gameRouter);
 app.use("/api/premium", routes.premiumRouter);
+app.use("/api/multiplayer", routes.multiplayerRouter);
 module.exports = app;

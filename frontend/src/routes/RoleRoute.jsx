@@ -10,6 +10,7 @@ function getHomePathByRole(role) {
 export default function RoleRoute({ allowedRoles, children }) {
     const { user, isAuthenticated } = useAuth();
     const parentOutletContext = useOutletContext();
+    // const outletContext = useOutletContext();
 
     if (!isAuthenticated) {
         return <Navigate to="/login" replace />;
@@ -25,4 +26,5 @@ export default function RoleRoute({ allowedRoles, children }) {
     }
 
     return <Outlet context={parentOutletContext} />;
+    // return <Outlet context={outletContext} />;
 }

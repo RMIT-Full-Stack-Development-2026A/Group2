@@ -1,4 +1,4 @@
-  import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import LoginPage from "../modules/auth/pages/LoginPage";
 import RegisterPage from "../modules/auth/pages/RegisterPage";
 import DashboardPage from "../modules/auth/pages/DashBoardPage";
@@ -19,6 +19,7 @@ import AIGameSetupPage from "../modules/game/pages/AIGameSetupPage";
 import GamePlayPage from "../modules/game/pages/GamePlayPage";
 import AdminDashboardPage from "../modules/admin/pages/AdminDashboardPage";
 import PlayerManagementPage from "../modules/admin/pages/PlayerManagementPage";
+import OnlineRoomsPage from "../modules/admin/pages/OnlineRoomsPage";
 
 
 
@@ -55,7 +56,6 @@ const router = createBrowserRouter([
             {
                 element: (
                     <RoleRoute allowedRoles={["player"]}>
-                        <Outlet />
                     </RoleRoute>
                 ),
                 children: [
@@ -86,6 +86,10 @@ const router = createBrowserRouter([
                     {
                         path: "/admin/players",
                         element: <PlayerManagementPage />,
+                    },
+                    {
+                        path: "/admin/rooms",
+                        element: <OnlineRoomsPage />,
                     },
                 ],
             },

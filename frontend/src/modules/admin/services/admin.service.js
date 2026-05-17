@@ -17,3 +17,23 @@ export async function toggleUserAccountStatus(userId) {
 
     return data;
 }
+
+export async function getSystemStats() {
+    const response = await httpGet("/api/admin/stats");
+    const data = await response.json();
+    return data.stats;
+}
+
+export async function getAllLobbies() {
+    const response = await httpGet("/api/admin/online-lobbies");
+    const data = await response.json();
+    return data.lobbies;
+}
+
+export async function closeLobby(lobbyId) {
+    const response = await httpGet(
+        `/api/admin/online-lobbies/close/${lobbyId}`,
+    );
+    const data = await response.json();
+    return data.lobby;
+}

@@ -1,8 +1,10 @@
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
+const app = require("./src/app");
+const http = require("http");
+const {initSocketServer} = require("./src/modules/multiplayer/socket/socketServer");
 
 dotenv.config();
-const app = require("./src/app");
 
 dotenv.config({ override: true });
 
@@ -18,7 +20,10 @@ async function startServer() {
     await mongoose.connect(MONGO_URI);
     console.log(`Connected to MongoDB (${DB_NAME})`);
 
-    app.listen(PORT, () => {
+    const httpServer = http.createServer(app);
+    initSocketServer(httpServer); 
+
+    httpServer.listen(PORT, () => {
       console.log(`Server is running at http://localhost:${PORT}`);
     });
   } catch (error) {

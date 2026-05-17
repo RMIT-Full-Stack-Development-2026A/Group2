@@ -48,7 +48,50 @@ async function toggleUserAccountStatus(req, res) {
     }
 }
 
+async function getSystemStats(req, res) {
+    try {
+        const stats = await adminService.getSystemStats();
+
+        return res.status(200).json({
+            status: "success",
+            stats,
+        });
+    } catch (err) {
+        return handleControllerError(res, err);
+    }
+}
+
+async function getAllLobbies(req, res) {
+    try {
+        const lobbies = await adminService.getAllLobbies();
+
+        return res.status(200).json({
+            status: "success",
+            lobbies,
+        });
+    } catch (err) {
+        return handleControllerError(res, err);
+    }
+}
+
+async function closeLobby(req, res) {
+    try {
+        const roomId = req.params.roomId;
+        const lobby = await adminService.closeLobby(roomId);
+
+        return res.status(200).json({
+            status: "success",
+            lobby,
+        });
+    } catch (err) {
+        return handleControllerError(res, err);
+    }
+}
+
 module.exports = {
     getAllUsers,
     toggleUserAccountStatus,
+    getSystemStats,
+    getAllLobbies,
+    closeLobby,
 };

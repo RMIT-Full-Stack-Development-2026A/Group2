@@ -14,6 +14,8 @@ import GameBoard from "./sub-components/GameBoard";
 import WinnerDialog from "./sub-components/WinnerDialog";
 import LeaveGameDialog from "./sub-components/LeaveGameDialog";
 
+import socket from "@/lib/socket"
+
 export default function GamePlayView() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -58,6 +60,13 @@ function GamePlayViewContent({ config, navigate }) {
     abortCurrentGame,
   } = useGamePlayView(config);
 
+  const isOnline = config.gameType === "online";
+  const myRole = config.myRole;
+
+  const myPlayerIndex = myRole === "player1" ? 1 : 2;
+  const isMyTurn = currentPlayer === myPlayerIndex && !winner && !aborted;
+  const isOpponentTurn = currentPlayer !== myPlayerIndex && !winner && !aborted;
+
   const [pauseDialogOpen, setPauseDialogOpen] = useState(false);
   const [abortDialogOpen, setAbortDialogOpen] = useState(false);
   const pendingNavRef = useRef(null);
@@ -68,6 +77,12 @@ function GamePlayViewContent({ config, navigate }) {
     setIsPaused(false);
     setPauseDialogOpen(false);
     setAbortDialogOpen(false);
+
+    if(isOnline) {
+      socket.disconnect();
+      navigate("/dashboard", {replace: true});
+      return;
+    }
 
     await abortCurrentGame();
 
@@ -117,7 +132,6 @@ function GamePlayViewContent({ config, navigate }) {
     };
   }, [handleNavIntercept, registerNavigationGuard]);
 
-  const isOnline = config.gameType === "online";
 
   return (
     <AppLayout>
@@ -147,47 +161,83 @@ function GamePlayViewContent({ config, navigate }) {
           </Alert>
         ) : null}
 
-        <div className={isOnline ? styles.mainOnline : styles.mainLocal}>
+        <div className={styles.mainLocal}>
           <div className={styles.centerRow}>
-            <PlayerStatusCard
-              name={config.player1}
-              marker={config.marker1}
-              isActive={currentPlayer === 1 && !winner && !aborted}
-              turnText="Your turn"
-              avatarContent={config.player1.charAt(0).toUpperCase()}
-            />
+            {isOnline ? (
+                <>
+                  <div className={styles.onlinePlayerColumn}>
+                    <PlayerStatusCard
+                      name="You"
+                      marker={myRole === "player1" ? config.marker1 : config.marker2}
+                      isActive={isMyTurn}
+                      turnText="Your turn"
+                      avatarContent="Y"
+                    />
+                    <PlayerStatusCard
+                      name="Opponent"
+                      marker={myRole === "player1" ? config.marker2 : config.marker1}
+                      isActive={isOpponentTurn}
+                      turnText="Their turn"
+                      avatarContent="O"
+                    />
+                  </div>
 
-            <GameBoard
-              board={board}
-              size={size}
-              boardStyle={config.boardStyle}
-              customBoardImage={config.customBoardImage}
-              winner={winner}
-              aborted={aborted}
-              isPaused={isPaused}
-              winningCells={winningCells}
-              marker1={config.marker1}
-              marker2={config.marker2}
-              onCellClick={handleCellClick}
-            />
-
-            <PlayerStatusCard
-              name={config.player2}
-              marker={config.marker2}
-              isActive={(currentPlayer === 2 || aiThinking) && !winner && !aborted}
-              showTurnText={aiThinking}
-              turnText={aiThinking ? "Thinking..." : "Their turn"}
-              avatarContent={
-                config.gameType === "ai"
-                  ? <Bot className="h-5 w-5" />
-                  : config.player2.charAt(0).toUpperCase()
-              }
-            />
+                  <GameBoard
+                    board={board}
+                    size={size}
+                    boardStyle={config.boardStyle}
+                    customBoardImage={config.customBoardImage}
+                    winner={winner}
+                    aborted={aborted}
+                    isPaused={isPaused}
+                    winningCells={winningCells}
+                    marker1={config.marker1}
+                    marker2={config.marker2}
+                    onCellClick={handleCellClick}
+                  />
+                  
+                </>
+              ) : (
+                <>
+                  <PlayerStatusCard
+                    name={config.player1}
+                    marker={config.marker1}
+                    isActive={currentPlayer === 1 && !winner && !aborted}
+                    turnText="Your turn"
+                    avatarContent={config.player1.charAt(0).toUpperCase()}
+                  />
+                  <GameBoard
+                    board={board}
+                    size={size}
+                    boardStyle={config.boardStyle}
+                    customBoardImage={config.customBoardImage}
+                    winner={winner}
+                    aborted={aborted}
+                    isPaused={isPaused}
+                    winningCells={winningCells}
+                    marker1={config.marker1}
+                    marker2={config.marker2}
+                    onCellClick={handleCellClick}
+                  />
+                  <PlayerStatusCard
+                    name={config.player2}
+                    marker={config.marker2}
+                    isActive={(currentPlayer === 2 || aiThinking) && !winner && !aborted}
+                    showTurnText={aiThinking}
+                    turnText={aiThinking ? "Thinking..." : "Their turn"}
+                    avatarContent={
+                      config.gameType === "ai"
+                        ? <Bot className="h-5 w-5" />
+                        : config.player2.charAt(0).toUpperCase()
+                    }
+                  />
+                </>
+              )}
           </div>
 
           {isOnline ? (
             <div className={styles.chatPanel}>
-              <GameChat currentUser={config.player1} opponent={config.player2} />
+              <GameChat roomCode={config.roomCode} />
             </div>
           ) : null}
         </div>
@@ -200,8 +250,8 @@ function GamePlayViewContent({ config, navigate }) {
           open={showWinnerModal}
           winner={winner}
           onOpenChange={setShowWinnerModal}
-          onHistory={() => navigate("/profile/history")}
-          onPlayAgain={resetGame}
+          onHistory={() => navigate("/profile?tab=history")}
+          onPlayAgain={isOnline ? () => { socket.disconnect(); navigate("/online") } : resetGame}
         />
 
         <LeaveGameDialog

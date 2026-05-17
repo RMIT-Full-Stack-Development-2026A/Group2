@@ -13,6 +13,8 @@ export default function GameHeaderBar({
   onTogglePause,
   onAbort,
 }) {
+  const isOnline = gameType === "online";
+
   return (
     <div className={styles.bar}>
       <div className={styles.left}>
@@ -28,6 +30,7 @@ export default function GameHeaderBar({
         <span>{formatTime(elapsed)}</span>
       </div>
 
+      {!isOnline ? (
       <div className={styles.actions}>
         <button type="button" className={styles.ghostBtn} onClick={onRestart}>
           Restart
@@ -44,6 +47,7 @@ export default function GameHeaderBar({
           Abort
         </button>
       </div>
+      ) : null}
     </div>
   );
 }

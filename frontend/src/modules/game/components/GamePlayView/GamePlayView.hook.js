@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { createEmptyBoard } from "../../utils/game.helpers";
 import {
   abortGameSession,
@@ -10,6 +11,7 @@ import {
   makeGameMove,
 } from "../../api/game.api";
 import { normalizeBackendGameState } from "./GamePlayView.service";
+import socket from "@/lib/socket";
 
 function getElapsedSecondsFromStart(startedAt) {
   if (!startedAt) return 0;
@@ -21,6 +23,7 @@ function getElapsedSecondsFromStart(startedAt) {
 }
 
 export default function useGamePlayView(config) {
+  const navigate = useNavigate();
   const AI_THINKING_DELAY_MS = 600;
   const size = config?.boardSize || 10;
   const firstPlayer = config?.firstPlayer;
@@ -119,6 +122,68 @@ export default function useGamePlayView(config) {
       active = false;
     };
   }, [applyBackendState, isBackendManaged, sessionId]);
+
+
+  const isOnline = config?.gameType === "online";
+  const myRole = config?.myRole || null;
+  const myRoleRef = useRef(myRole);
+
+  useEffect(() => {
+    myRoleRef.current = myRole;
+  }, [myRole]);
+
+  const currentPlayerRef = useRef(currentPlayer);
+
+  useEffect(() => {
+    currentPlayerRef.current = currentPlayer;
+  }, [currentPlayer]);
+
+  useEffect(() => {
+    if (!isOnline) return;
+
+    if (!socket.connected) socket.connect();
+
+    let firstConnect = true;
+    
+    const handleConnect = () => {
+      if(firstConnect) {
+        firstConnect = false;
+        return;
+      }
+
+      const isPlayer1 = config?.player1SocketId === socket.id;
+      const isPlayer2 = config?.player2SocketId === socket.id;
+      if (!isPlayer1 && !isPlayer2) {
+        navigate("/online", { replace: true });
+      }
+    };
+
+    socket.on("connect", handleConnect);
+
+    socket.on("moveResult", (dto) => {
+      applyBackendState(dto);
+    });
+
+    socket.on("playerDisconnected", () => {
+      const winnerName =
+        myRoleRef.current === "player1" ? config.player1 : config.player2;
+      setWinner(winnerName);
+      setShowWinnerModal(true);
+    });
+
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("moveResult");
+      socket.off("playerDisconnected");
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
 
   const resetGame = useCallback(async () => {
     if (isBackendManaged) {
@@ -255,11 +320,38 @@ export default function useGamePlayView(config) {
 
   const handleCellClick = useCallback(
     (row, col) => {
+      if (isOnline) {
+        
+        if (winner || aborted) return;
+        if (board[row]?.[col]) return;
+
+        const isMyTurn =
+          (myRole === "player1" && currentPlayerRef.current === 1) ||
+          (myRole === "player2" && currentPlayerRef.current === 2);
+        if (!isMyTurn) return;
+
+        const myMarker = myRole === "player1" ? config.marker1 : config.marker2;
+        const newBoard = board.map((r) => [...r]);
+        newBoard[row][col] = myMarker;
+        setBoard(newBoard);
+        setCurrentPlayer((p) => (p === 1 ? 2 : 1));
+
+        socket.emit("makeMove", {
+          roomCode: config.roomCode,
+          rowIndex: row,
+          colIndex: col,
+        });
+        return;
+      }
+
       if (isBackendManaged) {
         handleBackendCellClick(row, col);
       }
     },
-    [handleBackendCellClick, isBackendManaged],
+    [
+      isOnline, myRole, winner, aborted, board,
+      currentPlayer, config, isBackendManaged, handleBackendCellClick
+    ],
   );
 
   const abortCurrentGame = useCallback(async () => {
