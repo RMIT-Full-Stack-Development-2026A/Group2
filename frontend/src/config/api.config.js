@@ -32,6 +32,15 @@ export const API_ENDPOINTS = {
     getWallet: "/subscription/wallet",
     topUpWallet: "/subscription/wallet/top-up",
   },
+  premium: {
+    me: "/premium/me",
+    payWallet: "/premium/pay-wallet",
+    createCheckoutSession: "/premium/create-checkout-session",
+    createTestCheckoutSession: "/premium/create-test-checkout-session",
+    confirmSession: "/premium/confirm-session",
+    testEmail: "/premium/test-email",
+    reset: "/premium/reset",
+  },
   admin: {
     getPlayers: "/admin/players",
     getPlayer: (id) => `/admin/players/${id}`,

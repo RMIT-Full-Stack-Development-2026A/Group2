@@ -4,6 +4,8 @@ const mongoose = require("mongoose");
 dotenv.config();
 const app = require("./src/app");
 
+dotenv.config({ override: true });
+
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI;
 const DB_NAME = process.env.DB_NAME || "tictactoang";

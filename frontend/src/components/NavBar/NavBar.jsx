@@ -1,4 +1,5 @@
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 import {
     Crown,
     Gamepad2,
@@ -9,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "../../modules/auth/hooks/useAuth";
+import { getPremiumMe } from "../../modules/premium/services/premium.service";
 
 const navClass = ({ isActive }) =>
     `nav-link rounded-3 px-3 py-2 ${isActive ? "active fw-semibold bg-light" : "text-secondary"}`;
@@ -17,9 +19,26 @@ export default function NavBar({ onNavigate, onShowAuthModal }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout, isAuthenticated } = useAuth();
+  const [isPremiumActive, setIsPremiumActive] = useState(false);
   const displayName = user?.displayName ?? user?.username ?? "player";
   const dashboardPath =
         user?.role === "admin" ? "/admin/dashboard" : "/dashboard";
+
+  useEffect(() => {
+    if (user?.role !== "player") {
+      setIsPremiumActive(false);
+      return;
+    }
+
+    (async () => {
+      try {
+        const subscription = await getPremiumMe();
+        setIsPremiumActive(Boolean(subscription?.isPremium));
+      } catch {
+        setIsPremiumActive(false);
+      }
+    })();
+  }, [user?.role, location.pathname]);
 
   // Check if we're on guest dashboard (root path) and not authenticated
   const isOnGuestDashboard = location.pathname === "/" && !isAuthenticated;
@@ -130,8 +149,12 @@ export default function NavBar({ onNavigate, onShowAuthModal }) {
                             )}
                             {isAuthenticated && (
                                 <>
-                                    <span className="badge rounded-pill text-bg-warning text-dark px-3 py-2">
-                                        PREMIUM
+                                    <span
+                                className={`badge rounded-pill px-3 py-2 ${
+                                  isPremiumActive ? "text-bg-warning text-dark" : "text-bg-secondary"
+                                }`}
+                            >
+                                        {isPremiumActive ? "PREMIUM" : "FREE"}
                                     </span>
                                     <span className="text-secondary small">
                                         {displayName}
