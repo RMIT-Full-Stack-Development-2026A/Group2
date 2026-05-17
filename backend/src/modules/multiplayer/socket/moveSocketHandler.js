@@ -1,6 +1,7 @@
 const gameService = require("../../game/application/services/game.service");
 const roomSocketHandler = require("./roomSocketHandler");
 const rooms = roomSocketHandler.rooms; 
+const multiplayerService = require("../application/services/multiplayer.service")
 
 module.exports = function moveSocketHandler(io, socket) {
   socket.on("makeMove", async ({ roomCode, rowIndex, colIndex }) => {
@@ -19,6 +20,11 @@ module.exports = function moveSocketHandler(io, socket) {
       );
 
       io.to(roomCode).emit("moveResult", dto);
+
+      if (dto.session.status === "finished" || dto.session.status === "aborted") {
+        await multiplayerService.closeRoom(roomCode);
+      }
+
     } catch (error) {
       socket.emit("moveError", { message: error.message });
     }
