@@ -2,7 +2,7 @@ const SubscriptionPlan = require("./model/subscriptionPlan.model");
 const UserSubscription = require("./model/userSubscription.model");
 const Transaction = require("../wallet/model/transaction.model");
 const User = require("../auth/model/user.model");
-const Profile = require("../profile/model/profile.model");
+const Profile = require("../profile/profile.model");
 
 async function findActiveSubscription(userId, now = new Date()) {
   return UserSubscription.findOne({
