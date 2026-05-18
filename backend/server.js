@@ -1,12 +1,11 @@
 const dotenv = require("dotenv");
+// Load environment variables before importing application code
+dotenv.config({ override: true });
+
 const mongoose = require("mongoose");
 const app = require("./src/app");
 const http = require("http");
-const {initSocketServer} = require("./src/modules/multiplayer/socket/socketServer");
-
-dotenv.config();
-
-dotenv.config({ override: true });
+const { initSocketServer } = require("./src/modules/multiplayer/socket/socketServer");
 
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI;
