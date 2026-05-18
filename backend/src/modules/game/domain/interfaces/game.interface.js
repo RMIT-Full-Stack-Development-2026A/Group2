@@ -9,9 +9,10 @@ function normalizeGameType(gameMode) {
 }
 
 function mapReplayGameType(gameMode) {
-  if (gameMode === "single_player") return "Single Player";
-  if (gameMode === "two_player") return "Two Player";
-  if (gameMode === "online_match") return "Online Match";
+  const tag = normalizeGameType(gameMode);
+  if (tag === "ai") return "AI";
+  if (tag === "local") return "Local";
+  if (tag === "online") return "Online";
   return gameMode;
 }
 

@@ -1,0 +1,90 @@
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.metaGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.metaLabel {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.metaValue {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.metaValueLarge {
+  font-size: 1.375rem;
+  line-height: 1.2;
+}
+
+.transport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.transportBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid #d7dde6;
+  border-radius: 10px;
+  background: #fff;
+  color: #334155;
+}
+
+.transportBtn:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.transportBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.transportBtnPrimary {
+  width: auto;
+  min-width: 3.25rem;
+  padding: 0 1rem;
+  border-color: #0d6efd;
+  background: #0d6efd;
+  color: #fff;
+}
+
+.transportBtnPrimary:hover:not(:disabled) {
+  background: #0b5ed7;
+  border-color: #0b5ed7;
+}
+
+.scrubber {
+  width: 100%;
+  accent-color: #0d6efd;
+}

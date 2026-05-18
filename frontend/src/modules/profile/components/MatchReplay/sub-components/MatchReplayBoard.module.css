@@ -1,0 +1,169 @@
+.boardShell {
+  position: relative;
+  --cell-size: clamp(2.2rem, 2.8vw, 2.85rem);
+  border: 1px solid #d7dde6;
+  border-radius: 16px;
+  padding: 10px;
+  overflow: auto;
+  max-width: 100%;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+}
+
+.boardShellCompact {
+  --cell-size: clamp(1.35rem, calc((min(100vw, 880px) - 5rem) / 11), 2.15rem);
+  box-shadow: none;
+  overflow: visible;
+}
+
+.boardGrid {
+  display: grid;
+  gap: 0;
+  width: fit-content;
+  margin: 0;
+}
+
+.boardWithCoordinates {
+  display: grid;
+  grid-template-columns: 1.5rem auto;
+  grid-template-rows: 1.5rem auto;
+  width: fit-content;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.cornerSpacer {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.columnLabels {
+  display: grid;
+  gap: 0;
+  width: fit-content;
+}
+
+.columnLabels .coordinateLabel {
+  width: var(--cell-size);
+  height: 1.5rem;
+}
+
+.rowLabels {
+  display: grid;
+  grid-template-rows: repeat(var(--board-size, 10), var(--cell-size));
+  gap: 0;
+  width: 1.5rem;
+}
+
+.rowLabels .coordinateLabel {
+  width: 1.5rem;
+  height: var(--cell-size);
+}
+
+.coordinateLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--cell-size);
+  height: var(--cell-size);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #475569;
+  user-select: none;
+  pointer-events: none;
+}
+
+.classicBoard {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.woodBoard {
+  background: linear-gradient(180deg, #f6ead4 0%, #ead7b3 100%);
+}
+
+.darkBoard {
+  background: linear-gradient(180deg, #1e1e2e 0%, #0f172a 100%);
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--cell-size);
+  min-height: var(--cell-size);
+  width: var(--cell-size);
+  height: var(--cell-size);
+  padding: 0;
+  margin: 0;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #1e293b;
+  font-size: clamp(0.95rem, 1.2vw, 1.1rem);
+  font-weight: 700;
+  cursor: default;
+  transition: all 0.15s ease;
+  border-radius: 2px;
+}
+
+.cell:disabled {
+  cursor: default;
+}
+
+.cell.empty {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.cell.winning {
+  background: #22c55e;
+  border-color: #22c55e;
+  color: #fff;
+}
+
+/* Dark theme adjustments */
+.darkBoard .cell.empty {
+  background: #2a2a3e;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #a5b4fc;
+}
+
+/* Wood theme adjustments */
+.woodBoard .cell.empty {
+  background: #fffbeb;
+  border-color: #d97706;
+  color: #78350f;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .boardShell {
+    padding: 8px;
+  }
+
+  .coordinateLabel {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .boardWithCoordinates {
+    grid-template-columns: 1rem auto;
+    grid-template-rows: 1rem auto;
+  }
+
+  .cornerSpacer {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .columnLabels .coordinateLabel {
+    height: 1rem;
+  }
+
+  .rowLabels .coordinateLabel {
+    width: 1rem;
+  }
+
+  .coordinateLabel {
+    font-size: 0.65rem;
+  }
+}

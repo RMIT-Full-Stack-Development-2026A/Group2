@@ -1,4 +1,4 @@
-  import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import LoginPage from "../modules/auth/pages/LoginPage";
 import RegisterPage from "../modules/auth/pages/RegisterPage";
 import DashboardPage from "../modules/auth/pages/DashBoardPage";
@@ -6,6 +6,7 @@ import ProtectedRoute from "../routes/ProtectedRoute";
 import RoleRoute from "../routes/RoleRoute";
 import ProfilePage from "../modules/profile/pages/ProfilePage";
 import GameHistoryPage from "../modules/profile/pages/GameHistoryPage";
+import MatchReplayPage from "../modules/profile/pages/MatchReplayPage";
 import EditProfilePage from "../modules/profile/pages/EditProfilePage";
 import App from "../App";
 import PremiumPage from "../modules/premium/pages/PremiumPage";
@@ -16,65 +17,67 @@ import GamePlayPage from "../modules/game/pages/GamePlayPage";
 import AdminDashboardPage from "../modules/admin/pages/AdminDashboardPage";
 import PlayerManagementPage from "../modules/admin/pages/PlayerManagementPage";
 
-
-
 const router = createBrowserRouter([
-    {
-        path: "/",
-        element: <Navigate to="/login" replace />,
-    },
-    {
-        path: "/login",
-        element: <LoginPage />,
-    },
-    {
-        path: "/register",
-        element: <RegisterPage />,
-    },
-    {
+  {
+    path: "/",
+    element: <Navigate to="/login" replace />,
+  },
+  {
+    path: "/login",
+    element: <LoginPage />,
+  },
+  {
+    path: "/register",
+    element: <RegisterPage />,
+  },
+  {
+    element: (
+      <ProtectedRoute>
+        <App />
+      </ProtectedRoute>
+    ),
+    children: [
+      {
         element: (
-            <ProtectedRoute>
-                <App />
-            </ProtectedRoute>
+          <RoleRoute allowedRoles={["player"]}>
+            <Outlet />
+          </RoleRoute>
         ),
         children: [
-            {
-                element: (
-                    <RoleRoute allowedRoles={["player"]}>
-                        <Outlet />
-                    </RoleRoute>
-                ),
-                children: [
-                    { path: "/dashboard", element: <DashboardPage /> },
-                    { path: "/profile", element: <ProfilePage /> },
-                    { path: "/profile/history", element: <GameHistoryPage /> },
-                    { path: "/profile/edit", element: <EditProfilePage /> },
-                    { path: "/online", element: <OnlineArenaPage /> },
-                    { path: "/game/local", element: <LocalGameSetupPage /> },
-                    { path: "/game/ai", element: <AIGameSetupPage /> },
-                    { path: "/game/play", element: <GamePlayPage /> },
-                    { path: "/premium", element: <PremiumPage /> },
-                ],
-            },
-            {
-                element: (
-                    <RoleRoute allowedRoles={["admin"]}>
-                        <Outlet />
-                    </RoleRoute>
-                ),
-                children: [
-                    {
-                        path: "/admin/dashboard",
-                        element: <AdminDashboardPage />,
-                    },
-                    {
-                        path: "/admin/players",
-                        element: <PlayerManagementPage />,
-                    },
-                ],
-            },
+          { path: "/dashboard", element: <DashboardPage /> },
+          { path: "/profile", element: <ProfilePage /> },
+          { path: "/profile/history", element: <GameHistoryPage /> },
+          {
+            path: "/profile/history/replay/:sessionId",
+            element: <MatchReplayPage />,
+          },
+          { path: "/profile/edit", element: <EditProfilePage /> },
+          { path: "/online", element: <OnlineArenaPage /> },
+          { path: "/game/local", element: <LocalGameSetupPage /> },
+          { path: "/game/ai", element: <AIGameSetupPage /> },
+          { path: "/game/play", element: <GamePlayPage /> },
+          { path: "/premium", element: <PremiumPage /> },
         ],
-    },
+      },
+      {
+        element: (
+          <RoleRoute allowedRoles={["admin"]}>
+            <Outlet />
+          </RoleRoute>
+        ),
+        children: [
+          {
+            path: "/admin/dashboard",
+            element: <AdminDashboardPage />,
+          },
+          {
+            path: "/admin/players",
+            element: <PlayerManagementPage />,
+          },
+        ],
+      },
+    ],
+  },
 ]);
 
 export default router;
