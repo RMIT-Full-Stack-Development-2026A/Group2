@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useOutletContext } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import AuthRequiredModal from "../../../components/Modals/AuthRequiredModal";
 
@@ -64,15 +64,6 @@ export default function DashboardPage() {
               <div className="card-body p-4">
                 <h4 className="fw-bold">Online Arena</h4>
                 <p className="text-secondary mb-0">Play against others in real-time</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="col-md-4" onClick={() => handleActionClick("/profile")} style={{ cursor: "pointer" }}>
-            <div className="card h-100 shadow-sm border-0 rounded-4">
-              <div className="card-body p-4">
-                <h4 className="fw-bold">View Profile</h4>
-                <p className="text-secondary mb-0">Check out player profiles and stats</p>
               </div>
             </div>
           </div>
