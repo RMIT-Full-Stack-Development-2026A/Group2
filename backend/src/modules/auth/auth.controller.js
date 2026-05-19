@@ -8,6 +8,7 @@ const {
   clearLoginAttempts,
 } = require("../../middleware/loginAttemptLimiter");
 
+
 function handleControllerError(res, err) {
   if (err instanceof AppError) {
     return sendError(
@@ -99,11 +100,18 @@ async function logIn(req, res) {
   }
 }
 
-function logOut(req, res) {
+async function logOut(req, res) {
   const cookies = req.cookies;
 
   const secureCookie = process.env.NODE_ENV === "production";
   if (cookies?.jwt) {
+    const token = cookies.jwt;
+    try {
+      await authService.logOut(token);
+    } catch (e) {
+      console.error("Failed to blacklist refresh token on logout", e);
+    }
+
     res.clearCookie("jwt", {
       httpOnly: true,
       secure: secureCookie,

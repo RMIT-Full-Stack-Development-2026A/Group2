@@ -3,6 +3,7 @@ const tokenUtils = require("../../shared/utils/token.utils");
 const AppError = require("../../shared/errors/AppError");
 const userRepository = require("./auth.repository");
 const { validateRegisterBody } = require("./auth.validation");
+const jwt = require("jsonwebtoken");
 
 function publicUserDto(userDoc) {
     return {
@@ -163,6 +164,19 @@ async function logIn(identifier, password) {
     };
 }
 
+async function logOut(refreshToken) {
+    // Decode to extract expiry and user id for bookkeeping; do not rely on decode for validity
+    let decoded = {};
+    try {
+        decoded = jwt.decode(refreshToken) || {};
+    } catch (e) {
+        // ignore — we'll still store token with immediate expiry fallback
+    }
+    const expiresAt = decoded.exp ? new Date(decoded.exp * 1000) : new Date(Date.now());
+    const userId = decoded.id || null;
+    return userRepository.addBlacklistedRefreshToken(refreshToken, userId, expiresAt);
+}
+
 async function refresh(refreshToken) {
     let decoded;
     try {
@@ -171,6 +185,23 @@ async function refresh(refreshToken) {
         throw new AppError("Refresh token is invalid or expired.", {
             code: "INVALID_REFRESH_TOKEN",
             statusCode: 401,
+        });
+    }
+
+    // Check blacklist (repository handles DB interaction)
+    try {
+        const revoked = await userRepository.isRefreshTokenBlacklisted(refreshToken);
+        if (revoked) {
+            throw new AppError("Refresh token has been revoked.", {
+                code: "REVOKED_REFRESH_TOKEN",
+                statusCode: 401,
+            });
+        }
+    } catch (err) {
+        if (err instanceof AppError) throw err;
+        throw new AppError("Unable to verify refresh token.", {
+            code: "REFRESH_VERIFICATION_FAILED",
+            statusCode: 500,
         });
     }
 
@@ -204,4 +235,5 @@ module.exports = {
     signUp,
     logIn,
     refresh,
+    logOut,
 };
