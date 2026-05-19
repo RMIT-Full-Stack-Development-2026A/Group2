@@ -26,7 +26,7 @@ function normalizeHistoryItem(item) {
     sessionNumber: String(item.sessionNumber || ""),
     startTime: item.startTime || null,
     endTime: item.endTime || null,
-    gameType: item.gameTypeLabel || item.gameType || "Unknown",
+    gameType: String(item.gameType || "unknown").toLowerCase(),
     result: normalizedResult,
     playersLabel: normalizePlayersLabel(item),
   };

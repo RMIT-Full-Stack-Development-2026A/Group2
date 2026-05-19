@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Folder, Hexagon, Pencil, Upload } from "lucide-react";
 import { useProfileCard } from "../../hooks/useProfileCard";
 import { formatMemberSince, getAvatarInitials } from "./ProfileCard.service";
+import ProfileStatsSection from "./ProfileStatsSection";
 
 export default function ProfileCard({ embedded = false }) {
   const logoInputRef = useRef(null);
@@ -127,7 +128,7 @@ export default function ProfileCard({ embedded = false }) {
         </div>
       </div>
 
-      
+      <ProfileStatsSection />
     </div>,
   );
 }

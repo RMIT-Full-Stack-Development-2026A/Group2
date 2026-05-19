@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import { createBrowserRouter, Outlet } from "react-router-dom";
 import LoginPage from "../modules/auth/pages/LoginPage";
 import RegisterPage from "../modules/auth/pages/RegisterPage";
 import DashboardPage from "../modules/auth/pages/DashBoardPage";
@@ -8,6 +8,7 @@ import ProtectedRoute from "../routes/ProtectedRoute";
 import RoleRoute from "../routes/RoleRoute";
 import ProfilePage from "../modules/profile/pages/ProfilePage";
 import GameHistoryPage from "../modules/profile/pages/GameHistoryPage";
+import MatchReplayPage from "../modules/profile/pages/MatchReplayPage";
 import EditProfilePage from "../modules/profile/pages/EditProfilePage";
 import App from "../App";
 import PremiumPage from "../modules/premium/pages/PremiumPage";
@@ -20,8 +21,6 @@ import GamePlayPage from "../modules/game/pages/GamePlayPage";
 import AdminDashboardPage from "../modules/admin/pages/AdminDashboardPage";
 import PlayerManagementPage from "../modules/admin/pages/PlayerManagementPage";
 import OnlineRoomsPage from "../modules/admin/pages/OnlineRoomsPage";
-
-
 
 const router = createBrowserRouter([
     {
@@ -56,6 +55,7 @@ const router = createBrowserRouter([
             {
                 element: (
                     <RoleRoute allowedRoles={["player"]}>
+                        <Outlet />
                     </RoleRoute>
                 ),
                 children: [
@@ -63,6 +63,10 @@ const router = createBrowserRouter([
                     { path: "/profile", element: <ProfilePage /> },
                     { path: "/profile/history", element: <GameHistoryPage /> },
                     { path: "/profile/edit", element: <EditProfilePage /> },
+                    {
+                        path: "/profile/history/replay/:sessionId",
+                        element: <MatchReplayPage />,
+                    },
                     { path: "/online", element: <OnlineArenaPage /> },
                     { path: "/game/local", element: <LocalGameSetupPage /> },
                     { path: "/game/ai", element: <AIGameSetupPage /> },

@@ -1,4 +1,9 @@
-import { httpGet, httpPatch, httpPatchFormData, httpPost } from "../../../lib/httpClient";
+import {
+  httpGet,
+  httpPatch,
+  httpPatchFormData,
+  httpPost,
+} from "../../../lib/httpClient";
 
 /**
  * Raw GET for the authenticated user's profile (expects JSON body with `user`).
@@ -29,6 +34,13 @@ export async function postChangePassword(data) {
  */
 export async function patchProfileLogo(formData) {
   return httpPatchFormData("/api/profile/logo", formData);
+}
+
+/**
+ * GET match replay data for a specific session.
+ */
+export async function fetchMatchReplayRequest(sessionId) {
+  return httpGet(`/api/profile/history/${sessionId}/replay`);
 }
 
 /**

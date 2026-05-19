@@ -1,31 +1,37 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowDownUp, Calendar, ChevronDown, Eye, RotateCcw, Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import {
+  ArrowDownUp,
+  Calendar,
+  ChevronDown,
+  Clock3,
+  Eye,
+  RotateCcw,
+  Search,
+} from "lucide-react";
 import { useGameHistoryTable } from "../../hooks/useGameHistoryTable";
+import { formatTime } from "../../utils/datetime.utils";
 
-function formatDate(value) {
-  const date = new Date(value);
-  if (!value || Number.isNaN(date.getTime())) return "-";
-  return new Intl.DateTimeFormat(undefined, {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(date);
-}
-
-function resultBadge(result) {
+function resultBadgeClass(result) {
   const value = String(result || "aborted").toLowerCase();
-  const color =
-    value === "win"
-      ? "text-bg-primary"
-      : value === "lose"
-        ? "text-bg-danger"
-        : "bg-body-secondary text-secondary";
-  return `badge rounded-pill text-uppercase fw-bold px-3 py-2 ${color}`;
+
+  if (value === "win") return "text-bg-primary";
+  if (value === "lose") return "text-bg-danger";
+  return "bg-body-secondary text-secondary";
 }
+
+function resultLabel(result) {
+  const value = String(result || "aborted").toLowerCase();
+  if (value === "win") return "Win";
+  if (value === "lose") return "Lose";
+  return "Aborted";
+}
+
 
 export default function GameHistoryTable({ embedded = false }) {
   const [dateOpen, setDateOpen] = useState(false);
   const rootRef = useRef(null);
+  const navigate = useNavigate();
   const {
     items,
     totalCount,
@@ -46,7 +52,18 @@ export default function GameHistoryTable({ embedded = false }) {
     clearFilters,
   } = useGameHistoryTable();
 
-  const hasFilters = Boolean(search.trim() || result || gameType || dateFrom || dateTo || sort !== "desc");
+  const openReplay = (sessionId) => {
+    navigate(`/profile/history/replay/${sessionId}`);
+  };
+
+  const hasFilters = Boolean(
+    search.trim() ||
+    result ||
+    gameType ||
+    dateFrom ||
+    dateTo ||
+    sort !== "desc",
+  );
 
   useEffect(() => {
     function closeOnOutsideClick(event) {
@@ -109,7 +126,9 @@ export default function GameHistoryTable({ embedded = false }) {
             <Calendar size={18} aria-hidden />
             Date
             <ChevronDown size={16} aria-hidden />
-            {dateFrom || dateTo ? <span className="history-filter-dot" /> : null}
+            {dateFrom || dateTo ? (
+              <span className="history-filter-dot" />
+            ) : null}
           </button>
           {dateOpen ? (
             <div className="history-menu history-date-menu">
@@ -135,7 +154,9 @@ export default function GameHistoryTable({ embedded = false }) {
           type="button"
           className="btn btn-outline-secondary history-reset-btn"
           onClick={() => setSort(sort === "desc" ? "asc" : "desc")}
-          aria-label={sort === "desc" ? "Sort oldest first" : "Sort newest first"}
+          aria-label={
+            sort === "desc" ? "Sort oldest first" : "Sort newest first"
+          }
           title={sort === "desc" ? "Newest first" : "Oldest first"}
         >
           <ArrowDownUp size={18} aria-hidden />
@@ -157,12 +178,16 @@ export default function GameHistoryTable({ embedded = false }) {
         {items.length} of {totalCount} matches
       </p>
 
-      {loading && <p className="text-secondary mb-0">Loading match history...</p>}
+      {loading && (
+        <p className="text-secondary mb-0">Loading match history...</p>
+      )}
       {error && <p className="text-danger mb-0">{error}</p>}
 
       {!loading && !error && items.length === 0 && (
         <p className="text-secondary mb-0">
-          {hasFilters ? "No matching sessions found." : "No past sessions found."}
+          {hasFilters
+            ? "No matching sessions found."
+            : "No past sessions found."}
         </p>
       )}
 
@@ -170,19 +195,36 @@ export default function GameHistoryTable({ embedded = false }) {
         <div className="d-grid gap-3">
           {items.map((item) => (
             <article className="history-row" key={item.sessionId}>
-              <strong className="history-id text-secondary">{item.sessionNumber || "#"}</strong>
+              <strong className="history-id text-secondary">
+                {item.sessionNumber || "#"}
+              </strong>
               <div className="history-info">
-                <div className="fw-bold text-dark">{item.playersLabel.replace(/^You\s+/i, "")}</div>
+                <div className="fw-bold text-dark">
+                  {item.playersLabel.replace(/^You\s+/i, "")}
+                </div>
                 <div className="history-meta text-secondary">
                   <span className="d-inline-flex align-items-center gap-1">
-                    <Calendar size={15} aria-hidden />
-                    {formatDate(item.startTime)}
+                    <Clock3 size={15} aria-hidden />
+                    Start: {formatTime(item.startTime)}
+                  </span>
+                  <span className="d-inline-flex align-items-center gap-1">
+                    <Clock3 size={15} aria-hidden />
+                    End: {formatTime(item.endTime)}
                   </span>
                   <span className="history-pill">{item.gameType}</span>
                 </div>
               </div>
-              <span className={resultBadge(item.result)}>{item.result || "aborted"}</span>
-              <button type="button" className="btn btn-link text-dark p-0" aria-label={`View ${item.sessionNumber || "session"}`}>
+              <span
+                className={`badge rounded-pill text-uppercase fw-bold px-3 py-2 ${resultBadgeClass(item.result)}`}
+              >
+                {resultLabel(item.result)}
+              </span>
+              <button
+                type="button"
+                className="btn btn-link text-dark p-0"
+                onClick={() => openReplay(item.sessionId)}
+                aria-label={`Replay ${item.sessionNumber || "session"}`}
+              >
                 <Eye size={22} aria-hidden />
               </button>
             </article>
