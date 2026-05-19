@@ -21,6 +21,10 @@ export default function OnlineMatchResultDialog({
       aria-label="Online match result"
     >
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        <span className={`${styles.spark} ${styles.sparkOne}`} aria-hidden="true" />
+        <span className={`${styles.spark} ${styles.sparkTwo}`} aria-hidden="true" />
+        <span className={`${styles.spark} ${styles.sparkThree}`} aria-hidden="true" />
+
         <div className={styles.header}>
           <p className={styles.kicker}>Match result</p>
           <h2 className={styles.title}>{label}</h2>

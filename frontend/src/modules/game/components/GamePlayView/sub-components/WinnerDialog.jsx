@@ -20,6 +20,10 @@ export default function WinnerDialog({
       aria-label="Game result"
     >
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        <span className={`${styles.spark} ${styles.sparkOne}`} aria-hidden="true" />
+        <span className={`${styles.spark} ${styles.sparkTwo}`} aria-hidden="true" />
+        <span className={`${styles.spark} ${styles.sparkThree}`} aria-hidden="true" />
+
         <button
           type="button"
           className={styles.closeButton}

@@ -1,6 +1,12 @@
 .boardShell {
   position: relative;
   --cell-size: clamp(2.2rem, 2.8vw, 2.85rem);
+  --board-cell-bg: rgba(255, 255, 255, 0.96);
+  --board-cell-border: rgba(148, 163, 184, 0.95);
+  --board-cell-color: #0f172a;
+  --board-cell-hover-bg: rgba(37, 99, 235, 0.08);
+  --board-cell-hover-border: rgba(37, 99, 235, 0.45);
+  --board-cell-hover-shadow: rgba(37, 99, 235, 0.18);
   border: 1px solid #d7dde6;
   border-radius: 16px;
   padding: 10px;
@@ -71,10 +77,25 @@
 }
 
 .woodBoard {
-  background: linear-gradient(180deg, #f6ead4 0%, #ead7b3 100%);
+  --board-cell-bg: #d7aa72;
+  --board-cell-border: rgba(111, 72, 38, 0.58);
+  --board-cell-color: #2f1e12;
+  --board-cell-hover-bg: #e4bd86;
+  --board-cell-hover-border: rgba(92, 58, 29, 0.78);
+  --board-cell-hover-shadow: rgba(92, 58, 29, 0.22);
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08), transparent 28%, rgba(90, 55, 25, 0.09) 58%, transparent),
+    linear-gradient(180deg, #b77a3d 0%, #d6a76d 48%, #9b6230 100%);
+  border-color: rgba(92, 58, 29, 0.42);
 }
 
 .darkBoard {
+  --board-cell-bg: #1e293b;
+  --board-cell-border: rgba(148, 163, 184, 0.52);
+  --board-cell-color: #e2e8f0;
+  --board-cell-hover-bg: #27364d;
+  --board-cell-hover-border: rgba(191, 219, 254, 0.72);
+  --board-cell-hover-shadow: rgba(147, 197, 253, 0.2);
   background: linear-gradient(180deg, #202838 0%, #111827 100%);
   border-color: rgba(148, 163, 184, 0.25);
 }

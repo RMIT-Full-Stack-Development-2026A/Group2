@@ -2,6 +2,12 @@ import ImageUploadOption from "@/components/ImageUploadOption";
 import { BOARD_STYLES } from "../../../utils/game.constants";
 import styles from "./SetupBoardStyleSelector.module.css";
 
+function getPreviewClass(style) {
+  if (style === "wood") return styles.woodPreview;
+  if (style === "dark") return styles.darkPreview;
+  return styles.classicPreview;
+}
+
 export default function SetupBoardStyleSelector({
   boardStyle,
   setBoardStyle,
@@ -13,9 +19,28 @@ export default function SetupBoardStyleSelector({
   customLabel = "Custom",
   previewSize = "sm",
 }) {
+  const previewCells = Array.from({ length: 25 }, (_, index) => index);
+  const previewClass = useCustomBoard ? styles.customPreview : getPreviewClass(boardStyle);
+
   return (
     <div className={styles.section}>
       <label className={styles.label}>Board Style</label>
+
+      <div
+        className={`${styles.boardPreview} ${previewClass}`}
+        style={
+          useCustomBoard && customBoardImage
+            ? { backgroundImage: `url(${customBoardImage})` }
+            : undefined
+        }
+        aria-hidden="true"
+      >
+        <div className={styles.previewGrid}>
+          {previewCells.map((cell) => (
+            <span key={cell} className={styles.previewCell} />
+          ))}
+        </div>
+      </div>
 
       <div className={styles.grid}>
         {BOARD_STYLES.map((style) => (
