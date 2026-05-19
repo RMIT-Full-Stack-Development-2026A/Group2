@@ -33,6 +33,7 @@ export default function GameBoard({
   marker1,
   marker2,
   onCellClick,
+  readOnly = false,
 }) {
   const boardRows = Array.isArray(board) ? board : [];
   const normalizedBoard = Array.from({ length: size }, (_, rowIndex) => {
@@ -108,7 +109,7 @@ export default function GameBoard({
                 colIndex={colIndex}
                 value={mapBoardValueToMarker(cell, marker1, marker2)}
                 isWinning={isWinningCell(winningCells, rowIndex, colIndex)}
-                disabled={!!winner || aborted || isPaused}
+                disabled={readOnly || !!winner || aborted || isPaused}
                 customBoardImage={customBoardImage}
                 onClick={onCellClick}
               />

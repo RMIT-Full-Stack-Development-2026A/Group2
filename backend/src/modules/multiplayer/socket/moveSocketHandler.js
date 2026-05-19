@@ -20,6 +20,7 @@ module.exports = function moveSocketHandler(io, socket) {
       );
 
       io.to(roomCode).emit("moveResult", dto);
+      io.of("/spectator").to(roomCode).emit("spectatorMoveResult", dto);
 
       if (dto.session.status === "finished" || dto.session.status === "aborted") {
         await multiplayerService.closeRoom(roomCode);

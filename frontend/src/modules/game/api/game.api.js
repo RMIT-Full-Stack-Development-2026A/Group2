@@ -67,3 +67,22 @@ export async function abortGameSession(sessionId, options = {}) {
 
   return response?.data ?? null;
 }
+
+export async function createSpectatorShareLink(sessionId, options = {}) {
+  const response = await apiRequest(API_ENDPOINTS.multiplayer.createSpectatorShareLink, {
+    method: "POST",
+    body: JSON.stringify({ sessionId }),
+    ...options,
+  });
+
+  return response?.share ?? null;
+}
+
+export async function getSpectatorMatch(token, options = {}) {
+  const response = await apiRequest(API_ENDPOINTS.multiplayer.getSpectatorMatch(token), {
+    method: "GET",
+    ...options,
+  });
+
+  return response?.spectatorMatch ?? null;
+}

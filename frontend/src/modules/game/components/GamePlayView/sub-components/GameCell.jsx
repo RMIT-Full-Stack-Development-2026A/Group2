@@ -12,7 +12,7 @@ export default function GameCell({
   return (
     <button
       type="button"
-      onClick={() => onClick(rowIndex, colIndex)}
+      onClick={() => onClick?.(rowIndex, colIndex)}
       disabled={disabled}
       className={`${styles.cell} ${isWinning ? styles.winning : ""} ${customBoardImage ? styles.customOverlay : ""} ${!value && !disabled ? styles.clickable : ""}`.trim()}
     >

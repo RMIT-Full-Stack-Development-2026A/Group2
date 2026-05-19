@@ -4,12 +4,20 @@ const Move = require("../../model/move.model");
 const MatchLobby = require("../../../multiplayer/model/matchLobby.model");
 
 function normalizeUserId(userId) {
-  if (userId && typeof userId === "object" && userId.id != null) {
-    return String(userId.id);
-  }
-
   if (userId == null) {
     return null;
+  }
+
+  if (typeof userId === "object" && typeof userId.toHexString === "function") {
+    return userId.toHexString();
+  }
+
+  if (typeof userId === "object" && userId._id != null) {
+    return normalizeUserId(userId._id);
+  }
+
+  if (userId && typeof userId === "object" && userId.id != null) {
+    return String(userId.id);
   }
 
   return String(userId);

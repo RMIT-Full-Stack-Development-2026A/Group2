@@ -24,6 +24,10 @@ export const API_ENDPOINTS = {
     makeMove: (id) => `/game/sessions/${id}/moves`,
     abortSession: (id) => `/game/sessions/${id}/abort`,
   },
+  multiplayer: {
+    createSpectatorShareLink: "/multiplayer/spectator-links",
+    getSpectatorMatch: (token) => `/multiplayer/spectate/${token}`,
+  },
   subscription: {
     getPlans: "/subscription/plans",
     getCurrent: "/subscription/current",

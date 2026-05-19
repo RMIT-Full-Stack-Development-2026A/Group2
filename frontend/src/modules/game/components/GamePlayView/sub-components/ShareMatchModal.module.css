@@ -1,0 +1,139 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 2000;
+}
+
+.modal {
+  position: relative;
+  width: min(92vw, 520px);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 18px;
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.26);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  padding: 24px 22px 22px;
+}
+
+.closeButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  border-radius: 9px;
+  background: #ffffff;
+  color: #334155;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeIcon {
+  width: 17px;
+  height: 17px;
+}
+
+.header {
+  text-align: center;
+  padding: 4px 24px 0;
+}
+
+.kicker {
+  margin: 0 0 8px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.title {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.description {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.linkBox {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.linkInput {
+  flex: 1;
+  min-width: 0;
+  height: 42px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 0 12px;
+  color: #0f172a;
+  background: #ffffff;
+  font-size: 14px;
+}
+
+.copyButton {
+  height: 42px;
+  border: 1px solid #2563eb;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #ffffff;
+  font-weight: 700;
+  padding: 0 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.buttonIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.successText,
+.errorText {
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.successText {
+  color: #15803d;
+}
+
+.errorText {
+  color: #b91c1c;
+}
+
+@media (max-width: 560px) {
+  .modal {
+    padding: 22px 16px 18px;
+  }
+
+  .linkBox {
+    flex-direction: column;
+  }
+
+  .copyButton {
+    width: 100%;
+  }
+}

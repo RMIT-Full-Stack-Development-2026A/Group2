@@ -4,6 +4,7 @@ const roomSocketHandler = require("./roomSocketHandler");
 const moveSocketHandler = require("./moveSocketHandler");
 const User = require("../../auth/model/user.model");
 const chatSocketHandler = require("./chatSocketHandler");
+const spectatorSocketHandler = require("./spectatorSocketHandler");
 let io;
 
 function initSocketServer(httpServer) {
@@ -42,6 +43,16 @@ function initSocketServer(httpServer) {
 
     socket.on("disconnect", () => {
       console.log(`Socket disconnected: ${socket.id}`);
+    });
+  });
+
+  const spectatorNamespace = io.of("/spectator");
+  spectatorNamespace.on("connection", (socket) => {
+    console.log(`Spectator socket connected: ${socket.id}`);
+    spectatorSocketHandler(spectatorNamespace, socket);
+
+    socket.on("disconnect", () => {
+      console.log(`Spectator socket disconnected: ${socket.id}`);
     });
   });
 

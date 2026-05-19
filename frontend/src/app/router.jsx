@@ -17,6 +17,7 @@ import OnlineArenaPage from "../modules/game/pages/OnlineArenaPage";
 import LocalGameSetupPage from "../modules/game/pages/LocalGameSetupPage";
 import AIGameSetupPage from "../modules/game/pages/AIGameSetupPage";
 import GamePlayPage from "../modules/game/pages/GamePlayPage";
+import SpectatorMatchPage from "../modules/game/pages/SpectatorMatchPage";
 import AdminDashboardPage from "../modules/admin/pages/AdminDashboardPage";
 import PlayerManagementPage from "../modules/admin/pages/PlayerManagementPage";
 import OnlineRoomsPage from "../modules/admin/pages/OnlineRoomsPage";
@@ -30,6 +31,10 @@ const router = createBrowserRouter([
             {
                 path: "/",
                 element: <DashboardPage />,
+            },
+            {
+                path: "/watch/:token",
+                element: <SpectatorMatchPage />,
             },
         ],
     },

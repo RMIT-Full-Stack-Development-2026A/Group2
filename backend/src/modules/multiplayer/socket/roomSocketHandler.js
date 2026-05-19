@@ -17,6 +17,10 @@ function emitRoomClosed(io, roomCode, reason = "closed_by_admin") {
         roomCode: normalizedCode,
         reason,
     });
+    io.of("/spectator").to(normalizedCode).emit("roomClosed", {
+        roomCode: normalizedCode,
+        reason,
+    });
 
     // Update in-memory room state to closed so future lookups reflect DB
     const room = rooms.get(normalizedCode);
@@ -47,7 +51,7 @@ function roomSocketHandler(io, socket) {
     }
 
     await multiplayerService.createRoom(socket.user, {
-      roomCode, boardSize, boardStyle, marker1,
+      roomCode, boardSize, boardStyle, marker1, customBoardImage,
     });
 
     rooms.set(roomCode, {
@@ -127,7 +131,7 @@ function roomSocketHandler(io, socket) {
       const roomCode = uuidv4().slice(0, 6).toUpperCase();
 
       await multiplayerService.createRoom(socket.user, {
-        roomCode, boardSize, boardStyle, marker1,
+        roomCode, boardSize, boardStyle, marker1, customBoardImage,
       });
 
       rooms.set(roomCode, {
@@ -185,6 +189,7 @@ function roomSocketHandler(io, socket) {
     for (const [code, room] of rooms) {
       if (room.player1 === socket.id || room.player2 === socket.id) {
         io.to(code).emit("playerDisconnected");
+        io.of("/spectator").to(code).emit("playerDisconnected");
         if (room.sessionId) {
           try {
             await multiplayerService.closeRoom(code);

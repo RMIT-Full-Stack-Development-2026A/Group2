@@ -38,7 +38,8 @@
 }
 
 .timerIcon {
-  font-size: 14px;
+  width: 16px;
+  height: 16px;
 }
 
 .actions {
@@ -49,7 +50,8 @@
 
 .ghostBtn,
 .secondaryBtn,
-.dangerBtn {
+.dangerBtn,
+.primaryBtn {
   height: 36px;
   padding: 0 14px;
   border-radius: 10px;
@@ -57,6 +59,15 @@
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.buttonIcon {
+  width: 15px;
+  height: 15px;
 }
 
 .ghostBtn {
@@ -71,4 +82,18 @@
   background: #dc2626;
   border-color: #dc2626;
   color: white;
+}
+
+.primaryBtn {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: white;
+}
+
+.ghostBtn:disabled,
+.secondaryBtn:disabled,
+.dangerBtn:disabled,
+.primaryBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
 }

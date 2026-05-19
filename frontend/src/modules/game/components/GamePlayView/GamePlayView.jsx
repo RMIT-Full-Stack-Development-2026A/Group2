@@ -13,6 +13,8 @@ import PlayerStatusCard from "./sub-components/PlayerStatusCard";
 import GameBoard from "./sub-components/GameBoard";
 import WinnerDialog from "./sub-components/WinnerDialog";
 import LeaveGameDialog from "./sub-components/LeaveGameDialog";
+import ShareMatchModal from "./sub-components/ShareMatchModal";
+import { createSpectatorShareLink } from "../../api/game.api";
 
 import socket from "@/lib/socket"
 
@@ -69,6 +71,11 @@ function GamePlayViewContent({ config, navigate }) {
 
   const [pauseDialogOpen, setPauseDialogOpen] = useState(false);
   const [abortDialogOpen, setAbortDialogOpen] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [shareUrl, setShareUrl] = useState("");
+  const [shareError, setShareError] = useState("");
+  const [shareCopied, setShareCopied] = useState(false);
+  const [shareLoading, setShareLoading] = useState(false);
   const pendingNavRef = useRef(null);
 
   const gameInProgress = !winner && !aborted;
@@ -98,7 +105,7 @@ function GamePlayViewContent({ config, navigate }) {
     }
 
     if (dest) navigate(dest);
-  }, [abortCurrentGame, logout, navigate, setAborted, setIsPaused]);
+  }, [abortCurrentGame, isOnline, logout, navigate, setAborted, setIsPaused]);
 
   const handleNavIntercept = useCallback(
     (to) => {
@@ -122,6 +129,45 @@ function GamePlayViewContent({ config, navigate }) {
     setIsPaused(true);
     setPauseDialogOpen(true);
   }, [winner, aborted, isPaused, setIsPaused]);
+
+  const handleShareMatch = useCallback(async () => {
+    if (!config.sessionId) return;
+
+    try {
+      setShareLoading(true);
+      setShareError("");
+      setShareCopied(false);
+      setShareDialogOpen(true);
+
+      const share = await createSpectatorShareLink(config.sessionId);
+      if (!share?.path) {
+        throw new Error("Could not create spectator link.");
+      }
+
+      setShareUrl(`${window.location.origin}${share.path}`);
+    } catch (error) {
+      setShareError(
+        error?.data?.message ||
+          error?.message ||
+          "Could not create spectator link.",
+      );
+    } finally {
+      setShareLoading(false);
+    }
+  }, [config.sessionId]);
+
+  const handleCopyShareLink = useCallback(async () => {
+    if (!shareUrl) return;
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setShareCopied(true);
+      setShareError("");
+    } catch {
+      setShareCopied(false);
+      setShareError("Copy failed. Select the link and copy it manually.");
+    }
+  }, [shareUrl]);
 
   useEffect(() => {
     if (typeof registerNavigationGuard !== "function") return undefined;
@@ -147,6 +193,8 @@ function GamePlayViewContent({ config, navigate }) {
           onRestart={resetGame}
           onTogglePause={handlePauseAction}
           onAbort={() => setAbortDialogOpen(true)}
+          onShareMatch={isOnline && config.sessionId ? handleShareMatch : undefined}
+          isShareLoading={shareLoading}
         />
 
         {aborted ? (
@@ -281,6 +329,15 @@ function GamePlayViewContent({ config, navigate }) {
           description="This action cannot be undone. No result will be recorded."
           cancelText="Cancel"
           confirmText="Confirm Abort"
+        />
+
+        <ShareMatchModal
+          open={shareDialogOpen}
+          shareUrl={shareUrl}
+          error={shareError}
+          copied={shareCopied}
+          onCopy={handleCopyShareLink}
+          onClose={() => setShareDialogOpen(false)}
         />
       </div>
     </AppLayout>
