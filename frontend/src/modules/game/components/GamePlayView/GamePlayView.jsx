@@ -13,8 +13,10 @@ import PlayerStatusCard from "./sub-components/PlayerStatusCard";
 import GameBoard from "./sub-components/GameBoard";
 import WinnerDialog from "./sub-components/WinnerDialog";
 import LeaveGameDialog from "./sub-components/LeaveGameDialog";
-
-import socket from "@/lib/socket"
+import OnlineMatchResultDialog from "./sub-components/OnlineMatchResultDialog";
+import OnlineRoomClosedDialog from "./sub-components/OnlineRoomClosedDialog";
+import RematchRequestDialog from "./sub-components/RematchRequestDialog";
+import RematchWaitingDialog from "./sub-components/RematchWaitingDialog";
 
 export default function GamePlayView() {
   const location = useLocation();
@@ -31,7 +33,13 @@ export default function GamePlayView() {
     );
   }
 
-  return <GamePlayViewContent config={config} navigate={navigate} />;
+  return (
+    <GamePlayViewContent
+      key={config.sessionId || config.roomCode}
+      config={config}
+      navigate={navigate}
+    />
+  );
 }
 
 function GamePlayViewContent({ config, navigate }) {
@@ -44,6 +52,7 @@ function GamePlayViewContent({ config, navigate }) {
     board,
     currentPlayer,
     winner,
+    sessionResult,
     winningCells,
     aborted,
     elapsed,
@@ -52,12 +61,18 @@ function GamePlayViewContent({ config, navigate }) {
     isPaused,
     startTime,
     apiError,
+    onlineRoomClosed,
+    rematchWaiting,
+    incomingRematch,
     setAborted,
     setIsPaused,
     setShowWinnerModal,
     resetGame,
     handleCellClick,
     abortCurrentGame,
+    requestOnlineRematch,
+    respondOnlineRematch,
+    leaveOnlineMatch,
   } = useGamePlayView(config);
 
   const isOnline = config.gameType === "online";
@@ -71,16 +86,30 @@ function GamePlayViewContent({ config, navigate }) {
   const [abortDialogOpen, setAbortDialogOpen] = useState(false);
   const pendingNavRef = useRef(null);
 
-  const gameInProgress = !winner && !aborted;
+  const gameInProgress = isOnline ? !onlineRoomClosed : !winner && !aborted;
 
   const handleConfirmAbort = useCallback(async () => {
     setIsPaused(false);
     setPauseDialogOpen(false);
     setAbortDialogOpen(false);
 
-    if(isOnline) {
-      socket.disconnect();
-      navigate("/dashboard", {replace: true});
+    if (isOnline) {
+      if (winner || showWinnerModal || rematchWaiting || incomingRematch) {
+        respondOnlineRematch(false);
+      } else {
+        leaveOnlineMatch();
+      }
+
+      const dest = pendingNavRef.current;
+      pendingNavRef.current = null;
+
+      if (dest === "/logout") {
+        await logout();
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      navigate(dest || "/online", { replace: true });
       return;
     }
 
@@ -98,7 +127,20 @@ function GamePlayViewContent({ config, navigate }) {
     }
 
     if (dest) navigate(dest);
-  }, [abortCurrentGame, logout, navigate, setAborted, setIsPaused]);
+  }, [
+    abortCurrentGame,
+    incomingRematch,
+    isOnline,
+    leaveOnlineMatch,
+    logout,
+    navigate,
+    rematchWaiting,
+    respondOnlineRematch,
+    setAborted,
+    setIsPaused,
+    showWinnerModal,
+    winner,
+  ]);
 
   const handleNavIntercept = useCallback(
     (to) => {
@@ -237,7 +279,7 @@ function GamePlayViewContent({ config, navigate }) {
 
           {isOnline ? (
             <div className={styles.chatPanel}>
-              <GameChat roomCode={config.roomCode} />
+              <GameChat roomCode={config.roomCode} disabled={!!onlineRoomClosed} />
             </div>
           ) : null}
         </div>
@@ -246,12 +288,55 @@ function GamePlayViewContent({ config, navigate }) {
           Started: {new Date(startTime.current).toLocaleTimeString()}
         </p>
 
-        <WinnerDialog
-          open={showWinnerModal}
-          winner={winner}
-          onOpenChange={setShowWinnerModal}
-          onHistory={() => navigate("/profile?tab=history")}
-          onPlayAgain={isOnline ? () => { socket.disconnect(); navigate("/online") } : resetGame}
+        {isOnline ? (
+          <OnlineMatchResultDialog
+            open={showWinnerModal}
+            winner={winner}
+            result={sessionResult}
+            onPlayAgain={requestOnlineRematch}
+            onLeaveRoom={() => {
+              respondOnlineRematch(false);
+              navigate("/online", { replace: true });
+            }}
+            onHistory={() => {
+              respondOnlineRematch(false);
+              navigate("/profile?tab=history");
+            }}
+          />
+        ) : (
+          <WinnerDialog
+            open={showWinnerModal}
+            winner={winner}
+            onOpenChange={setShowWinnerModal}
+            onHistory={() => navigate("/profile?tab=history")}
+            onPlayAgain={resetGame}
+          />
+        )}
+
+        <RematchWaitingDialog
+          open={!!rematchWaiting}
+          message={rematchWaiting}
+          onLeaveRoom={() => {
+            respondOnlineRematch(false);
+            navigate("/online", { replace: true });
+          }}
+        />
+
+        <RematchRequestDialog
+          open={!!incomingRematch}
+          opponentName={incomingRematch?.requestedByName}
+          onAccept={() => respondOnlineRematch(true)}
+          onDecline={() => {
+            respondOnlineRematch(false);
+            navigate("/online", { replace: true });
+          }}
+        />
+
+        <OnlineRoomClosedDialog
+          open={!!onlineRoomClosed}
+          reason={onlineRoomClosed?.reason}
+          message={onlineRoomClosed?.message}
+          onReturn={() => navigate("/online", { replace: true })}
         />
 
         <LeaveGameDialog
@@ -277,10 +362,14 @@ function GamePlayViewContent({ config, navigate }) {
           }}
           onConfirm={handleConfirmAbort}
           kicker="Confirm action"
-          title="Abort Game?"
-          description="This action cannot be undone. No result will be recorded."
+          title={isOnline ? "Leave Online Room?" : "Abort Game?"}
+          description={
+            isOnline
+              ? "This will close the online room for both players."
+              : "This action cannot be undone. No result will be recorded."
+          }
           cancelText="Cancel"
-          confirmText="Confirm Abort"
+          confirmText={isOnline ? "Leave Room" : "Confirm Abort"}
         />
       </div>
     </AppLayout>

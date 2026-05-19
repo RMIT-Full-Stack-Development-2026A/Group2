@@ -59,6 +59,7 @@ export function normalizeBackendGameState(dto, config) {
   return {
     sessionId: dto?.session?.id || config?.sessionId || null,
     sessionStatus: dto?.session?.status || "ongoing",
+    sessionResult: dto?.session?.result || "pending",
     board,
     size: boardSize,
     currentPlayer,
@@ -69,6 +70,6 @@ export function normalizeBackendGameState(dto, config) {
     aborted,
     participants,
     startedAt: dto?.session?.startTime || null,
-    showWinnerModal: finished && !!winner,
+    showWinnerModal: finished,
   };
 }

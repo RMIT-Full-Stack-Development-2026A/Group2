@@ -517,6 +517,25 @@ async function abortGame(authUser, sessionId) {
   return toGameStateDto(updatedSession, participants, moves, board);
 }
 
+async function terminateOnlineSession(sessionId) {
+  const { session, participants, moves, board } = await loadGameState(sessionId);
+
+  if (["finished", "aborted"].includes(session.status)) {
+    return toGameStateDto(session, participants, moves, board);
+  }
+
+  const updatedSession = await gameRepository.updateSession(session._id, {
+    status: "aborted",
+    result: "aborted",
+    endTime: new Date(),
+    currentTurn: null,
+    winnerParticipantID: null,
+    winningLine: [],
+  });
+
+  return toGameStateDto(updatedSession, participants, moves, board);
+}
+
 async function getSessionState(sessionId) {
   const { session, participants, moves, board } = await loadGameState(sessionId);
   return toGameStateDto(session, participants, moves, board);
@@ -528,5 +547,6 @@ module.exports = {
   createOnlineGame,
   makeMove,
   abortGame,
+  terminateOnlineSession,
   getSessionState,
 };

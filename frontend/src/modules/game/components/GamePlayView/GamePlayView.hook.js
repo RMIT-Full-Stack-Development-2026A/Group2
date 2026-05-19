@@ -47,6 +47,9 @@ export default function useGamePlayView(config) {
     initialBackendState?.currentPlayer || (firstPlayer === "player2" ? 2 : 1),
   );
   const [winner, setWinner] = useState(() => initialBackendState?.winner || null);
+  const [sessionResult, setSessionResult] = useState(
+    () => initialBackendState?.sessionResult || "pending",
+  );
   const [winningCells, setWinningCells] = useState(
     () => initialBackendState?.winningCells || [],
   );
@@ -63,6 +66,9 @@ export default function useGamePlayView(config) {
   );
   const [isPaused, setIsPaused] = useState(false);
   const [apiError, setApiError] = useState("");
+  const [onlineRoomClosed, setOnlineRoomClosed] = useState(null);
+  const [rematchWaiting, setRematchWaiting] = useState(false);
+  const [incomingRematch, setIncomingRematch] = useState(null);
   const startTime = useRef(initialStartTime);
 
   useEffect(() => {
@@ -81,8 +87,10 @@ export default function useGamePlayView(config) {
     (dto) => {
       const nextState = normalizeBackendGameState(dto, config);
       setBoard(nextState.board);
+      setSessionId(nextState.sessionId);
       setCurrentPlayer(nextState.currentPlayer);
       setWinner(nextState.winner);
+      setSessionResult(nextState.sessionResult);
       setWinningCells(nextState.winningCells);
       setAborted(nextState.aborted);
       setShowWinnerModal(nextState.showWinnerModal);
@@ -126,11 +134,6 @@ export default function useGamePlayView(config) {
 
   const isOnline = config?.gameType === "online";
   const myRole = config?.myRole || null;
-  const myRoleRef = useRef(myRole);
-
-  useEffect(() => {
-    myRoleRef.current = myRole;
-  }, [myRole]);
 
   const currentPlayerRef = useRef(currentPlayer);
 
@@ -160,16 +163,91 @@ export default function useGamePlayView(config) {
 
     socket.on("connect", handleConnect);
 
-    socket.on("moveResult", (dto) => {
+    const handleMoveResult = (dto) => {
       applyBackendState(dto);
-    });
+    };
 
-    socket.on("playerDisconnected", () => {
-      const winnerName =
-        myRoleRef.current === "player1" ? config.player1 : config.player2;
-      setWinner(winnerName);
-      setShowWinnerModal(true);
-    });
+    const handleOnlineMatchTerminated = (payload = {}) => {
+      setIsMovePending(false);
+      setAiThinking(false);
+      setIsPaused(true);
+      setShowWinnerModal(false);
+      setRematchWaiting(false);
+      setIncomingRematch(null);
+      setOnlineRoomClosed({
+        reason: payload.reason || "opponent_left",
+        message:
+          payload.message ||
+          "This match has ended and the room has been closed.",
+      });
+    };
+
+    const handleRematchWaiting = (payload = {}) => {
+      setShowWinnerModal(false);
+      setIncomingRematch(null);
+      setRematchWaiting(payload.message || "Waiting for your opponent to respond.");
+    };
+
+    const handleRematchRequested = (payload = {}) => {
+      setShowWinnerModal(false);
+      setRematchWaiting(false);
+      setIncomingRematch({
+        requestedByName: payload.requestedByName || "Your opponent",
+        message: payload.message || "Your opponent wants to play again.",
+      });
+    };
+
+    const handleRematchDeclined = (payload = {}) => {
+      setShowWinnerModal(false);
+      setRematchWaiting(false);
+      setIncomingRematch(null);
+      setIsPaused(true);
+      setOnlineRoomClosed({
+        reason: payload.reason || "opponent_declined",
+        message:
+          payload.message ||
+          "Your opponent did not accept the rematch. This room has been closed.",
+      });
+    };
+
+    const handleRematchStarting = ({ nextMatchConfig } = {}) => {
+      if (!nextMatchConfig) return;
+
+      const myRole =
+        nextMatchConfig.player1SocketId === socket.id ? "player1" : "player2";
+
+      navigate("/game/play", {
+        replace: true,
+        state: {
+          gameType: "online",
+          roomCode: nextMatchConfig.roomCode,
+          boardSize: nextMatchConfig.boardSize,
+          boardStyle: nextMatchConfig.boardStyle,
+          customBoardImage: nextMatchConfig.customBoardImage,
+          marker1: nextMatchConfig.marker1,
+          marker2: nextMatchConfig.marker2,
+          player1: nextMatchConfig.player1Name,
+          player2: nextMatchConfig.player2Name,
+          player1SocketId: nextMatchConfig.player1SocketId,
+          player2SocketId: nextMatchConfig.player2SocketId,
+          myRole,
+          sessionId: nextMatchConfig.sessionId,
+          backendSession: nextMatchConfig.backendSession,
+        },
+      });
+    };
+
+    const handleRoomLifecycleError = ({ message } = {}) => {
+      setApiError(message || "The online room could not be updated.");
+    };
+
+    socket.on("moveResult", handleMoveResult);
+    socket.on("onlineMatchTerminated", handleOnlineMatchTerminated);
+    socket.on("rematchWaitingForOpponent", handleRematchWaiting);
+    socket.on("rematchRequested", handleRematchRequested);
+    socket.on("rematchDeclined", handleRematchDeclined);
+    socket.on("rematchStarting", handleRematchStarting);
+    socket.on("roomLifecycleError", handleRoomLifecycleError);
 
     const handleBeforeUnload = (e) => {
       e.preventDefault();
@@ -179,11 +257,16 @@ export default function useGamePlayView(config) {
 
     return () => {
       socket.off("connect", handleConnect);
-      socket.off("moveResult");
-      socket.off("playerDisconnected");
+      socket.off("moveResult", handleMoveResult);
+      socket.off("onlineMatchTerminated", handleOnlineMatchTerminated);
+      socket.off("rematchWaitingForOpponent", handleRematchWaiting);
+      socket.off("rematchRequested", handleRematchRequested);
+      socket.off("rematchDeclined", handleRematchDeclined);
+      socket.off("rematchStarting", handleRematchStarting);
+      socket.off("roomLifecycleError", handleRoomLifecycleError);
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, []);
+  }, [applyBackendState, config, isOnline, navigate]);
 
   const resetGame = useCallback(async () => {
     if (isBackendManaged) {
@@ -322,7 +405,7 @@ export default function useGamePlayView(config) {
     (row, col) => {
       if (isOnline) {
         
-        if (winner || aborted) return;
+        if (winner || aborted || onlineRoomClosed || rematchWaiting || incomingRematch) return;
         if (board[row]?.[col]) return;
 
         const isMyTurn =
@@ -350,9 +433,43 @@ export default function useGamePlayView(config) {
     },
     [
       isOnline, myRole, winner, aborted, board,
-      currentPlayer, config, isBackendManaged, handleBackendCellClick
+      onlineRoomClosed, rematchWaiting, incomingRematch,
+      config, isBackendManaged, handleBackendCellClick
     ],
   );
+
+  const requestOnlineRematch = useCallback(() => {
+    if (!isOnline || !config?.roomCode || !sessionId) return;
+    socket.emit("requestRematch", {
+      roomCode: config.roomCode,
+      sessionId,
+    });
+  }, [config?.roomCode, isOnline, sessionId]);
+
+  const respondOnlineRematch = useCallback(
+    (accept) => {
+      if (!isOnline || !config?.roomCode) return;
+      socket.emit("respondRematch", {
+        roomCode: config.roomCode,
+        accept,
+      });
+      if (!accept) {
+        setShowWinnerModal(false);
+        setIncomingRematch(null);
+        setRematchWaiting(false);
+      }
+    },
+    [config?.roomCode, isOnline],
+  );
+
+  const leaveOnlineMatch = useCallback(() => {
+    if (!isOnline || !config?.roomCode) return;
+    socket.emit("leaveOnlineMatch", {
+      roomCode: config.roomCode,
+      sessionId,
+      reason: "player_left",
+    });
+  }, [config?.roomCode, isOnline, sessionId]);
 
   const abortCurrentGame = useCallback(async () => {
     if (!isBackendManaged || !sessionId) {
@@ -378,6 +495,7 @@ export default function useGamePlayView(config) {
     board,
     currentPlayer,
     winner,
+    sessionResult,
     winningCells,
     aborted,
     elapsed,
@@ -386,11 +504,18 @@ export default function useGamePlayView(config) {
     isPaused,
     startTime,
     apiError,
+    onlineRoomClosed,
+    rematchWaiting,
+    incomingRematch,
     setAborted,
     setIsPaused,
     setShowWinnerModal,
     resetGame,
     handleCellClick,
     abortCurrentGame,
+    requestOnlineRematch,
+    respondOnlineRematch,
+    leaveOnlineMatch,
+    setOnlineRoomClosed,
   };
 }

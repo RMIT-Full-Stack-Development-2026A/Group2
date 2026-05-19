@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import socket from "@/lib/socket";
 
-export default function GameChat({ roomCode }) {
+export default function GameChat({ roomCode, disabled = false }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const bottomRef = useRef(null);
@@ -19,6 +19,7 @@ export default function GameChat({ roomCode }) {
   }, [messages]);
 
   function handleSend() {
+    if (disabled) return;
     if (!input.trim()) return;
     socket.emit("sendMessage", { roomCode, message: input.trim() });
     setMessages((prev) => [...prev, { from: "you", message: input.trim() }]);
@@ -71,8 +72,9 @@ export default function GameChat({ roomCode }) {
           <input
             type="text"
             className="form-control form-control-sm"
-            placeholder="Type a message..."
+            placeholder={disabled ? "Room closed" : "Type a message..."}
             value={input}
+            disabled={disabled}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
           />
@@ -80,6 +82,7 @@ export default function GameChat({ roomCode }) {
             type="button"
             className="btn btn-primary btn-sm"
             onClick={handleSend}
+            disabled={disabled}
           >
             Send
           </button>

@@ -24,6 +24,14 @@ async function closeLobby(id) {
     );
 }
 
+async function finishLobby(id) {
+    return MatchLobby.findByIdAndUpdate(
+        id,
+        { status: "finished", endedAt: new Date() },
+        { returnDocument: "after" }
+    );
+}
+
 async function getAllLobbies() {
     const lobbies = await MatchLobby.find({});
     return lobbies;
@@ -35,5 +43,6 @@ module.exports = {
     findWaitingLobbies,
     updateLobby,
     closeLobby,
+    finishLobby,
     getAllLobbies
 };

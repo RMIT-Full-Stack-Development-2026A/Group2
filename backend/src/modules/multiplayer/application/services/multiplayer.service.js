@@ -35,6 +35,12 @@ async function closeRoom(roomCode) {
     await multiplayerRepository.closeLobby(lobby._id);
 }
 
+async function finishRoom(roomCode) {
+    const lobby = await multiplayerRepository.findLobbyByCode(roomCode);
+    if (!lobby) return;
+    await multiplayerRepository.finishLobby(lobby._id);
+}
+
 async function getWaitingRooms() {
     return multiplayerRepository.findWaitingLobbies();
 }
@@ -43,5 +49,6 @@ module.exports = {
     createRoom,
     joinRoom,
     closeRoom,
+    finishRoom,
     getWaitingRooms
 };

@@ -7,7 +7,8 @@ module.exports = function moveSocketHandler(io, socket) {
   socket.on("makeMove", async ({ roomCode, rowIndex, colIndex }) => {
 
     try {
-      const room = rooms.get(roomCode);
+      const normalizedCode = String(roomCode || "").toUpperCase();
+      const room = rooms.get(normalizedCode);
       if (!room?.sessionId) {
         socket.emit("moveError", { message: "Game session not found." });
         return;
@@ -19,10 +20,25 @@ module.exports = function moveSocketHandler(io, socket) {
         { rowIndex, colIndex }
       );
 
-      io.to(roomCode).emit("moveResult", dto);
+      io.to(normalizedCode).emit("moveResult", dto);
 
-      if (dto.session.status === "finished" || dto.session.status === "aborted") {
-        await multiplayerService.closeRoom(roomCode);
+      if (dto.session.status === "finished") {
+        try {
+          await multiplayerService.finishRoom(normalizedCode);
+        } catch (error) {
+          console.error("Failed to finish room:", error.message);
+        }
+        roomSocketHandler.transitionRoomToFinishedDecision(
+          io,
+          normalizedCode,
+          dto.session.id,
+        );
+      }
+
+      if (dto.session.status === "aborted") {
+        await multiplayerService.closeRoom(normalizedCode);
+        room.status = "closed";
+        rooms.delete(normalizedCode);
       }
 
     } catch (error) {
