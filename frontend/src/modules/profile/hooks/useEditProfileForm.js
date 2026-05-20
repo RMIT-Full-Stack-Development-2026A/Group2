@@ -29,6 +29,16 @@ function mapApiErrorsToIssues(errors) {
   }));
 }
 
+function buildProfilePayload(formData) {
+  return {
+    username: formData.username.trim(),
+    displayName: formData.displayName.trim(),
+    email: formData.email.trim(),
+    country: formData.country,
+    avatarURL: formData.avatarURL.trim() || null,
+  };
+}
+
 /**
  * @param {object | null} initialUser — profile from GET /api/profile
  */
@@ -105,13 +115,7 @@ export function useEditProfileForm(initialUser) {
           }
         }
 
-        const profileResult = await updateProfile({
-          username: formData.username.trim(),
-          displayName: formData.displayName.trim(),
-          email: formData.email.trim(),
-          country: formData.country,
-          avatarURL: formData.avatarURL.trim() || null,
-        });
+        const profileResult = await updateProfile(buildProfilePayload(formData));
 
         if (!profileResult.ok) {
           setError(profileResult.message);
@@ -145,7 +149,29 @@ export function useEditProfileForm(initialUser) {
     setLogoSuccess("");
     setLogoUploading(true);
     try {
-      const result = await uploadProfileLogo(file);
+      let result = await uploadProfileLogo(file);
+      if (!result.ok && result.code === "PROFILE_NOT_FOUND") {
+        if (
+          !formData.username.trim() ||
+          !formData.displayName.trim() ||
+          !formData.email.trim() ||
+          !formData.country
+        ) {
+          setLogoError(
+            "Fill in username, display name, email, and country, then try uploading again.",
+          );
+          return;
+        }
+
+        const profileResult = await updateProfile(buildProfilePayload(formData));
+        if (!profileResult.ok) {
+          setLogoError(profileResult.message);
+          return;
+        }
+
+        result = await uploadProfileLogo(file);
+      }
+
       if (!result.ok) {
         setLogoError(result.message);
         return;
