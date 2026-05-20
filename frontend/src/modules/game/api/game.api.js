@@ -67,3 +67,12 @@ export async function abortGameSession(sessionId, options = {}) {
 
   return response?.data ?? null;
 }
+
+export async function fetchSpectatorMatch(token, options = {}) {
+  const response = await apiRequest(API_ENDPOINTS.multiplayer.spectate(token), {
+    method: "GET",
+    ...options,
+  });
+
+  return response?.spectatorMatch ?? null;
+}

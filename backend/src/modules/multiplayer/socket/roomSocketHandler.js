@@ -84,6 +84,11 @@ function emitRoomClosed(io, roomCode, reason = "closed_by_admin") {
     reason,
   });
 
+  io.of("/spectator").to(normalizedCode).emit("roomClosed", {
+    roomCode: normalizedCode,
+    reason,
+  });
+
   const room = rooms.get(normalizedCode);
   if (room) {
     clearRematchTimer(room);
@@ -104,6 +109,10 @@ async function closeRoomAfterPostMatch(io, roomCode, room, payload) {
     roomCode,
     reason: payload.reason,
     message: payload.message,
+  });
+  io.of("/spectator").to(roomCode).emit("roomClosed", {
+    roomCode,
+    reason: payload.reason,
   });
 
   try {
@@ -183,6 +192,17 @@ async function terminateActiveRoom(io, roomCode, room, actorSocketId, reason) {
       sessionId,
       reason: opponentReason,
       message: opponentMessage,
+    });
+  }
+
+  if (reason === "player_disconnected") {
+    io.of("/spectator").to(roomCode).emit("playerDisconnected", {
+      roomCode,
+    });
+  } else {
+    io.of("/spectator").to(roomCode).emit("roomClosed", {
+      roomCode,
+      reason,
     });
   }
 
@@ -482,6 +502,38 @@ function roomSocketHandler(io, socket) {
     }
 
     await terminateActiveRoom(io, normalizedCode, room, socket.id, "player_left");
+  });
+
+  socket.on("createSpectatorLink", async ({ roomCode, sessionId }) => {
+    const normalizedCode = normalizeRoomCode(roomCode);
+    const room = rooms.get(normalizedCode);
+
+    if (
+      !room ||
+      room.status !== "active" ||
+      !room.sessionId ||
+      String(room.sessionId) !== String(sessionId || "") ||
+      !isRoomPlayer(room, socket.id)
+    ) {
+      socket.emit("spectatorLinkError", {
+        message: "Unable to generate spectator link for this match.",
+      });
+      return;
+    }
+
+    try {
+      const share =
+        await multiplayerService.createOrGetSpectatorShareForActiveRoom(
+          socket.user,
+          room,
+          sessionId,
+        );
+      socket.emit("spectatorLinkCreated", share);
+    } catch {
+      socket.emit("spectatorLinkError", {
+        message: "Unable to generate spectator link for this match.",
+      });
+    }
   });
 
   socket.on("requestRematch", ({ roomCode, sessionId }) => {

@@ -21,6 +21,9 @@ module.exports = function moveSocketHandler(io, socket) {
       );
 
       io.to(normalizedCode).emit("moveResult", dto);
+      io.of("/spectator")
+        .to(normalizedCode)
+        .emit("spectatorMoveResult", dto);
 
       if (dto.session.status === "finished") {
         try {

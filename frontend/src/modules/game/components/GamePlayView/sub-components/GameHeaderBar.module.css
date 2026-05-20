@@ -48,6 +48,7 @@
 }
 
 .ghostBtn,
+.shareBtn,
 .secondaryBtn,
 .dangerBtn {
   height: 36px;
@@ -67,6 +68,12 @@
   background: #f8fafc;
 }
 
+.shareBtn {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
 .dangerBtn {
   background: #dc2626;
   border-color: #dc2626;
@@ -74,6 +81,7 @@
 }
 
 .ghostBtn:disabled,
+.shareBtn:disabled,
 .secondaryBtn:disabled,
 .dangerBtn:disabled {
   cursor: not-allowed;

@@ -12,6 +12,9 @@ export default function GameHeaderBar({
   onRestart,
   onTogglePause,
   onAbort,
+  showShareMatch = false,
+  onShareMatch,
+  shareMatchLoading = false,
 }) {
   const isOnline = gameType === "online";
 
@@ -31,6 +34,16 @@ export default function GameHeaderBar({
       </div>
 
       <div className={styles.actions}>
+        {showShareMatch ? (
+          <button
+            type="button"
+            className={styles.shareBtn}
+            onClick={onShareMatch}
+            disabled={shareMatchLoading}
+          >
+            {shareMatchLoading ? "Preparing..." : "Share Match"}
+          </button>
+        ) : null}
         {!isOnline ? (
           <>
             <button type="button" className={styles.ghostBtn} onClick={onRestart}>

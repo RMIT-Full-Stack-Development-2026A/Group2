@@ -32,6 +32,22 @@ const matchLobbySchema = new Schema(
       default: LOBBY_STATUSES[0],
       required: true,
     },
+    spectatorShareToken: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
+      index: true,
+      default: undefined,
+    },
+    spectatorShareEnabled: {
+      type: Boolean,
+      default: false,
+    },
+    spectatorShareCreatedAt: {
+      type: Date,
+      default: null,
+    },
     startedAt: Date,
     endedAt: Date,
   },

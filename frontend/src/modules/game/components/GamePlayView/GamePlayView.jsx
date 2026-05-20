@@ -14,6 +14,7 @@ import GameBoard from "./sub-components/GameBoard";
 import WinnerDialog from "./sub-components/WinnerDialog";
 import LeaveGameDialog from "./sub-components/LeaveGameDialog";
 import OnlineRoomClosedDialog from "./sub-components/OnlineRoomClosedDialog";
+import ShareMatchModal from "./sub-components/ShareMatchModal";
 
 import socket from "@/lib/socket";
 import { getProfile } from "@/modules/profile/services/profile.service";
@@ -41,6 +42,10 @@ function GamePlayViewContent({ config, navigate }) {
     const registerNavigationGuard = outletContext?.registerNavigationGuard;
     const { logout, user } = useAuth();
     const [profileAvatarURL, setProfileAvatarURL] = useState("");
+    const [shareMatchLoading, setShareMatchLoading] = useState(false);
+    const [shareMatchUrl, setShareMatchUrl] = useState("");
+    const [shareMatchOpen, setShareMatchOpen] = useState(false);
+    const [shareMatchError, setShareMatchError] = useState("");
 
     const {
         size,
@@ -195,6 +200,43 @@ function GamePlayViewContent({ config, navigate }) {
     }, [winner, aborted, isPaused, setIsPaused]);
 
     useEffect(() => {
+        if (!isOnline) return undefined;
+
+        function handleShareCreated({ path }) {
+            setShareMatchLoading(false);
+            setShareMatchError("");
+            if (!path) return;
+            setShareMatchUrl(`${window.location.origin}${path}`);
+            setShareMatchOpen(true);
+        }
+
+        function handleShareError({ message } = {}) {
+            setShareMatchLoading(false);
+            setShareMatchError(
+                message || "Unable to generate spectator link for this match.",
+            );
+        }
+
+        socket.on("spectatorLinkCreated", handleShareCreated);
+        socket.on("spectatorLinkError", handleShareError);
+
+        return () => {
+            socket.off("spectatorLinkCreated", handleShareCreated);
+            socket.off("spectatorLinkError", handleShareError);
+        };
+    }, [isOnline]);
+
+    const handleShareMatch = useCallback(() => {
+        if (!isOnline || !config.roomCode || !config.sessionId) return;
+        setShareMatchError("");
+        setShareMatchLoading(true);
+        socket.emit("createSpectatorLink", {
+            roomCode: config.roomCode,
+            sessionId: config.sessionId,
+        });
+    }, [config.roomCode, config.sessionId, isOnline]);
+
+    useEffect(() => {
         if (typeof registerNavigationGuard !== "function") return undefined;
 
         registerNavigationGuard(handleNavIntercept);
@@ -217,6 +259,15 @@ function GamePlayViewContent({ config, navigate }) {
                     onRestart={handleRestartAction}
                     onTogglePause={handlePauseAction}
                     onAbort={() => setAbortDialogOpen(true)}
+                    showShareMatch={
+                        isOnline &&
+                        !!config.roomCode &&
+                        !!config.sessionId &&
+                        !winner &&
+                        !aborted
+                    }
+                    onShareMatch={handleShareMatch}
+                    shareMatchLoading={shareMatchLoading}
                 />
 
                 {aborted ? (
@@ -230,6 +281,12 @@ function GamePlayViewContent({ config, navigate }) {
                 {apiError ? (
                     <Alert variant="destructive">
                         <AlertDescription>{apiError}</AlertDescription>
+                    </Alert>
+                ) : null}
+
+                {shareMatchError ? (
+                    <Alert variant="destructive">
+                        <AlertDescription>{shareMatchError}</AlertDescription>
                     </Alert>
                 ) : null}
 
@@ -395,6 +452,12 @@ function GamePlayViewContent({ config, navigate }) {
                     reason={roomClosedReason}
                     message={roomClosedMessage}
                     onReturn={handleRoomClosedRedirect}
+                />
+
+                <ShareMatchModal
+                    open={shareMatchOpen}
+                    url={shareMatchUrl}
+                    onClose={() => setShareMatchOpen(false)}
                 />
             </div>
         </AppLayout>

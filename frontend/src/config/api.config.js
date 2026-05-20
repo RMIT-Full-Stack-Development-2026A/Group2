@@ -48,6 +48,9 @@ export const API_ENDPOINTS = {
     getRoom: (id) => `/admin/rooms/${id}`,
     getStats: "/admin/stats",
   },
+  multiplayer: {
+    spectate: (token) => `/multiplayer/spectate/${encodeURIComponent(token)}`,
+  },
 };
 
 export function buildApiUrl(path = "") {
