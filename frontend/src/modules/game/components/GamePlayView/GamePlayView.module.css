@@ -51,11 +51,32 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 570px;
+  height: 525px;
+}
+
+.onlineLayout {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: center;
+  flex: 1;
+}
+
+.onlineLeftCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding-top: 48px;
+}
+
+.onlineRightCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding-top: 48px;
 }
 
 @media (max-width: 1024px) {
-
   .centerRow {
     flex-direction: column;
     align-items: center;
@@ -65,5 +86,10 @@
     width: 320px;
     flex-shrink: 0;
     align-self: stretch;
+  }
+
+  .onlineLayout {
+    flex-direction: column;
+    align-items: center;
   }
 }
