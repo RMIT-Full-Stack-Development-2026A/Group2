@@ -10,6 +10,7 @@ function toExternalUserDto(userData) {
         username: userData.username,
         email: userData.email,
         accountStatus: userData.accountStatus,
+        isPremium: userData.isPremium,
     };
 }
 

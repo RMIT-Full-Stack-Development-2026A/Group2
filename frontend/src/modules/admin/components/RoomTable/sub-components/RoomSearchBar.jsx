@@ -8,8 +8,8 @@ const RoomSearchBar = ({
     setStatusFilter,
 }) => {
     return (
-        <div className="d-flex align-items-center gap-2">
-            <div className="position-relative flex-grow-1">
+        <div className="row g-2 align-items-stretch">
+            <div className="col-12 col-lg-9 position-relative">
                 <Search
                     style={{
                         width: "16px",
@@ -23,7 +23,7 @@ const RoomSearchBar = ({
                 />
                 <input
                     type="text"
-                    placeholder="Search by username or email..."
+                    placeholder="Search by room number or player name"
                     className="form-control"
                     style={{ paddingLeft: "32px" }}
                     value={search}
@@ -31,17 +31,18 @@ const RoomSearchBar = ({
                 />
             </div>
 
-            <select
-                className="form-select"
-                style={{ width: "160px" }}
-                aria-label="Filter rooms by status"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-            >
-                <option value="all">All rooms</option>
-                <option value="active">Active rooms</option>
-                <option value="closed">Closed rooms</option>
-            </select>
+            <div className="col-12 col-lg-3">
+                <select
+                    className="form-select"
+                    aria-label="Filter rooms by status"
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                    <option value="all">All rooms</option>
+                    <option value="active">Active rooms</option>
+                    <option value="closed">Closed rooms</option>
+                </select>
+            </div>
         </div>
     );
 };

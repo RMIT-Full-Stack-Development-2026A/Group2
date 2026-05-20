@@ -278,6 +278,29 @@ function createGameInterface() {
     };
   }
 
+  async function abortGameByAdmin(sessionId) {
+    const session = await gameRepository.findSessionById(sessionId);
+
+    if (!session) {
+      throw new AppError("Game session not found.", {
+        code: "GAME_NOT_FOUND",
+        statusCode: 404,
+      });
+    }
+
+    // Minimal admin abort: mark session as aborted in DB.
+    const updatedSession = await gameRepository.updateSession(session._id, {
+      status: "aborted",
+      result: "aborted",
+      endTime: new Date(),
+      currentTurn: null,
+      winnerParticipantID: null,
+      winningLine: [],
+    });
+
+    return updatedSession;
+  }
+
   async function listPlayersInLobby(sessionId) {
       const participants = await gameRepository.findParticipantsBySession(sessionId);
       return participants.map((participant) => participant.userID); // Return only the userID 
@@ -287,6 +310,7 @@ function createGameInterface() {
     listHistoryForUser,
     getReplayForUser,
     listPlayersInLobby,
+    abortGameByAdmin,
   };
 }
 

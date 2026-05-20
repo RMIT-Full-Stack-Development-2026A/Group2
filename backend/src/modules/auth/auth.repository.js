@@ -1,5 +1,8 @@
 const User = require("./model/user.model");
 const Profile = require("../profile/profile.model");
+const {createPremiumInterface} = require("../premium/premium.interface");
+
+const premiumInterface = createPremiumInterface();
 
 function escapeRegex(s) {
     return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -95,7 +98,7 @@ async function updateUser(id, update) {
     return mapAuthUser(user, profile);
 }
 
-function mapAuthUser(user, profile) {
+function mapAuthUser(user, profile, isPremium = null) {
     if (!user) {
         return null;
     }
@@ -115,6 +118,7 @@ function mapAuthUser(user, profile) {
         displayName: profile?.displayName ?? user.username,
         profileCreatedAt: profile?.createdAt ?? null,
         profileUpdatedAt: profile?.updatedAt ?? null,
+        isPremium: isPremium,
     };
 }
 
@@ -123,7 +127,8 @@ async function findAllUsers() {
     const combinedUsers = await Promise.all(
         users.map(async (user) => {
             const profile = await Profile.findOne({ userID: user._id }).lean();
-            return mapAuthUser(user, profile);
+            const isPremium = await premiumInterface.hasActiveSubscription(user._id);
+            return mapAuthUser(user, profile, isPremium);
         }),
     );
     return combinedUsers;
@@ -139,7 +144,8 @@ async function toggleUserAccountStatus(userId) {
         user.accountStatus === "active" ? "deactivated" : "active";
     await user.save();
     const profile = await Profile.findOne({ userID: user._id }).lean();
-    return mapAuthUser(user.toObject(), profile);
+    const isPremium = await premiumInterface.hasActiveSubscription(user._id);
+    return mapAuthUser(user.toObject(), profile, isPremium);
 }
 
 // Blacklist management

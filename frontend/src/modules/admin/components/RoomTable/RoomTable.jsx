@@ -49,18 +49,14 @@ const RoomTable = ({ filtered, setRooms }) => {
 
     return (
         <>
-            <table className="w-100 small">
+            <table className="table table-sm align-middle w-100 mb-0">
                 <thead>
                     <tr className="border-bottom">
                         <th className="p-3 fw-500 text-muted">Room #</th>
                         <th className="p-3 fw-500 text-muted">Player 1</th>
                         <th className="p-3 fw-500 text-muted">Player 2</th>
-                        <th className="p-3 fw-500 text-muted d-none d-sm-table-cell">
-                            Start
-                        </th>
-                        <th className="p-3 fw-500 text-muted d-none d-sm-table-cell">
-                            End
-                        </th>
+                        <th className="p-3 fw-500 text-muted">Start</th>
+                        <th className="p-3 fw-500 text-muted">End</th>
                         <th className="p-3 fw-500 text-muted">Status</th>
                         <th className="p-3 fw-500 text-muted">Actions</th>
                     </tr>
@@ -74,15 +70,15 @@ const RoomTable = ({ filtered, setRooms }) => {
                             <td className="p-3">
                                 {r.players?.length === 2 ? r.players[1] : "—"}
                             </td>
-                            <td className="p-3 text-muted d-none d-sm-table-cell">
+                            <td className="p-3 text-muted">
                                 {formatDateTime(r.startTime)}
                             </td>
-                            <td className="p-3 text-muted d-none d-sm-table-cell">
+                            <td className="p-3 text-muted">
                                 {formatDateTime(r.endTime)}
                             </td>
                             <td className="p-3">
                                 <span
-                                    className={getStatusBadgeClass(r.status)}
+                                    className={`${getStatusBadgeClass(r.status)} text-nowrap`}
                                     style={{
                                         minWidth: "100px",
                                         textAlign: "center",
@@ -95,7 +91,7 @@ const RoomTable = ({ filtered, setRooms }) => {
                                 {r.status !== "closed" &&
                                     r.status !== "finished" && (
                                         <button
-                                            className={`btn btn-sm d-flex align-items-center gap-2 btn-danger`}
+                                            className={`btn btn-sm d-inline-flex align-items-center gap-2 btn-danger text-nowrap`}
                                             onClick={() => closeRoom(r.lobbyId)}
                                         >
                                             <XCircle
@@ -104,7 +100,9 @@ const RoomTable = ({ filtered, setRooms }) => {
                                                     height: "12px",
                                                 }}
                                             />{" "}
-                                            Close
+                                            <span className="d-none d-sm-inline">
+                                                Close
+                                            </span>
                                         </button>
                                     )}
                             </td>

@@ -22,8 +22,8 @@ export default function usePlayerTable({ onPlayerStatusUpdated } = {}) {
 
         const filtered = players.filter((player) => {
             const searchLower = search.toLowerCase();
-            const usernameLower = player.username.toLowerCase();
-            const emailLower = player.email.toLowerCase();
+            const usernameLower = player.username?.toLowerCase() || "";
+            const emailLower = player.email?.toLowerCase() || "";
 
             return (
                 usernameLower.includes(searchLower) ||

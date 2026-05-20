@@ -19,7 +19,7 @@ export default function AdminDashboardPage() {
                 },
                 {
                     label: "Premium Players",
-                    value: "Not done",
+                    value: fetchedStats.premiumUsers,
                     icon: Crown,
                     color: "text-warning",
                 },
@@ -51,7 +51,7 @@ export default function AdminDashboardPage() {
                 <div className="container py-4" style={{ maxWidth: "960px" }}>
                     <h1 className="h3 fw-bold mb-4">Admin Dashboard</h1>
 
-                    <div className="row row-cols-2 row-cols-sm-3 row-cols-lg-5 g-3 mb-4">
+                    <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-3 mb-4">
                         {stats.map((s) => (
                             <div className="col" key={s.label}>
                                 <div className="card h-100 border-0 shadow-sm">
