@@ -235,7 +235,14 @@ export default function useGamePlayView(config) {
             socket.off("roomClosed");
             window.removeEventListener("beforeunload", handleBeforeUnload);
         };
-    }, []);
+    }, [
+        applyBackendState,
+        config?.player1SocketId,
+        config?.player2SocketId,
+        config?.roomCode,
+        isOnline,
+        navigate,
+    ]);
 
     const resetGame = useCallback(async () => {
         if (isBackendManaged) {
@@ -423,7 +430,6 @@ export default function useGamePlayView(config) {
             winner,
             aborted,
             board,
-            currentPlayer,
             config,
             isBackendManaged,
             handleBackendCellClick,

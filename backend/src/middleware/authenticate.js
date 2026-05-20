@@ -53,6 +53,16 @@ async function validateToken(req, res, next) {
           });
         }
 
+        const revoked = await userRepository.isTokenBlacklisted(token);
+        if (revoked) {
+          return res.status(401).json({
+            status: "error",
+            code: "REVOKED_TOKEN",
+            message:
+              "Your session token has been revoked. Example: sign in again to get a new token.",
+          });
+        }
+
         const user = await userRepository.findById(decoded.id);
 
         if (!user) {

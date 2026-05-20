@@ -1,11 +1,11 @@
-const AppError = require("../../../../shared/errors/AppError");
-const { sendError } = require("../../../../shared/utils/httpResponse");
-const gameService = require("../../application/services/game.service");
+const AppError = require("../../../shared/errors/AppError");
+const { sendError } = require("../../../shared/utils/httpResponse");
+const gameService = require("../application/services/game.service");
 const {
   validateCreateLocalGame,
   validateCreateSinglePlayerGame,
   validateMoveInput,
-} = require("../../application/validators/game.validation");
+} = require("../application/validators/game.validation");
 
 function handleControllerError(res, err) {
   if (err instanceof AppError) {

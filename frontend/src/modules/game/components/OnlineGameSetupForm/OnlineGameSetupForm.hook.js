@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import socket from "@/lib/socket";
 import { buildOnlineGameNavigationState } from "./OnlineGameSetupForm.service";
 
 export default function useOnlineGameSetupForm() {
     const { user } = useAuth();
-    const navigate = useNavigate();
     const [rooms, setRooms] = useState([]);
     const [waiting, setWaiting] = useState(false);
     const [waitingRoomCode, setWaitingRoomCode] = useState(null);
@@ -79,7 +77,7 @@ export default function useOnlineGameSetupForm() {
             socket.off("joinError");
             socket.off("roomClosed");
         };
-    }, []);
+    }, [user?.username]);
 
     return {
         rooms,

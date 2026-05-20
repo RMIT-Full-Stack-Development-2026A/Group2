@@ -1,10 +1,11 @@
 const crypto = require("crypto");
 const AppError = require("../../../../shared/errors/AppError");
 const multiplayerRepository = require("../../infrastructure/repositories/multiplayer.repository");
-const gameService = require("../../../game/application/services/game.service");
+const { createGameInterface } = require("../../../game/domain/interfaces/game.interface");
 
 const SPECTATOR_UNAVAILABLE_MESSAGE =
     "This spectator link is invalid or the match is no longer available.";
+const gameInterface = createGameInterface();
 
 async function createRoom(user, { roomCode, boardSize, boardStyle, marker1, marker2 }) {
     const lobby = await multiplayerRepository.createLobby({
@@ -19,7 +20,7 @@ async function joinRoom(player2User, roomCode, player1User, { boardSize, marker1
     const lobby = await multiplayerRepository.findLobbyByCode(roomCode);
     if (!lobby) throw new Error("Room not found.");
 
-    const dto = await gameService.createOnlineGame(player1User, player2User, {
+    const dto = await gameInterface.createOnlineGame(player1User, player2User, {
         boardSize,
         marker1,
         marker2,
@@ -142,7 +143,7 @@ async function getSpectatorMatchSnapshotByToken(token) {
         throwSpectatorUnavailable();
     }
 
-    const backendSession = await gameService.getSessionState(lobby.sessionId);
+    const backendSession = await gameInterface.getSessionState(lobby.sessionId);
     if (backendSession?.session?.gameMode !== "online_match") {
         throwSpectatorUnavailable();
     }

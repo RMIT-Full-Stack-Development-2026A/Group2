@@ -102,14 +102,18 @@ async function logIn(req, res) {
 
 async function logOut(req, res) {
   const cookies = req.cookies;
+  const authHeader = req.headers.authorization || "";
+  const accessToken = authHeader.startsWith("Bearer ")
+    ? authHeader.slice("Bearer ".length).trim()
+    : null;
 
   const secureCookie = process.env.NODE_ENV === "production";
-  if (cookies?.jwt) {
+  if (cookies?.jwt || accessToken) {
     const token = cookies.jwt;
     try {
-      await authService.logOut(token);
+      await authService.logOut(token, accessToken);
     } catch (e) {
-      console.error("Failed to blacklist refresh token on logout", e);
+      console.error("Failed to blacklist auth token on logout", e);
     }
 
     res.clearCookie("jwt", {

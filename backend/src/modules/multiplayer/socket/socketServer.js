@@ -4,6 +4,7 @@ const roomSocketHandler = require("./roomSocketHandler");
 const moveSocketHandler = require("./moveSocketHandler");
 const User = require("../../auth/model/user.model");
 const Profile = require("../../profile/profile.model");
+const authRepository = require("../../auth/auth.repository");
 const chatSocketHandler = require("./chatSocketHandler");
 const spectatorSocketHandler = require("./spectatorSocketHandler");
 let io;
@@ -22,6 +23,8 @@ function initSocketServer(httpServer) {
 
     try {
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        const revoked = await authRepository.isTokenBlacklisted(token);
+        if (revoked) return next(new Error("Unauthorized"));
         const user = await User.findById(decoded.id).select("username role");
         if (!user) return next(new Error("Unauthorized"));
         const profile = await Profile.findOne({ userID: user._id })

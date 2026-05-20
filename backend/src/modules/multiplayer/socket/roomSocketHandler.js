@@ -1,9 +1,10 @@
 const { v4: uuidv4 } = require("uuid");
 const multiplayerService = require("../application/services/multiplayer.service");
-const gameService = require("../../game/application/services/game.service");
+const { createGameInterface } = require("../../game/domain/interfaces/game.interface");
 
 const rooms = new Map();
 const REMATCH_RESPONSE_TIMEOUT_MS = 30000;
+const gameInterface = createGameInterface();
 
 function normalizeRoomCode(roomCode) {
   return String(roomCode || "").trim().toUpperCase();
@@ -154,7 +155,7 @@ async function terminateActiveRoom(io, roomCode, room, actorSocketId, reason) {
   const sessionId = room.sessionId || null;
   if (sessionId) {
     try {
-      await gameService.terminateOnlineSession(sessionId);
+      await gameInterface.terminateOnlineSession(sessionId);
     } catch (error) {
       console.error("Failed to terminate online session:", error.message);
     }

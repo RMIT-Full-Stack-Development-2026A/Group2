@@ -23,21 +23,25 @@ export default function NavBar({ onNavigate, onShowAuthModal }) {
     const displayName = user?.displayName ?? user?.username ?? "player";
     const isAdmin = user?.role === "admin";
     const dashboardPath = isAdmin ? "/admin/dashboard" : "/dashboard";
+    const showPremiumBadge = user?.role === "player" && isPremiumActive;
 
     useEffect(() => {
-        if (user?.role !== "player") {
-            setIsPremiumActive(false);
-            return;
-        }
+        if (user?.role !== "player") return undefined;
+
+        let active = true;
 
         (async () => {
             try {
                 const subscription = await getPremiumMe();
-                setIsPremiumActive(Boolean(subscription?.isPremium));
+                if (active) setIsPremiumActive(Boolean(subscription?.isPremium));
             } catch {
-                setIsPremiumActive(false);
+                if (active) setIsPremiumActive(false);
             }
         })();
+
+        return () => {
+            active = false;
+        };
     }, [user?.role, location.pathname]);
 
     // Check if we're on guest dashboard (root path) and not authenticated
@@ -214,12 +218,12 @@ export default function NavBar({ onNavigate, onShowAuthModal }) {
                                 <>
                                     <span
                                         className={`badge rounded-pill px-3 py-2 ${
-                                            isPremiumActive
+                                            showPremiumBadge
                                                 ? "text-bg-warning text-dark"
                                                 : "text-bg-secondary"
                                         }`}
                                     >
-                                        {isPremiumActive ? "PREMIUM" : "FREE"}
+                                        {showPremiumBadge ? "PREMIUM" : "FREE"}
                                     </span>
                                     <span className="text-secondary small">
                                         {displayName}

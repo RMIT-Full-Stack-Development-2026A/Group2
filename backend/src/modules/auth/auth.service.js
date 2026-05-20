@@ -164,7 +164,31 @@ async function logIn(identifier, password) {
     };
 }
 
-async function logOut(refreshToken) {
+function decodeTokenForBlacklist(token) {
+    if (!token) return null;
+    const decoded = jwt.decode(token) || {};
+    return {
+        userId: decoded.id || null,
+        expiresAt: decoded.exp ? new Date(decoded.exp * 1000) : new Date(),
+    };
+}
+
+async function blacklistToken(token) {
+    const decoded = decodeTokenForBlacklist(token);
+    if (!decoded) return null;
+    try {
+        return await userRepository.addBlacklistedToken(
+            token,
+            decoded.userId,
+            decoded.expiresAt,
+        );
+    } catch (error) {
+        if (error?.code === 11000) return null;
+        throw error;
+    }
+}
+
+async function logOutOld(refreshToken) {
     // Decode to extract expiry and user id for bookkeeping; do not rely on decode for validity
     let decoded = {};
     try {
@@ -175,6 +199,13 @@ async function logOut(refreshToken) {
     const expiresAt = decoded.exp ? new Date(decoded.exp * 1000) : new Date(Date.now());
     const userId = decoded.id || null;
     return userRepository.addBlacklistedRefreshToken(refreshToken, userId, expiresAt);
+}
+
+async function logOut(refreshToken, accessToken = null) {
+    await Promise.all([
+        blacklistToken(refreshToken),
+        blacklistToken(accessToken),
+    ]);
 }
 
 async function refresh(refreshToken) {
@@ -190,7 +221,7 @@ async function refresh(refreshToken) {
 
     // Check blacklist (repository handles DB interaction)
     try {
-        const revoked = await userRepository.isRefreshTokenBlacklisted(refreshToken);
+        const revoked = await userRepository.isTokenBlacklisted(refreshToken);
         if (revoked) {
             throw new AppError("Refresh token has been revoked.", {
                 code: "REVOKED_REFRESH_TOKEN",

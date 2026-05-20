@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Bot } from "lucide-react";
-import GameChat from "@/components/GameChat";
+import GameChat from "@/components/GameChat/GameChat";
 import styles from "./GamePlayView.module.css";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 

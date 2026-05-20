@@ -1,5 +1,6 @@
 const AppError = require("../../../../shared/errors/AppError");
 const gameRepository = require("../../infrastructure/repositories/game.repository");
+const gameService = require("../../application/services/game.service");
 
 function normalizeGameType(gameMode) {
   if (gameMode === "single_player") return "ai";
@@ -168,6 +169,22 @@ function toReplayMoveDto(move) {
 }
 
 function createGameInterface() {
+  async function createOnlineGame(player1User, player2User, payload) {
+    return gameService.createOnlineGame(player1User, player2User, payload);
+  }
+
+  async function makeMove(authUser, sessionId, payload) {
+    return gameService.makeMove(authUser, sessionId, payload);
+  }
+
+  async function terminateOnlineSession(sessionId) {
+    return gameService.terminateOnlineSession(sessionId);
+  }
+
+  async function getSessionState(sessionId) {
+    return gameService.getSessionState(sessionId);
+  }
+
   async function listHistoryForUser(userId, filters = {}) {
     const myParticipants = await gameRepository.findParticipantsByUser(userId);
 
@@ -308,6 +325,10 @@ function createGameInterface() {
   }
 
   return {
+    createOnlineGame,
+    makeMove,
+    terminateOnlineSession,
+    getSessionState,
     listHistoryForUser,
     getReplayForUser,
     listPlayersInLobby,

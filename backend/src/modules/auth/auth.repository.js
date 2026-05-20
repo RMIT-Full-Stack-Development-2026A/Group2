@@ -160,6 +160,15 @@ async function isRefreshTokenBlacklisted(token) {
     return !!found;
 }
 
+async function addBlacklistedToken(token, userId, expiresAt) {
+    return RefreshBlacklist.create({ token, userId, expiresAt });
+}
+
+async function isTokenBlacklisted(token) {
+    const found = await RefreshBlacklist.findOne({ token }).lean();
+    return !!found;
+}
+
 module.exports = {
     findByEmail,
     findByUsernameOrEmail,
@@ -171,4 +180,6 @@ module.exports = {
     updateUser,
     addBlacklistedRefreshToken,
     isRefreshTokenBlacklisted,
+    addBlacklistedToken,
+    isTokenBlacklisted,
 };

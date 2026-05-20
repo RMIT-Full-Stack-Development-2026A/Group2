@@ -75,11 +75,14 @@ export default function OnlineGameSetupForm() {
 
     useEffect(() => {
         if (!preparingGame) return;
-        setCountdown(3);
+        const resetTimer = setTimeout(() => setCountdown(3), 0);
         const timer = setInterval(() => {
             setCountdown((c) => c - 1);
         }, 1000);
-        return () => clearInterval(timer);
+        return () => {
+            clearTimeout(resetTimer);
+            clearInterval(timer);
+        };
     }, [preparingGame]);
 
     useEffect(() => {
