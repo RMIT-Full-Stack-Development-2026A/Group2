@@ -30,24 +30,26 @@ export default function GameHeaderBar({
         <span>{formatTime(elapsed)}</span>
       </div>
 
-      {!isOnline ? (
       <div className={styles.actions}>
-        <button type="button" className={styles.ghostBtn} onClick={onRestart}>
-          Restart
-        </button>
-        <button
-          type="button"
-          className={styles.secondaryBtn}
-          disabled={!!winner || aborted}
-          onClick={onTogglePause}
-        >
-          {isPaused ? "Resume" : "Pause"}
-        </button>
+        {!isOnline ? (
+          <>
+            <button type="button" className={styles.ghostBtn} onClick={onRestart}>
+              Restart
+            </button>
+            <button
+              type="button"
+              className={styles.secondaryBtn}
+              disabled={!!winner || aborted}
+              onClick={onTogglePause}
+            >
+              {isPaused ? "Resume" : "Pause"}
+            </button>
+          </>
+        ) : null}
         <button type="button" className={styles.dangerBtn} onClick={onAbort}>
           Abort
         </button>
       </div>
-      ) : null}
     </div>
   );
 }

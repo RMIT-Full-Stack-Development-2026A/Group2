@@ -267,6 +267,8 @@ async function startRematch(io, oldRoomCode, room) {
       player2SocketId: nextRoom.player2,
       player1Name: nextRoom.player1User.username,
       player2Name: nextRoom.player2User.username,
+      player1AvatarURL: nextRoom.player1User.avatarURL || null,
+      player2AvatarURL: nextRoom.player2User.avatarURL || null,
       sessionId: dto.session.id,
       backendSession: dto,
     },
@@ -352,6 +354,8 @@ function roomSocketHandler(io, socket) {
       marker1: room.marker1,
       player1Name: room.player1User.username,
       player2Name: socket.user.username,
+      player1AvatarURL: room.player1User.avatarURL || null,
+      player2AvatarURL: socket.user.avatarURL || null,
       player2SocketId: socket.id,
     });
 
@@ -377,6 +381,8 @@ function roomSocketHandler(io, socket) {
         marker1: availableRoom.marker1,
         player1Name: availableRoom.player1User.username,
         player2Name: socket.user.username,
+        player1AvatarURL: availableRoom.player1User.avatarURL || null,
+        player2AvatarURL: socket.user.avatarURL || null,
         player2SocketId: socket.id,
       });
 
@@ -448,6 +454,8 @@ function roomSocketHandler(io, socket) {
         player2SocketId: room.player2,
         player1Name: room.player1User.username,
         player2Name: room.player2User.username,
+        player1AvatarURL: room.player1User.avatarURL || null,
+        player2AvatarURL: room.player2User.avatarURL || null,
         sessionId: dto.session.id,
         backendSession: dto,
       });

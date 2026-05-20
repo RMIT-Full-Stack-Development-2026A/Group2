@@ -6,6 +6,7 @@ export default function PlayerStatusCard({
   isActive,
   turnText,
   avatarContent,
+  avatarSrc,
   showTurnText = false,
   compact = false
 }) {
@@ -17,7 +18,19 @@ export default function PlayerStatusCard({
         {isActive || showTurnText ? <p className={styles.turnText}>{turnText}</p> : null}
       </div>
 
-      <div className={styles.avatar}>{avatarContent}</div>
+      <div className={styles.avatar}>
+        {avatarSrc ? (
+          <img
+            src={avatarSrc}
+            alt=""
+            className={styles.avatarImage}
+            loading="eager"
+            decoding="async"
+          />
+        ) : (
+          avatarContent
+        )}
+      </div>
     </div>
   );
 }

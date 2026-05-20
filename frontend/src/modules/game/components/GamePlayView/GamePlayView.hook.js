@@ -70,6 +70,7 @@ export default function useGamePlayView(config) {
     const [isPaused, setIsPaused] = useState(false);
     const [apiError, setApiError] = useState("");
     const [showRoomClosedPopup, setShowRoomClosedPopup] = useState(false);
+    const [roomClosedReason, setRoomClosedReason] = useState("");
     const [roomClosedMessage, setRoomClosedMessage] = useState("");
     const startTime = useRef(initialStartTime);
 
@@ -171,14 +172,33 @@ export default function useGamePlayView(config) {
             applyBackendState(dto);
         });
 
+        const handleOnlineRoomClosed = ({ roomCode, reason, message } = {}) => {
+            const closedRoom = String(roomCode || "").toUpperCase();
+            const currentRoom = String(config?.roomCode || "").toUpperCase();
+
+            if (closedRoom && closedRoom !== currentRoom) return;
+
+            setApiError("");
+            setAborted(true);
+            setWinner(null);
+            setShowWinnerModal(false);
+            setIsPaused(false);
+            setRoomClosedReason(reason || "opponent_disconnected");
+            setRoomClosedMessage(
+                message || "This match has ended and the room has been closed.",
+            );
+            setShowRoomClosedPopup(true);
+        };
+
         socket.on("playerDisconnected", () => {
-            const winnerName =
-                myRoleRef.current === "player1"
-                    ? config.player1
-                    : config.player2;
-            setWinner(winnerName);
-            setShowWinnerModal(true);
+            handleOnlineRoomClosed({
+                roomCode: config?.roomCode,
+                reason: "opponent_disconnected",
+                message: "The other player disconnected. This match has ended.",
+            });
         });
+
+        socket.on("onlineMatchTerminated", handleOnlineRoomClosed);
 
         socket.on("roomClosed", ({ roomCode, reason }) => {
             const closedRoom = String(roomCode || "").toUpperCase();
@@ -196,6 +216,7 @@ export default function useGamePlayView(config) {
             setWinner(null);
             setShowWinnerModal(false);
             setIsPaused(false);
+            setRoomClosedReason(reason || "closed");
             setRoomClosedMessage(message);
             setShowRoomClosedPopup(true);
         });
@@ -210,6 +231,7 @@ export default function useGamePlayView(config) {
             socket.off("connect", handleConnect);
             socket.off("moveResult");
             socket.off("playerDisconnected");
+            socket.off("onlineMatchTerminated", handleOnlineRoomClosed);
             socket.off("roomClosed");
             window.removeEventListener("beforeunload", handleBeforeUnload);
         };
@@ -444,6 +466,7 @@ export default function useGamePlayView(config) {
         setIsPaused,
         setShowWinnerModal,
         showRoomClosedPopup,
+        roomClosedReason,
         roomClosedMessage,
         resetGame,
         handleCellClick,

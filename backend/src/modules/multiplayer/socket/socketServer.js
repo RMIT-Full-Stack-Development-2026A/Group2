@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const roomSocketHandler = require("./roomSocketHandler");
 const moveSocketHandler = require("./moveSocketHandler");
 const User = require("../../auth/model/user.model");
+const Profile = require("../../profile/profile.model");
 const chatSocketHandler = require("./chatSocketHandler");
 let io;
 
@@ -22,10 +23,15 @@ function initSocketServer(httpServer) {
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
         const user = await User.findById(decoded.id).select("username role");
         if (!user) return next(new Error("Unauthorized"));
+        const profile = await Profile.findOne({ userID: user._id })
+          .select("avatarURL displayName")
+          .lean();
         socket.user = { 
             id: String(user._id), 
-            username: user.username, 
-            role: user.role 
+            username: user.username,
+            displayName: profile?.displayName || user.username,
+            avatarURL: profile?.avatarURL || null,
+            role: user.role
         };
       next();
     } catch (err) {

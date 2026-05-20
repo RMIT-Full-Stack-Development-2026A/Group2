@@ -72,3 +72,10 @@
   border-color: #dc2626;
   color: white;
 }
+
+.ghostBtn:disabled,
+.secondaryBtn:disabled,
+.dangerBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}

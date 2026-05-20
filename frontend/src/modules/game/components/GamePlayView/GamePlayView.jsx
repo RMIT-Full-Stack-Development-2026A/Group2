@@ -13,8 +13,10 @@ import PlayerStatusCard from "./sub-components/PlayerStatusCard";
 import GameBoard from "./sub-components/GameBoard";
 import WinnerDialog from "./sub-components/WinnerDialog";
 import LeaveGameDialog from "./sub-components/LeaveGameDialog";
+import OnlineRoomClosedDialog from "./sub-components/OnlineRoomClosedDialog";
 
 import socket from "@/lib/socket";
+import { getProfile } from "@/modules/profile/services/profile.service";
 
 export default function GamePlayView() {
     const location = useLocation();
@@ -37,7 +39,8 @@ export default function GamePlayView() {
 function GamePlayViewContent({ config, navigate }) {
     const outletContext = useOutletContext();
     const registerNavigationGuard = outletContext?.registerNavigationGuard;
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
+    const [profileAvatarURL, setProfileAvatarURL] = useState("");
 
     const {
         size,
@@ -56,6 +59,7 @@ function GamePlayViewContent({ config, navigate }) {
         setIsPaused,
         setShowWinnerModal,
         showRoomClosedPopup,
+        roomClosedReason,
         roomClosedMessage,
         resetGame,
         handleCellClick,
@@ -80,20 +84,42 @@ function GamePlayViewContent({ config, navigate }) {
         } catch {
             // ignore
         }
-        navigate("/dashboard", { replace: true });
+        navigate("/online", { replace: true });
     }, [navigate]);
 
-    useEffect(() => {
-        if (!showRoomClosedPopup) return undefined;
-
-        const timer = setTimeout(() => {
-            handleRoomClosedRedirect();
-        }, 3000);
-
-        return () => clearTimeout(timer);
-    }, [handleRoomClosedRedirect, showRoomClosedPopup]);
-
     const gameInProgress = !winner && !aborted;
+
+    useEffect(() => {
+        let active = true;
+
+        getProfile()
+            .then((profile) => {
+                if (!active) return;
+                setProfileAvatarURL(profile?.profile?.avatarURL || "");
+            })
+            .catch(() => {
+                if (active) setProfileAvatarURL("");
+            });
+
+        return () => {
+            active = false;
+        };
+    }, []);
+
+    const onlineCurrentUserAvatarURL =
+        myRole === "player1"
+            ? config.player1AvatarURL || ""
+            : config.player2AvatarURL || "";
+    const currentUserAvatarURL =
+        onlineCurrentUserAvatarURL ||
+        profileAvatarURL ||
+        user?.profile?.avatarURL ||
+        user?.avatarURL ||
+        "";
+    const opponentAvatarURL =
+        myRole === "player1"
+            ? config.player2AvatarURL || ""
+            : config.player1AvatarURL || "";
 
     const handleConfirmAbort = useCallback(async () => {
         setIsPaused(false);
@@ -101,6 +127,10 @@ function GamePlayViewContent({ config, navigate }) {
         setAbortDialogOpen(false);
 
         if (isOnline) {
+            socket.emit("leaveOnlineMatch", {
+                roomCode: config.roomCode,
+                sessionId: config.sessionId,
+            });
             socket.disconnect();
             navigate("/dashboard", { replace: true });
             return;
@@ -120,7 +150,26 @@ function GamePlayViewContent({ config, navigate }) {
         }
 
         if (dest) navigate(dest);
-    }, [abortCurrentGame, isOnline, logout, navigate, setAborted, setIsPaused]);
+    }, [
+        abortCurrentGame,
+        config.roomCode,
+        config.sessionId,
+        isOnline,
+        logout,
+        navigate,
+        setAborted,
+        setIsPaused,
+    ]);
+
+    const handleRestartAction = useCallback(() => {
+        if (isOnline) {
+            socket.disconnect();
+            navigate("/online");
+            return;
+        }
+
+        resetGame();
+    }, [isOnline, navigate, resetGame]);
 
     const handleNavIntercept = useCallback(
         (to) => {
@@ -165,7 +214,7 @@ function GamePlayViewContent({ config, navigate }) {
                     winner={winner}
                     aborted={aborted}
                     isPaused={isPaused}
-                    onRestart={resetGame}
+                    onRestart={handleRestartAction}
                     onTogglePause={handlePauseAction}
                     onAbort={() => setAbortDialogOpen(true)}
                 />
@@ -199,6 +248,7 @@ function GamePlayViewContent({ config, navigate }) {
                                         isActive={isMyTurn}
                                         turnText="Your turn"
                                         avatarContent="Y"
+                                        avatarSrc={currentUserAvatarURL}
                                     />
                                     <PlayerStatusCard
                                         name="Opponent"
@@ -210,6 +260,7 @@ function GamePlayViewContent({ config, navigate }) {
                                         isActive={isOpponentTurn}
                                         turnText="Their turn"
                                         avatarContent="O"
+                                        avatarSrc={opponentAvatarURL}
                                     />
                                 </div>
 
@@ -241,6 +292,7 @@ function GamePlayViewContent({ config, navigate }) {
                                     avatarContent={config.player1
                                         .charAt(0)
                                         .toUpperCase()}
+                                    avatarSrc={currentUserAvatarURL}
                                 />
                                 <GameBoard
                                     board={board}
@@ -338,19 +390,11 @@ function GamePlayViewContent({ config, navigate }) {
                     confirmText="Confirm Abort"
                 />
 
-                <LeaveGameDialog
+                <OnlineRoomClosedDialog
                     open={showRoomClosedPopup}
-                    onClose={handleRoomClosedRedirect}
-                    onConfirm={handleRoomClosedRedirect}
-                    kicker="Room closed"
-                    title="Room closed by admin"
-                    description={
-                        roomClosedMessage ||
-                        "This room was closed by an admin. You will be redirected to your dashboard."
-                    }
-                    cancelText="Stay"
-                    confirmText="Go to Dashboard"
-                    confirmTone="primary"
+                    reason={roomClosedReason}
+                    message={roomClosedMessage}
+                    onReturn={handleRoomClosedRedirect}
                 />
             </div>
         </AppLayout>

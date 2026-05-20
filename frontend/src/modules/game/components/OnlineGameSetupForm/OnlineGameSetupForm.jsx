@@ -234,14 +234,30 @@ export default function OnlineGameSetupForm() {
                         <div className={styles.playerCardsRow}>
                             <div className={styles.playerCard}>
                                 <div className={styles.playerAvatar} style={{ background: "#2563eb" }}>
-                                    {player1Initial}
+                                    {waitForStart.player1AvatarURL ? (
+                                        <img
+                                            src={waitForStart.player1AvatarURL}
+                                            alt=""
+                                            className={styles.playerAvatarImage}
+                                        />
+                                    ) : (
+                                        player1Initial
+                                    )}
                                 </div>
                                 <p className={styles.playerName}>{waitForStart.player1Name}</p>
                                 <span className={styles.readyBadge}>Ready</span>
                             </div>
                             <div className={styles.playerCard}>
                                 <div className={styles.playerAvatar} style={{ background: "#2563eb" }}>
-                                    {player2Initial}
+                                    {waitForStart.player2AvatarURL ? (
+                                        <img
+                                            src={waitForStart.player2AvatarURL}
+                                            alt=""
+                                            className={styles.playerAvatarImage}
+                                        />
+                                    ) : (
+                                        player2Initial
+                                    )}
                                 </div>
                                 <p className={styles.playerName}>{waitForStart.player2Name}</p>
                                 <span className={styles.readyBadge}>Joined!</span>

@@ -13,6 +13,8 @@ export function buildOnlineGameNavigationState({
   myRole, 
   player1Name, 
   player2Name, 
+  player1AvatarURL,
+  player2AvatarURL,
   sessionId, 
   backendSession,
 }) {
@@ -26,6 +28,8 @@ export function buildOnlineGameNavigationState({
     marker2,
     player1: player1Name || (myRole === "player1" ? username : "Opponent"),
     player2: player2Name || (myRole === "player2" ? username : "Opponent"),
+    player1AvatarURL: player1AvatarURL || null,
+    player2AvatarURL: player2AvatarURL || null,
     player1SocketId, 
     player2SocketId,
     myRole, 
