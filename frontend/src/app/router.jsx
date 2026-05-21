@@ -1,7 +1,7 @@
 import { createBrowserRouter, Outlet } from "react-router-dom";
 import LoginPage from "../modules/auth/pages/LoginPage";
 import RegisterPage from "../modules/auth/pages/RegisterPage";
-import DashboardPage from "../modules/auth/pages/DashBoardPage";
+import DashboardPage from "../modules/dashboard/pages/DashBoardPage";
 import PublicLayout from "../components/PublicLayout";
 import AuthLayout from "../components/AuthLayout";
 import ProtectedRoute from "../routes/ProtectedRoute";
