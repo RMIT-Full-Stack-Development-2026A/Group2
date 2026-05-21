@@ -111,7 +111,7 @@ async function createTestCheckoutSession(userId) {
 async function createStripeCheckoutSession(userId, isTestPayment) {
   const stripe = getStripeClient();
 
-  const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+  const clientUrl = (process.env.CLIENT_URL || "http://localhost:5173").replace(/\/+$/, "");
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     payment_method_types: ["card"],

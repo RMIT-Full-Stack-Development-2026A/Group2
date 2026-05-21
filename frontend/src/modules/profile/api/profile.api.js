@@ -4,12 +4,13 @@ import {
   httpPatchFormData,
   httpPost,
 } from "../../../lib/httpClient";
+import { API_ENDPOINTS } from "../../../config/api.config";
 
 /**
  * Raw GET for the authenticated user's profile (expects JSON body with `user`).
  */
 export async function fetchProfileRequest() {
-  return httpGet("/api/profile");
+  return httpGet(API_ENDPOINTS.profile.me);
 }
 
 /**
@@ -17,7 +18,7 @@ export async function fetchProfileRequest() {
  * @param {{ username: string, email: string, country: string }} data
  */
 export async function patchProfile(data) {
-  return httpPatch("/api/profile", data);
+  return httpPatch(API_ENDPOINTS.profile.update, data);
 }
 
 /**
@@ -25,7 +26,7 @@ export async function patchProfile(data) {
  * @param {{ currentPassword: string, newPassword: string, confirmNewPassword: string }} data
  */
 export async function postChangePassword(data) {
-  return httpPost("/api/profile/change-password", data);
+  return httpPost(API_ENDPOINTS.profile.changePassword, data);
 }
 
 /**
@@ -33,14 +34,14 @@ export async function postChangePassword(data) {
  * @param {FormData} formData
  */
 export async function patchProfileLogo(formData) {
-  return httpPatchFormData("/api/profile/logo", formData);
+  return httpPatchFormData(API_ENDPOINTS.profile.uploadLogo, formData);
 }
 
 /**
  * GET match replay data for a specific session.
  */
 export async function fetchMatchReplayRequest(sessionId) {
-  return httpGet(`/api/profile/history/${sessionId}/replay`);
+  return httpGet(API_ENDPOINTS.profile.replay(sessionId));
 }
 
 /**
@@ -75,6 +76,8 @@ export async function fetchMatchHistoryRequest(filters = {}) {
   }
 
   const query = params.toString();
-  const url = query ? `/api/profile/history?${query}` : "/api/profile/history";
+  const url = query
+    ? `${API_ENDPOINTS.profile.history}?${query}`
+    : API_ENDPOINTS.profile.history;
   return httpGet(url);
 }

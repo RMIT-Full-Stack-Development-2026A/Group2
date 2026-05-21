@@ -7,7 +7,7 @@ const premiumController = require("./modules/premium/premium.controller");
 const app = express();
 
 // CORS + cookies: frontend origin (default Vite port).
-const clientOrigin = process.env.CLIENT_URL || "http://localhost:5173";
+const clientOrigin = (process.env.CLIENT_URL || "http://localhost:5173").replace(/\/+$/, "");
 app.use(
   cors({
     origin: clientOrigin,

@@ -3,6 +3,7 @@
  * Refresh token is sent via HTTP-only cookie automatically.
  * Access token is sent in Authorization header.
  */
+import { buildApiUrl } from "../config/api.config";
 
 let refreshTokenFn = null;
 let getAccessTokenFn = null;
@@ -65,7 +66,7 @@ async function httpFetch(url, options = {}) {
         fetchOptions.headers["Authorization"] = `Bearer ${token}`;
     }
 
-    let response = await fetch(url, fetchOptions);
+    let response = await fetch(buildApiUrl(url), fetchOptions);
 
     // If 401 Unauthorized, try to refresh token and retry
     if (response.status === 401) {
@@ -82,7 +83,7 @@ async function httpFetch(url, options = {}) {
             if (newToken) {
                 retryOptions.headers["Authorization"] = `Bearer ${newToken}`;
             }
-            response = await fetch(url, retryOptions);
+            response = await fetch(buildApiUrl(url), retryOptions);
         }
     }
 

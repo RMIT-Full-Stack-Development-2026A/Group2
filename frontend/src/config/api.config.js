@@ -1,6 +1,6 @@
 const RAW_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
-export const API_BASE_URL = RAW_API_BASE_URL.replace(/\/+$/, "");
+export const API_BASE_URL = RAW_API_BASE_URL.replace(/\/+$/, "").replace(/\/api$/i, "");
 export const API_PREFIX = "/api";
 
 export const AUTH_TOKEN_KEY = "accessToken";
@@ -19,7 +19,6 @@ export const API_ENDPOINTS = {
   game: {
     createSinglePlayer: "/game/sessions/single-player",
     createLocalGame: "/game/sessions/local",
-    createOnlineGame: "/game/sessions/online",
     getSession: (id) => `/game/sessions/${id}`,
     makeMove: (id) => `/game/sessions/${id}/moves`,
     abortSession: (id) => `/game/sessions/${id}/abort`,
@@ -33,14 +32,23 @@ export const API_ENDPOINTS = {
     reset: "/premium/reset",
   },
   admin: {
-    getPlayers: "/admin/players",
-    getPlayer: (id) => `/admin/players/${id}`,
-    getRooms: "/admin/rooms",
-    getRoom: (id) => `/admin/rooms/${id}`,
+    getUsers: "/admin/users",
+    toggleUserStatus: (id) => `/admin/users/change-status/${id}`,
+    getOnlineLobbies: "/admin/online-lobbies",
+    closeOnlineLobby: (id) => `/admin/online-lobbies/close/${id}`,
     getStats: "/admin/stats",
+  },
+  profile: {
+    me: "/profile",
+    update: "/profile",
+    changePassword: "/profile/change-password",
+    uploadLogo: "/profile/logo",
+    history: "/profile/history",
+    replay: (sessionId) => `/profile/history/${sessionId}/replay`,
   },
   multiplayer: {
     spectate: (token) => `/multiplayer/spectate/${encodeURIComponent(token)}`,
+    rooms: "/multiplayer/rooms",
   },
 };
 
