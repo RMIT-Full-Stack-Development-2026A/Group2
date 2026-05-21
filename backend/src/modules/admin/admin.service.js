@@ -40,11 +40,24 @@ async function getSystemStats() {
     );
     const totalPremiumUsers = premiumUsers.filter(Boolean).length;
 
+    // Include current in-memory room counts from the socket handler if available
+    let roomCounts = { waiting: 0, active: 0 };
+    try {
+        if (typeof roomSocketHandler.getRoomCounts === "function") {
+            roomCounts = roomSocketHandler.getRoomCounts();
+        }
+    } catch (err) {
+        // fall back to zeros on error
+        roomCounts = { waiting: 0, active: 0 };
+    }
+
     return {
         totalUsers,
         activeUsers,
         deactivatedUsers,
         premiumUsers: totalPremiumUsers,
+        onlineRoomsWaiting: roomCounts.waiting,
+        onlineRoomsActive: roomCounts.active,
     };
 }
 
