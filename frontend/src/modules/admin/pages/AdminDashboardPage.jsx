@@ -3,13 +3,20 @@ import { Users, Crown, Wifi, WifiOff, Gamepad2 } from "lucide-react";
 import { useState } from "react";
 import { useEffect } from "react";
 import { getSystemStats } from "../services/admin.service";
+import socket from "../../../lib/socket";
 
 export default function AdminDashboardPage() {
     const [stats, setStats] = useState([]);
+    const [roomCounts, setRoomCounts] = useState({ waiting: 0, active: 0 });
 
     useEffect(() => {
         async function fetchStats() {
             const fetchedStats = await getSystemStats();
+            setRoomCounts({
+                waiting: fetchedStats.onlineRoomsWaiting || 0,
+                active: fetchedStats.onlineRoomsActive || 0,
+            });
+
             setStats([
                 {
                     label: "Total Players",
@@ -36,14 +43,44 @@ export default function AdminDashboardPage() {
                     color: "text-danger",
                 },
                 {
-                    label: "Online Rooms",
-                    value: "Not done",
+                    label: "Active Rooms",
+                    value: fetchedStats.onlineRoomsActive || 0,
                     icon: Gamepad2,
                     color: "text-info",
+                },
+                {
+                    label: "Waiting Rooms",
+                    value: fetchedStats.onlineRoomsWaiting || 0,
+                    icon: Gamepad2,
+                    color: "text-muted",
                 },
             ]);
         }
         fetchStats();
+    }, []);
+
+    useEffect(() => {
+        // ensure socket connected and listen for room count updates
+        if (!socket.connected) socket.connect();
+
+        function handleCounts(counts) {
+            setRoomCounts(counts || { waiting: 0, active: 0 });
+            setStats((current) =>
+                current.map((s) => {
+                    if (s.label === "Active Rooms")
+                        return { ...s, value: counts.active };
+                    if (s.label === "Waiting Rooms")
+                        return { ...s, value: counts.waiting };
+                    return s;
+                }),
+            );
+        }
+
+        socket.on("roomCountsUpdated", handleCounts);
+
+        return () => {
+            socket.off("roomCountsUpdated", handleCounts);
+        };
     }, []);
     return (
         <>

@@ -124,7 +124,46 @@ export default function NavBar({ onNavigate, onShowAuthModal }) {
                                     </NavLink>
                                 )}
                             </li>
-                            {!isAdmin && (
+                            {isAdmin ? (
+                                <>
+                                    <li className="nav-item">
+                                        <NavLink
+                                            to="/admin/players"
+                                            className={navClass}
+                                            onClick={handleNavLinkClick(
+                                                "/admin/players",
+                                            )}
+                                        >
+                                            <span className="d-inline-flex align-items-center gap-2">
+                                                <User
+                                                    size={18}
+                                                    strokeWidth={2}
+                                                    aria-hidden
+                                                />
+                                                Players
+                                            </span>
+                                        </NavLink>
+                                    </li>
+                                    <li className="nav-item">
+                                        <NavLink
+                                            to="/admin/rooms"
+                                            className={navClass}
+                                            onClick={handleNavLinkClick(
+                                                "/admin/rooms",
+                                            )}
+                                        >
+                                            <span className="d-inline-flex align-items-center gap-2">
+                                                <LayoutDashboard
+                                                    size={18}
+                                                    strokeWidth={2}
+                                                    aria-hidden
+                                                />
+                                                Rooms
+                                            </span>
+                                        </NavLink>
+                                    </li>
+                                </>
+                            ) : (
                                 <>
                                     <li className="nav-item">
                                         <NavLink
@@ -196,15 +235,19 @@ export default function NavBar({ onNavigate, onShowAuthModal }) {
                             )}
                             {isAuthenticated && (
                                 <>
-                                    <span
-                                        className={`badge rounded-pill px-3 py-2 ${
-                                            showPremiumBadge
-                                                ? "text-bg-warning text-dark"
-                                                : "text-bg-secondary"
-                                        }`}
-                                    >
-                                        {showPremiumBadge ? "PREMIUM" : "FREE"}
-                                    </span>
+                                    {user?.role !== "admin" && (
+                                        <span
+                                            className={`badge rounded-pill px-3 py-2 ${
+                                                showPremiumBadge
+                                                    ? "text-bg-warning text-dark"
+                                                    : "text-bg-secondary"
+                                            }`}
+                                        >
+                                            {showPremiumBadge
+                                                ? "PREMIUM"
+                                                : "FREE"}
+                                        </span>
+                                    )}
                                     <span className="text-secondary small">
                                         {displayName}
                                     </span>
