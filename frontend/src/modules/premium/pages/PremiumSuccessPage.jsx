@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { CircleCheck, Sparkles, XCircle } from "lucide-react";
+import { usePremium } from "../hooks/usePremium";
 import { confirmPremiumCheckoutSession } from "../services/premium.service";
 
 export default function PremiumSuccessPage() {
+  const { applySubscription } = usePremium();
   const [searchParams] = useSearchParams();
   const [phase, setPhase] = useState("verifying");
   const [statusText, setStatusText] = useState("Verifying your payment with Stripe…");
@@ -24,7 +26,8 @@ export default function PremiumSuccessPage() {
       confirmedSessionRef.current = sessionId;
 
       try {
-        await confirmPremiumCheckoutSession(sessionId);
+        const subscription = await confirmPremiumCheckoutSession(sessionId);
+        applySubscription(subscription);
         setStatusText("Your subscription is active. Enjoy the full TicTacToang experience.");
         setPhase("success");
       } catch (error) {

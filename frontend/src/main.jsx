@@ -6,11 +6,14 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "./styles/globals.css";
 import router from "./app/router";
 import { AuthProvider } from "./modules/auth/context/AuthContext";
+import { PremiumProvider } from "./modules/premium/context/PremiumContext";
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
-      <RouterProvider router={router} />
+      <PremiumProvider>
+        <RouterProvider router={router} />
+      </PremiumProvider>
     </AuthProvider>
   </StrictMode>,
 )

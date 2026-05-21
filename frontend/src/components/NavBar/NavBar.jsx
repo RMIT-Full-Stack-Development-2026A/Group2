@@ -1,5 +1,4 @@
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
 import {
     Crown,
     Gamepad2,
@@ -10,7 +9,7 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "../../modules/auth/hooks/useAuth";
-import { getPremiumMe } from "../../modules/premium/services/premium.service";
+import { usePremium } from "../../modules/premium/hooks/usePremium";
 
 const navClass = ({ isActive }) =>
     `nav-link rounded-3 px-3 py-2 ${isActive ? "active fw-semibold bg-light" : "text-secondary"}`;
@@ -19,30 +18,11 @@ export default function NavBar({ onNavigate, onShowAuthModal }) {
     const navigate = useNavigate();
     const location = useLocation();
     const { user, logout, isAuthenticated } = useAuth();
-    const [isPremiumActive, setIsPremiumActive] = useState(false);
+    const { isPremiumActive } = usePremium();
     const displayName = user?.displayName ?? user?.username ?? "player";
     const isAdmin = user?.role === "admin";
     const dashboardPath = isAdmin ? "/admin/dashboard" : "/dashboard";
     const showPremiumBadge = user?.role === "player" && isPremiumActive;
-
-    useEffect(() => {
-        if (user?.role !== "player") return undefined;
-
-        let active = true;
-
-        (async () => {
-            try {
-                const subscription = await getPremiumMe();
-                if (active) setIsPremiumActive(Boolean(subscription?.isPremium));
-            } catch {
-                if (active) setIsPremiumActive(false);
-            }
-        })();
-
-        return () => {
-            active = false;
-        };
-    }, [user?.role, location.pathname]);
 
     // Check if we're on guest dashboard (root path) and not authenticated
     const isOnGuestDashboard = location.pathname === "/" && !isAuthenticated;

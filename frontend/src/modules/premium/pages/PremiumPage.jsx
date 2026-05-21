@@ -1,13 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { Check, Star, Zap, CreditCard } from "lucide-react";
-import {
-  createPremiumCheckoutSession,
-  createPremiumTestCheckoutSession,
-  getPremiumMe,
-  resetPremiumStatus,
-  sendPremiumTestEmail,
-} from "../services/premium.service";
-import { getProfile } from "../../profile/services/profile.service";
+import { createPremiumCheckoutSession } from "../services/premium.service";
+import { usePremium } from "../hooks/usePremium";
 
 function formatDate(value) {
   if (!value) return "—";
@@ -35,47 +29,14 @@ const PREMIUM_FEATURES = [
 ];
 
 export default function PremiumPage() {
-  const [subscription, setSubscription] = useState(null);
-  const [accountEmail, setAccountEmail] = useState("");
-  const [loading, setLoading] = useState(true);
+  const { subscription, isPremiumActive, isLoadingPremium } = usePremium();
   const [busy, setBusy] = useState(false);
-  const [emailBusy, setEmailBusy] = useState(false);
-  const [resetBusy, setResetBusy] = useState(false);
-  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-
-  async function refreshStatus() {
-    const [subscriptionData, profile] = await Promise.all([
-      getPremiumMe(),
-      getProfile(),
-    ]);
-    setSubscription(subscriptionData);
-    setAccountEmail(profile?.email || "");
-  }
-
-  useEffect(() => {
-    (async () => {
-      try {
-        setLoading(true);
-        await refreshStatus();
-      } catch (err) {
-        setError(err.message || "Could not load premium information.");
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
-
-  const isPremiumActive = useMemo(
-    () => Boolean(subscription?.isPremium && subscription?.expiryDate),
-    [subscription],
-  );
 
   async function handlePayStripe() {
     try {
       setBusy(true);
       setError("");
-      setMessage("");
       const session = await createPremiumCheckoutSession();
       if (!session?.url) {
         throw new Error("Stripe checkout URL was not returned.");
@@ -87,58 +48,7 @@ export default function PremiumPage() {
     }
   }
 
-  async function handleTestStripePayment() {
-    try {
-      setBusy(true);
-      setError("");
-      setMessage("");
-      const session = await createPremiumTestCheckoutSession();
-      if (!session?.url) {
-        throw new Error("Stripe test checkout URL was not returned.");
-      }
-      window.location.href = session.url;
-    } catch (err) {
-      setBusy(false);
-      setError(err.message || "Stripe test checkout failed.");
-    }
-  }
-
-  async function handleSendTestEmail() {
-    try {
-      setEmailBusy(true);
-      setError("");
-      setMessage("");
-      const result = await sendPremiumTestEmail();
-      setMessage(result);
-    } catch (err) {
-      setError(err.message || "Test email failed.");
-    } finally {
-      setEmailBusy(false);
-    }
-  }
-
-  async function handleResetPremium() {
-    const confirmed = window.confirm(
-      "Reset your premium status? This will cancel your active subscription so you can test the flow again.",
-    );
-    if (!confirmed) {
-      return;
-    }
-    try {
-      setResetBusy(true);
-      setError("");
-      setMessage("");
-      const result = await resetPremiumStatus();
-      await refreshStatus();
-      setMessage(result);
-    } catch (err) {
-      setError(err.message || "Could not reset premium status.");
-    } finally {
-      setResetBusy(false);
-    }
-  }
-
-  if (loading) {
+  if (isLoadingPremium) {
     return <p className="text-secondary mb-0">Loading premium data...</p>;
   }
 
@@ -151,7 +61,6 @@ export default function PremiumPage() {
         </p>
       </div>
 
-      {message ? <div className="alert alert-success">{message}</div> : null}
       {error ? <div className="alert alert-danger">{error}</div> : null}
 
       <div className="row g-4 mb-4">
@@ -222,7 +131,7 @@ export default function PremiumPage() {
         </div>
       </div>
 
-      <div className="card shadow-sm mb-3">
+      <div className="card shadow-sm">
         <div className="card-body p-4">
           <h5 className="fw-bold mb-1 d-flex align-items-center gap-2">
             <Zap size={20} strokeWidth={2.5} className="text-warning" />
@@ -248,42 +157,6 @@ export default function PremiumPage() {
               Pay with Stripe — $10.00/month
             </button>
           )}
-        </div>
-      </div>
-
-      <div className="card shadow-sm">
-        <div className="card-body p-4">
-          <h6 className="fw-bold text-secondary mb-2">Developer Testing</h6>
-          <p className="small text-secondary mb-3">
-            Email for notifications:{" "}
-            <strong>{accountEmail || "No email found on this account"}</strong>
-          </p>
-          <div className="d-flex flex-wrap gap-2">
-            <button
-              type="button"
-              className="btn btn-outline-dark btn-sm"
-              onClick={handleTestStripePayment}
-              disabled={busy}
-            >
-              Test Stripe Payment
-            </button>
-            <button
-              type="button"
-              className="btn btn-outline-secondary btn-sm"
-              onClick={handleSendTestEmail}
-              disabled={emailBusy}
-            >
-              {emailBusy ? "Sending..." : "Send Test Email"}
-            </button>
-            <button
-              type="button"
-              className="btn btn-outline-danger btn-sm"
-              onClick={handleResetPremium}
-              disabled={resetBusy || !isPremiumActive}
-            >
-              {resetBusy ? "Resetting..." : "Reset Premium"}
-            </button>
-          </div>
         </div>
       </div>
     </div>

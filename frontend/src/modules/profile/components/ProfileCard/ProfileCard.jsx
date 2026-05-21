@@ -1,6 +1,8 @@
 import { useRef } from "react";
 import { Link } from "react-router-dom";
-import { Folder, Hexagon, Pencil, Upload } from "lucide-react";
+import { Crown, Hexagon, Pencil, Upload } from "lucide-react";
+import { useAuth } from "../../../auth/hooks/useAuth";
+import { usePremium } from "../../../premium/hooks/usePremium";
 import { useProfileCard } from "../../hooks/useProfileCard";
 import { formatMemberSince, getAvatarInitials } from "./ProfileCard.service";
 import ProfileStatsSection from "./ProfileStatsSection";
@@ -13,6 +15,9 @@ export default function ProfileCard({ embedded = false }) {
     handleLogoUpload,
     uploadingLogo,
   } = useProfileCard();
+  const { user: authUser } = useAuth();
+  const { isPremiumActive } = usePremium();
+  const showPlanBadge = authUser?.role === "player";
 
   const shell = (inner) =>
     embedded ? (
@@ -109,10 +114,18 @@ export default function ProfileCard({ embedded = false }) {
               <Hexagon size={14} strokeWidth={2} aria-hidden />
               {safeUser.role || "player"}
             </span>
-            <span className="badge rounded-pill bg-warning text-dark d-inline-flex align-items-center gap-1 px-2 py-2 fw-semibold">
-              <Folder size={14} strokeWidth={2} aria-hidden />
-              Premium
-            </span>
+            {showPlanBadge ? (
+              <span
+                className={`badge rounded-pill d-inline-flex align-items-center gap-1 px-2 py-2 fw-semibold ${
+                  isPremiumActive
+                    ? "bg-warning text-dark"
+                    : "bg-white text-dark border border-secondary-subtle"
+                }`}
+              >
+                <Crown size={14} strokeWidth={2} aria-hidden />
+                {isPremiumActive ? "Premium" : "Free"}
+              </span>
+            ) : null}
           </div>
         </div>
       </div>
