@@ -6,9 +6,13 @@ const {
   PREMIUM_PLAN_NAME,
   PREMIUM_PRICE_USD,
 } = require("./premium.interface");
-const { sendSubscriptionPaymentSuccessEmail } = require("../../shared/utils/email");
+const {
+  getMissingEmailConfigKeys,
+  sendSubscriptionPaymentSuccessEmail,
+} = require("../../shared/utils/email");
 
 const processedSessionIds = new Set();
+const emailedSessionIds = new Set();
 
 function markSessionProcessed(sessionId) {
   if (!sessionId) return false;
@@ -17,6 +21,15 @@ function markSessionProcessed(sessionId) {
   }
   processedSessionIds.add(sessionId);
   return true;
+}
+
+function markSessionEmailed(sessionId) {
+  if (!sessionId) return;
+  emailedSessionIds.add(sessionId);
+}
+
+function wasSessionEmailed(sessionId) {
+  return Boolean(sessionId && emailedSessionIds.has(sessionId));
 }
 
 function getStripeClient() {
@@ -86,17 +99,35 @@ async function getPremiumStatus(userId) {
   return toSubscriptionStatusDto(activeSubscription);
 }
 
-async function notifyPaymentEmailSafely(userId, provider, endDate) {
+async function notifyPaymentEmail(userId, provider, endDate, options = {}) {
   try {
     const user = await premiumRepository.findUserById(userId);
     await sendSubscriptionPaymentSuccessEmail({
       toEmail: user?.email,
       provider,
       endDate,
+      throwOnSkip: options.throwOnSkip,
     });
+    return true;
   } catch (error) {
+    if (options.throwOnSkip) {
+      throw error;
+    }
     console.error(`Failed to send premium ${provider} payment email:`, error.message);
+    return false;
   }
+}
+
+async function notifyPaymentEmailForSession(sessionId, userId, provider, endDate, options = {}) {
+  if (wasSessionEmailed(sessionId)) {
+    return true;
+  }
+
+  const sent = await notifyPaymentEmail(userId, provider, endDate, options);
+  if (sent) {
+    markSessionEmailed(sessionId);
+  }
+  return sent;
 }
 
 async function createCheckoutSession(userId) {
@@ -172,16 +203,42 @@ async function handleStripeCheckoutCompleted(session) {
   const userId = session?.metadata?.userId;
   const isTestPayment = session?.metadata?.isTestPayment === "true";
   if (!userId) {
-    return;
+    return { processed: false, emailSent: false, reason: "missing_user_id" };
   }
 
   if (!markSessionProcessed(session?.id)) {
-    return;
+    if (wasSessionEmailed(session?.id)) {
+      return { processed: false, emailSent: true, reason: "already_processed" };
+    }
+
+    const activeSubscription = await premiumRepository.findActiveSubscription(userId);
+    if (!activeSubscription) {
+      return {
+        processed: false,
+        emailSent: false,
+        reason: "already_processed_no_active_subscription",
+      };
+    }
+
+    const provider = isTestPayment ? "stripe-test" : "stripe";
+    const emailSent = await notifyPaymentEmailForSession(
+      session?.id,
+      userId,
+      provider,
+      activeSubscription.endDate,
+    );
+    return { processed: false, emailSent, reason: "already_processed_email_retry" };
   }
 
   const existing = await premiumRepository.findActiveSubscription(userId);
   if (existing && !isTestPayment) {
-    return;
+    const emailSent = await notifyPaymentEmailForSession(
+      session?.id,
+      userId,
+      "stripe",
+      existing.endDate,
+    );
+    return { processed: false, emailSent, reason: "subscription_already_active" };
   }
   let granted;
   let provider = "stripe";
@@ -215,7 +272,14 @@ async function handleStripeCheckoutCompleted(session) {
     status: "success",
   });
 
-  notifyPaymentEmailSafely(userId, provider, granted.endDate);
+  const emailSent = await notifyPaymentEmailForSession(
+    session?.id,
+    userId,
+    provider,
+    granted.endDate,
+  );
+
+  return { processed: true, emailSent, reason: "processed" };
 }
 
 async function resetPremiumStatus(userId) {
@@ -227,10 +291,18 @@ async function resetPremiumStatus(userId) {
 }
 
 async function sendTestPaymentEmail(userId) {
+  const missingKeys = getMissingEmailConfigKeys();
+  if (missingKeys.length) {
+    throw new AppError(`Email is not configured. Missing: ${missingKeys.join(", ")}.`, {
+      code: "EMAIL_NOT_CONFIGURED",
+      statusCode: 500,
+    });
+  }
+
   const subscription = await getPremiumStatus(userId);
   const fallbackEndDate = addMonths(new Date(), PREMIUM_DURATION_MONTHS);
   const endDate = subscription?.expiryDate || fallbackEndDate;
-  await notifyPaymentEmailSafely(userId, "stripe-test", endDate);
+  await notifyPaymentEmail(userId, "stripe-test", endDate, { throwOnSkip: true });
 }
 
 module.exports = {

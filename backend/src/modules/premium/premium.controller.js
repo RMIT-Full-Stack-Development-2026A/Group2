@@ -90,7 +90,7 @@ async function sendTestEmail(req, res) {
     await premiumService.sendTestPaymentEmail(String(req.user.id));
     return res.status(200).json({
       status: "success",
-      message: "Test payment email has been queued.",
+      message: "Test payment email has been sent.",
     });
   } catch (err) {
     return handleControllerError(res, err);
