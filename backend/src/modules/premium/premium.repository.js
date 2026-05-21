@@ -55,6 +55,7 @@ async function findUserById(userId) {
   return {
     ...user,
     email: profile?.email || null,
+    displayName: profile?.displayName || null,
   };
 }
 

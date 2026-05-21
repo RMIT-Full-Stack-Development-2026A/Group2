@@ -89,8 +89,13 @@ async function getPremiumStatus(userId) {
 async function notifyPaymentEmailSafely(userId, provider, endDate) {
   try {
     const user = await premiumRepository.findUserById(userId);
+    const recipientName = user?.displayName?.trim() || user?.username || "Player";
+
     await sendSubscriptionPaymentSuccessEmail({
       toEmail: user?.email,
+      recipientName,
+      planName: "Monthly Premium",
+      amountUsd: PREMIUM_PRICE_USD,
       provider,
       endDate,
     });

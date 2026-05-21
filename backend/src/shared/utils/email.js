@@ -1,4 +1,9 @@
 const nodemailer = require("nodemailer");
+const {
+  buildPremiumPaymentSuccessHtml,
+  buildPremiumPaymentSuccessText,
+  formatValidUntil,
+} = require("./premiumEmail.template");
 
 let transporter;
 let hasWarnedMissingConfig = false;
@@ -33,9 +38,27 @@ function getTransporter() {
   return transporter;
 }
 
-async function sendSubscriptionPaymentSuccessEmail({ toEmail, provider, endDate }) {
+async function sendSubscriptionPaymentSuccessEmail({
+  toEmail,
+  recipientName,
+  planName,
+  amountUsd,
+  provider,
+  endDate,
+}) {
   const mailer = getTransporter();
   const from = process.env.EMAIL_FROM || process.env.EMAIL_USER;
+  const appUrl = (process.env.CLIENT_URL || "http://localhost:5173").replace(/\/+$/, "");
+  const validUntil = formatValidUntil(endDate);
+
+  const templatePayload = {
+    recipientName: recipientName || "Player",
+    planName: planName || "Monthly Premium",
+    amountUsd: amountUsd ?? 10,
+    provider,
+    validUntil,
+    appUrl,
+  };
 
   if (!toEmail) {
     if (!hasWarnedMissingRecipient) {
@@ -52,8 +75,9 @@ async function sendSubscriptionPaymentSuccessEmail({ toEmail, provider, endDate 
   await mailer.sendMail({
     from,
     to: toEmail,
-    subject: "Premium subscription payment successful",
-    text: `Your premium subscription payment via ${provider} was successful. Your subscription is active until ${new Date(endDate).toISOString()}.`,
+    subject: "Premium Subscription Activated — TicTacToang",
+    text: buildPremiumPaymentSuccessText(templatePayload),
+    html: buildPremiumPaymentSuccessHtml(templatePayload),
   });
 }
 

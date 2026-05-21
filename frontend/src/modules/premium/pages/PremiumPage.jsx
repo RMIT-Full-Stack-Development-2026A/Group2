@@ -22,9 +22,7 @@ const FREE_FEATURES = [
 const PREMIUM_FEATURES = [
   "All free features",
   "Match replay with playback",
-  "Priority matchmaking",
   "Advanced statistics",
-  "Email notifications",
   "Premium badge",
 ];
 
