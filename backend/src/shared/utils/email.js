@@ -48,7 +48,6 @@ async function sendSubscriptionPaymentSuccessEmail({
 }) {
   const mailer = getTransporter();
   const from = process.env.EMAIL_FROM || process.env.EMAIL_USER;
-  const appUrl = (process.env.CLIENT_URL || "http://localhost:5173").replace(/\/+$/, "");
   const validUntil = formatValidUntil(endDate);
 
   const templatePayload = {
@@ -57,7 +56,6 @@ async function sendSubscriptionPaymentSuccessEmail({
     amountUsd: amountUsd ?? 10,
     provider,
     validUntil,
-    appUrl,
   };
 
   if (!toEmail) {

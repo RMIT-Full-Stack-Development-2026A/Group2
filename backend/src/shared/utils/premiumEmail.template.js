@@ -36,7 +36,6 @@ function buildPremiumPaymentSuccessText({
   amountUsd,
   provider,
   validUntil,
-  appUrl,
 }) {
   const featureLines = PREMIUM_FEATURES.map((feature) => `  • ${feature}`).join("\n");
 
@@ -54,8 +53,6 @@ function buildPremiumPaymentSuccessText({
     "You now have access to:",
     featureLines,
     "",
-    `Manage your subscription: ${appUrl}/premium`,
-    "",
     "Thank you for supporting TicTacToang!",
     "If you have questions, reply to this email or contact our support team.",
   ].join("\n");
@@ -67,14 +64,12 @@ function buildPremiumPaymentSuccessHtml({
   amountUsd,
   provider,
   validUntil,
-  appUrl,
 }) {
   const safeName = escapeHtml(recipientName);
   const safePlan = escapeHtml(planName);
   const safeAmount = escapeHtml(formatAmount(amountUsd));
   const safeProvider = escapeHtml(formatProviderLabel(provider));
   const safeValidUntil = escapeHtml(validUntil);
-  const safeAppUrl = escapeHtml(appUrl);
 
   const featureItems = PREMIUM_FEATURES.map(
     (feature) =>
@@ -136,18 +131,13 @@ function buildPremiumPaymentSuccessHtml({
             </td>
           </tr>
           <tr>
-            <td style="padding:0 32px 8px;">
+            <td style="padding:0 32px 24px;">
               <p style="margin:0 0 12px;font-size:15px;font-weight:700;color:#111827;">You now have access to:</p>
               <ul style="margin:0;padding:0 0 0 20px;">${featureItems}</ul>
             </td>
           </tr>
           <tr>
-            <td style="padding:24px 32px 12px;text-align:center;">
-              <a href="${safeAppUrl}/premium" style="display:inline-block;padding:12px 24px;background-color:#7c3aed;color:#ffffff;text-decoration:none;font-size:15px;font-weight:600;border-radius:8px;">View subscription</a>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:12px 32px 32px;text-align:center;">
+            <td style="padding:0 32px 32px;text-align:center;">
               <p style="margin:0;font-size:13px;line-height:1.6;color:#9ca3af;">
                 Thank you for supporting TicTacToang!<br />
                 If you have questions, reply to this email or contact our support team.
