@@ -26,7 +26,7 @@
 
 .boardWrap {
   min-height: 0;
-  max-height: min(52vh, 520px);
+  max-height: min(80vh, 680px);
   overflow: auto;
   padding-bottom: 0.25rem;
 }
