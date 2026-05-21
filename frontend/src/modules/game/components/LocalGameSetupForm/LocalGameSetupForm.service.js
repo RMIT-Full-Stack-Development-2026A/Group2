@@ -13,6 +13,7 @@ export function buildLocalGameNavigationState({
   marker2,
   useCustomBoard,
   customBoardImage,
+  playerAvatarURL,
   backendSession,
 }) {
   return {
@@ -26,6 +27,7 @@ export function buildLocalGameNavigationState({
     boardStyle: useCustomBoard ? "custom" : boardStyle,
     marker1,
     marker2,
+    player1AvatarURL: playerAvatarURL || "",
     customBoardImage: useCustomBoard ? customBoardImage : undefined,
   };
 }
@@ -40,6 +42,7 @@ export async function startLocalGame({
   marker2,
   useCustomBoard,
   customBoardImage,
+  playerAvatarURL,
 }) {
   const payload = createLocalGamePayload({
     player2Name,
@@ -59,6 +62,7 @@ export async function startLocalGame({
     marker2,
     useCustomBoard,
     customBoardImage,
+    playerAvatarURL,
     backendSession,
   });
 }

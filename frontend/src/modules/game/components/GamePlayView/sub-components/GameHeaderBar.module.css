@@ -31,14 +31,17 @@
 .timer {
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: #475569;
-  font-size: 14px;
-  font-weight: 600;
+  min-height: 36px;
+  padding: 0 4px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 700;
 }
 
-.timerIcon {
-  font-size: 14px;
+.timerValue {
+  min-width: 42px;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
 }
 
 .actions {

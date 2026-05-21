@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { getAiOpponent } from "../../utils/aiOpponent";
 
 export default function useAIGameSetupForm() {
   const [difficulty, setDifficulty] = useState("medium");
@@ -11,8 +12,10 @@ export default function useAIGameSetupForm() {
   const [useCustomBoard, setUseCustomBoard] = useState(false);
 
   const botName = useMemo(() => {
-    return `AI-${difficulty.charAt(0).toUpperCase()}${difficulty.slice(1)}`;
+    return getAiOpponent(difficulty).name;
   }, [difficulty]);
+
+  const botAvatar = useMemo(() => getAiOpponent(difficulty), [difficulty]);
 
   return {
     difficulty,
@@ -32,5 +35,6 @@ export default function useAIGameSetupForm() {
     useCustomBoard,
     setUseCustomBoard,
     botName,
+    botAvatar,
   };
 }

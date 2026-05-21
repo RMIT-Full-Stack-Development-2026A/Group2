@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Bot } from "lucide-react";
 import GameChat from "@/components/GameChat/GameChat";
 import styles from "./GamePlayView.module.css";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
@@ -18,6 +17,7 @@ import ShareMatchModal from "./sub-components/ShareMatchModal";
 
 import socket from "@/lib/socket";
 import { getProfile } from "@/modules/profile/services/profile.service";
+import { getAiOpponent } from "../../utils/aiOpponent";
 
 export default function GamePlayView() {
     const location = useLocation();
@@ -111,12 +111,13 @@ function GamePlayViewContent({ config, navigate }) {
         };
     }, []);
 
-    const onlineCurrentUserAvatarURL =
-        myRole === "player1"
+    const configuredCurrentUserAvatarURL = isOnline
+        ? myRole === "player1"
             ? config.player1AvatarURL || ""
-            : config.player2AvatarURL || "";
+            : config.player2AvatarURL || ""
+        : config.player1AvatarURL || "";
     const currentUserAvatarURL =
-        onlineCurrentUserAvatarURL ||
+        configuredCurrentUserAvatarURL ||
         profileAvatarURL ||
         user?.profile?.avatarURL ||
         user?.avatarURL ||
@@ -125,6 +126,7 @@ function GamePlayViewContent({ config, navigate }) {
         myRole === "player1"
             ? config.player2AvatarURL || ""
             : config.player1AvatarURL || "";
+    const aiOpponent = getAiOpponent(config.aiDifficulty);
 
     const handleConfirmAbort = useCallback(async () => {
         setIsPaused(false);
@@ -380,12 +382,17 @@ function GamePlayViewContent({ config, navigate }) {
                                     }
                                     avatarContent={
                                         config.gameType === "ai" ? (
-                                            <Bot className="h-5 w-5" />
+                                            aiOpponent.avatar
                                         ) : (
                                             config.player2
                                                 .charAt(0)
                                                 .toUpperCase()
                                         )
+                                    }
+                                    avatarVariant={
+                                        config.gameType === "ai"
+                                            ? aiOpponent.avatarClass
+                                            : ""
                                     }
                                 />
                             </>

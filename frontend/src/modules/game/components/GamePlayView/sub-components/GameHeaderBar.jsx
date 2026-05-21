@@ -23,14 +23,13 @@ export default function GameHeaderBar({
       <div className={styles.left}>
         <span className={styles.badge}>{String(gameType).toUpperCase()}</span>
         <span className={styles.badge}>
-          {boardSize}×{boardSize}
+          {boardSize}x{boardSize}
         </span>
         {aiDifficulty ? <span className={styles.secondaryBadge}>{aiDifficulty}</span> : null}
       </div>
 
       <div className={styles.timer}>
-        <span className={styles.timerIcon}>🕒</span>
-        <span>{formatTime(elapsed)}</span>
+        <span className={styles.timerValue}>{formatTime(elapsed)}</span>
       </div>
 
       <div className={styles.actions}>

@@ -7,9 +7,13 @@ export default function PlayerStatusCard({
   turnText,
   avatarContent,
   avatarSrc,
+  avatarClassName = "",
+  avatarVariant = "",
   showTurnText = false,
   compact = false
 }) {
+  const avatarStyleClass = avatarClassName || styles[avatarVariant] || "";
+
   return (
     <div className={compact ? styles.columnCompact : styles.column}>
       <div className={`${styles.card} ${isActive ? styles.active : ""}`}>
@@ -18,7 +22,7 @@ export default function PlayerStatusCard({
         {isActive || showTurnText ? <p className={styles.turnText}>{turnText}</p> : null}
       </div>
 
-      <div className={styles.avatar}>
+      <div className={`${styles.avatar} ${avatarStyleClass}`}>
         {avatarSrc ? (
           <img
             src={avatarSrc}

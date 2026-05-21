@@ -63,6 +63,24 @@
   display: block;
 }
 
+.aiAvatarEasy {
+  background: transparent;
+  color: inherit;
+  font-size: 42px;
+}
+
+.aiAvatarMedium {
+  background: transparent;
+  color: inherit;
+  font-size: 42px;
+}
+
+.aiAvatarHard {
+  background: transparent;
+  color: inherit;
+  font-size: 42px;
+}
+
 .columnCompact {
   width: 140px;
   flex-shrink: 0;

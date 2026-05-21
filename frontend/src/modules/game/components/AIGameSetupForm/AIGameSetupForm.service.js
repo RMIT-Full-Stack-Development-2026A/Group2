@@ -14,6 +14,7 @@ export function buildAIGameNavigationState({
   difficulty,
   useCustomBoard,
   customBoardImage,
+  playerAvatarURL,
   backendSession,
 }) {
   return {
@@ -28,6 +29,7 @@ export function buildAIGameNavigationState({
     marker1: playerMarker,
     marker2: aiMarker,
     aiDifficulty: difficulty,
+    player1AvatarURL: playerAvatarURL || "",
     customBoardImage: useCustomBoard ? customBoardImage : undefined,
   };
 }
@@ -43,6 +45,7 @@ export async function startAIGame({
   difficulty,
   useCustomBoard,
   customBoardImage,
+  playerAvatarURL,
 }) {
   const payload = createSinglePlayerGamePayload({
     firstPlayer,
@@ -63,6 +66,7 @@ export async function startAIGame({
     difficulty,
     useCustomBoard,
     customBoardImage,
+    playerAvatarURL,
     backendSession,
   });
 }

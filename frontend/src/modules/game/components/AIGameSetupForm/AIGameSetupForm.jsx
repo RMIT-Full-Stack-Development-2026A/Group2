@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Bot } from "lucide-react";
+import { getProfile } from "@/modules/profile/services/profile.service";
 import useAIGameSetupForm from "./AIGameSetupForm.hook";
 import { startAIGame } from "./AIGameSetupForm.service";
 import DifficultySelector from "./sub-components/DifficultySelector";
@@ -17,6 +18,7 @@ export default function AIGameSetupForm() {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [playerAvatarURL, setPlayerAvatarURL] = useState("");
 
   const {
     difficulty,
@@ -36,7 +38,25 @@ export default function AIGameSetupForm() {
     useCustomBoard,
     setUseCustomBoard,
     botName,
+    botAvatar,
   } = useAIGameSetupForm();
+
+  useEffect(() => {
+    let active = true;
+
+    getProfile()
+      .then((profile) => {
+        if (!active) return;
+        setPlayerAvatarURL(profile?.profile?.avatarURL || profile?.avatarURL || "");
+      })
+      .catch(() => {
+        if (active) setPlayerAvatarURL("");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleStart = async () => {
     setSubmitError("");
@@ -54,6 +74,7 @@ export default function AIGameSetupForm() {
         difficulty,
         useCustomBoard,
         customBoardImage,
+        playerAvatarURL,
       });
 
       navigate("/game/play", {
@@ -90,18 +111,15 @@ export default function AIGameSetupForm() {
                 name={user?.username}
                 marker={playerMarker}
                 avatarContent={user?.username?.charAt(0)?.toUpperCase()}
+                avatarSrc={playerAvatarURL}
               />
 
-              <div className={styles.botPreview}>
                 <SetupPlayerPreviewCard
-                  name={botName}
-                  marker={aiMarker}
-                  avatarContent={<Bot size={18} />}
-                  subtitle=""
-                  className={styles.botPreviewCard}
-                />
-                <span className={styles.badge}>{difficulty}</span>
-              </div>
+                name={botName}
+                marker={aiMarker}
+                avatarContent={botAvatar.avatar}
+                avatarClassName={styles[botAvatar.avatarClass]}
+              />
             </div>
 
             <SetupFirstPlayerSelector

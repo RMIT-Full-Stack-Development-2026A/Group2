@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { getProfile } from "@/modules/profile/services/profile.service";
 import useLocalGameSetupForm from "./LocalGameSetupForm.hook";
 import { startLocalGame } from "./LocalGameSetupForm.service";
 import SetupPlayerPreviewCard from "../shared/SetupPlayerPreviewCard/SetupPlayerPreviewCard";
@@ -15,6 +16,7 @@ export default function LocalGameSetupForm() {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [playerAvatarURL, setPlayerAvatarURL] = useState("");
 
   const {
     player2Name,
@@ -34,6 +36,23 @@ export default function LocalGameSetupForm() {
     useCustomBoard,
     setUseCustomBoard,
   } = useLocalGameSetupForm();
+
+  useEffect(() => {
+    let active = true;
+
+    getProfile()
+      .then((profile) => {
+        if (!active) return;
+        setPlayerAvatarURL(profile?.profile?.avatarURL || profile?.avatarURL || "");
+      })
+      .catch(() => {
+        if (active) setPlayerAvatarURL("");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleStart = async () => {
     setSubmitError("");
@@ -56,6 +75,7 @@ export default function LocalGameSetupForm() {
         marker2,
         useCustomBoard,
         customBoardImage,
+        playerAvatarURL,
       });
 
       navigate("/game/play", {
@@ -89,6 +109,7 @@ export default function LocalGameSetupForm() {
                   name={user?.username}
                   marker={marker1}
                   avatarContent={user?.username?.charAt(0)?.toUpperCase()}
+                  avatarSrc={playerAvatarURL}
                 />
               </div>
 
