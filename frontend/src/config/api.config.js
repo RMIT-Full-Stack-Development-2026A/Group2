@@ -24,17 +24,8 @@ export const API_ENDPOINTS = {
     makeMove: (id) => `/game/sessions/${id}/moves`,
     abortSession: (id) => `/game/sessions/${id}/abort`,
   },
-  subscription: {
-    getPlans: "/subscription/plans",
-    getCurrent: "/subscription/current",
-    subscribe: "/subscription/subscribe",
-    cancel: "/subscription/cancel",
-    getWallet: "/subscription/wallet",
-    topUpWallet: "/subscription/wallet/top-up",
-  },
   premium: {
     me: "/premium/me",
-    payWallet: "/premium/pay-wallet",
     createCheckoutSession: "/premium/create-checkout-session",
     createTestCheckoutSession: "/premium/create-test-checkout-session",
     confirmSession: "/premium/confirm-session",
@@ -47,6 +38,9 @@ export const API_ENDPOINTS = {
     getRooms: "/admin/rooms",
     getRoom: (id) => `/admin/rooms/${id}`,
     getStats: "/admin/stats",
+  },
+  multiplayer: {
+    spectate: (token) => `/multiplayer/spectate/${encodeURIComponent(token)}`,
   },
 };
 

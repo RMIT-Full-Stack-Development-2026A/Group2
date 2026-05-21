@@ -1,6 +1,6 @@
 const SubscriptionPlan = require("./model/subscriptionPlan.model");
 const UserSubscription = require("./model/userSubscription.model");
-const Transaction = require("../wallet/model/transaction.model");
+const Transaction = require("./model/transaction.model");
 const User = require("../auth/model/user.model");
 const Profile = require("../profile/profile.model");
 

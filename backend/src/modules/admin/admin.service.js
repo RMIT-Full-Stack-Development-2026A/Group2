@@ -5,12 +5,14 @@ const {
 const {
     createGameInterface,
 } = require("../game/domain/interfaces/game.interface");
+const { createPremiumInterface } = require("../premium/premium.interface");
 const { getIO } = require("../multiplayer/socket/socketServer");
 const roomSocketHandler = require("../multiplayer/socket/roomSocketHandler");
 
 const authInterface = createAuthInterface();
 const multiplayerInterface = createMultiplayerInterface();
 const gameInterface = createGameInterface();
+const premiumInterface = createPremiumInterface();
 
 async function getAllUsers() {
     return await authInterface.listUsersForAdmin();
@@ -27,10 +29,22 @@ async function getSystemStats() {
         (user) => user.accountStatus === "active",
     ).length;
     const deactivatedUsers = totalUsers - activeUsers;
+
+    const premiumUsers = await Promise.all(
+        users.map(async (user) => {
+            const isPremium = await premiumInterface.hasActiveSubscription(
+                user.id,
+            );
+            return isPremium;
+        }),
+    );
+    const totalPremiumUsers = premiumUsers.filter(Boolean).length;
+
     return {
         totalUsers,
         activeUsers,
         deactivatedUsers,
+        premiumUsers: totalPremiumUsers,
     };
 }
 
@@ -85,6 +99,21 @@ async function getAllLobbies() {
 async function closeLobby(roomId) {
     // Use multiplayer interface to modify room status on db
     const closedLobby = await multiplayerInterface.closeLobbyForAdmin(roomId);
+
+    // If this lobby had an active game session, abort it on db (admin forced abort).
+    if (closedLobby && closedLobby.sessionId) {
+        try {
+            await gameInterface.abortGameByAdmin(closedLobby.sessionId);
+        } catch (err) {
+            // don't block admin flow if abort fails; log for debugging
+            // eslint-disable-next-line no-console
+            console.error(
+                "Failed to abort game for session",
+                closedLobby.sessionId,
+                err?.message || err,
+            );
+        }
+    }
 
     // Emit socket event so connected players leave immediately without refresh.
     const io = getIO();

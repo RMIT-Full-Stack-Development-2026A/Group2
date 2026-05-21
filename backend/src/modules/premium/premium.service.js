@@ -99,13 +99,6 @@ async function notifyPaymentEmailSafely(userId, provider, endDate) {
   }
 }
 
-async function payWithWallet() {
-  throw new AppError("Wallet payment is disabled. Please use Stripe checkout.", {
-    code: "WALLET_PAYMENT_DISABLED",
-    statusCode: 400,
-  });
-}
-
 async function createCheckoutSession(userId) {
   await ensureNoActiveSubscription(userId);
   return createStripeCheckoutSession(userId, false);
@@ -215,7 +208,6 @@ async function handleStripeCheckoutCompleted(session) {
 
   await premiumRepository.createTransaction({
     userID: userId,
-    walletID: null,
     userSubscriptionID: granted.subscription._id,
     amount: PREMIUM_PRICE_USD,
     currency: "USD",
@@ -243,7 +235,6 @@ async function sendTestPaymentEmail(userId) {
 
 module.exports = {
   getPremiumStatus,
-  payWithWallet,
   createCheckoutSession,
   createTestCheckoutSession,
   confirmCheckoutSession,

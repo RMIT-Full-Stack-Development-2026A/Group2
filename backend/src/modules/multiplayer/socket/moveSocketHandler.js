@@ -1,7 +1,8 @@
-const gameService = require("../../game/application/services/game.service");
+const { createGameInterface } = require("../../game/domain/interfaces/game.interface");
 const roomSocketHandler = require("./roomSocketHandler");
 const rooms = roomSocketHandler.rooms; 
 const multiplayerService = require("../application/services/multiplayer.service")
+const gameInterface = createGameInterface();
 
 module.exports = function moveSocketHandler(io, socket) {
   socket.on("makeMove", async ({ roomCode, rowIndex, colIndex }) => {
@@ -14,13 +15,16 @@ module.exports = function moveSocketHandler(io, socket) {
         return;
       }
 
-      const dto = await gameService.makeMove(
+      const dto = await gameInterface.makeMove(
         socket.user,
         room.sessionId,
         { rowIndex, colIndex }
       );
 
       io.to(normalizedCode).emit("moveResult", dto);
+      io.of("/spectator")
+        .to(normalizedCode)
+        .emit("spectatorMoveResult", dto);
 
       if (dto.session.status === "finished") {
         try {

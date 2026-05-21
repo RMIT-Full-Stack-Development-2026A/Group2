@@ -1,5 +1,8 @@
 const User = require("./model/user.model");
 const Profile = require("../profile/profile.model");
+const {createPremiumInterface} = require("../premium/premium.interface");
+
+const premiumInterface = createPremiumInterface();
 
 function escapeRegex(s) {
     return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -95,27 +98,28 @@ async function updateUser(id, update) {
     return mapAuthUser(user, profile);
 }
 
-function mapAuthUser(user, profile) {
-  if (!user) {
-    return null;
-  }
-  return {
-    _id: user._id,
-    username: user.username,
-    role: user.role,
-    accountStatus: user.accountStatus,
-    passwordHash: user.passwordHash,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
-    profile: profile ?? null,
-    email: profile?.email ?? null,
-    country: profile?.country ?? null,
-    avatarURL: profile?.avatarURL ?? null,
-    avatarPublicId: profile?.avatarPublicId ?? null,
-    displayName: profile?.displayName ?? user.username,
-    profileCreatedAt: profile?.createdAt ?? null,
-    profileUpdatedAt: profile?.updatedAt ?? null,
-  };
+function mapAuthUser(user, profile, isPremium = null) {
+    if (!user) {
+        return null;
+    }
+    return {
+        _id: user._id,
+        username: user.username,
+        role: user.role,
+        accountStatus: user.accountStatus,
+        passwordHash: user.passwordHash,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+        profile: profile ?? null,
+        email: profile?.email ?? null,
+        country: profile?.country ?? null,
+        avatarURL: profile?.avatarURL ?? null,
+        avatarPublicId: profile?.avatarPublicId ?? null,
+        displayName: profile?.displayName ?? user.username,
+        profileCreatedAt: profile?.createdAt ?? null,
+        profileUpdatedAt: profile?.updatedAt ?? null,
+        isPremium: isPremium,
+    };
 }
 
 async function findAllUsers() {
@@ -123,7 +127,8 @@ async function findAllUsers() {
     const combinedUsers = await Promise.all(
         users.map(async (user) => {
             const profile = await Profile.findOne({ userID: user._id }).lean();
-            return mapAuthUser(user, profile);
+            const isPremium = await premiumInterface.hasActiveSubscription(user._id);
+            return mapAuthUser(user, profile, isPremium);
         }),
     );
     return combinedUsers;
@@ -139,7 +144,29 @@ async function toggleUserAccountStatus(userId) {
         user.accountStatus === "active" ? "deactivated" : "active";
     await user.save();
     const profile = await Profile.findOne({ userID: user._id }).lean();
-    return mapAuthUser(user.toObject(), profile);
+    const isPremium = await premiumInterface.hasActiveSubscription(user._id);
+    return mapAuthUser(user.toObject(), profile, isPremium);
+}
+
+// Blacklist management
+const RefreshBlacklist = require("./model/refreshBlacklist.model");
+
+async function addBlacklistedRefreshToken(token, userId, expiresAt) {
+    return RefreshBlacklist.create({ token, userId, expiresAt });
+}
+
+async function isRefreshTokenBlacklisted(token) {
+    const found = await RefreshBlacklist.findOne({ token }).lean();
+    return !!found;
+}
+
+async function addBlacklistedToken(token, userId, expiresAt) {
+    return RefreshBlacklist.create({ token, userId, expiresAt });
+}
+
+async function isTokenBlacklisted(token) {
+    const found = await RefreshBlacklist.findOne({ token }).lean();
+    return !!found;
 }
 
 module.exports = {
@@ -151,4 +178,8 @@ module.exports = {
     toggleUserAccountStatus,
     findByIdWithPasswordHash,
     updateUser,
+    addBlacklistedRefreshToken,
+    isRefreshTokenBlacklisted,
+    addBlacklistedToken,
+    isTokenBlacklisted,
 };

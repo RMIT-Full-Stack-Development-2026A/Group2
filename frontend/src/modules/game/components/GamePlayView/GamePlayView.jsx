@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Bot } from "lucide-react";
-import GameChat from "@/components/GameChat";
+import GameChat from "@/components/GameChat/GameChat";
 import styles from "./GamePlayView.module.css";
 import { useAuth } from "@/modules/auth/hooks/useAuth";
 
@@ -13,365 +13,453 @@ import PlayerStatusCard from "./sub-components/PlayerStatusCard";
 import GameBoard from "./sub-components/GameBoard";
 import WinnerDialog from "./sub-components/WinnerDialog";
 import LeaveGameDialog from "./sub-components/LeaveGameDialog";
-import OnlineMatchResultDialog from "./sub-components/OnlineMatchResultDialog";
 import OnlineRoomClosedDialog from "./sub-components/OnlineRoomClosedDialog";
-import RematchRequestDialog from "./sub-components/RematchRequestDialog";
-import RematchWaitingDialog from "./sub-components/RematchWaitingDialog";
+import ShareMatchModal from "./sub-components/ShareMatchModal";
+
+import socket from "@/lib/socket";
+import { getProfile } from "@/modules/profile/services/profile.service";
 
 export default function GamePlayView() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const config = location.state;
+    const location = useLocation();
+    const navigate = useNavigate();
+    const config = location.state;
 
-  if (!config) {
-    return (
-      <AppLayout>
-        <div className={styles.emptyState}>
-          <p>No game configuration found.</p>
-        </div>
-      </AppLayout>
-    );
-  }
+    if (!config) {
+        return (
+            <AppLayout>
+                <div className={styles.emptyState}>
+                    <p>No game configuration found.</p>
+                </div>
+            </AppLayout>
+        );
+    }
 
-  return (
-    <GamePlayViewContent
-      key={config.sessionId || config.roomCode}
-      config={config}
-      navigate={navigate}
-    />
-  );
+    return <GamePlayViewContent config={config} navigate={navigate} />;
 }
 
 function GamePlayViewContent({ config, navigate }) {
-  const outletContext = useOutletContext();
-  const registerNavigationGuard = outletContext?.registerNavigationGuard;
-  const { logout } = useAuth();
+    const outletContext = useOutletContext();
+    const registerNavigationGuard = outletContext?.registerNavigationGuard;
+    const { logout, user } = useAuth();
+    const [profileAvatarURL, setProfileAvatarURL] = useState("");
+    const [shareMatchLoading, setShareMatchLoading] = useState(false);
+    const [shareMatchUrl, setShareMatchUrl] = useState("");
+    const [shareMatchOpen, setShareMatchOpen] = useState(false);
+    const [shareMatchError, setShareMatchError] = useState("");
 
-  const {
-    size,
-    board,
-    currentPlayer,
-    winner,
-    sessionResult,
-    winningCells,
-    aborted,
-    elapsed,
-    aiThinking,
-    showWinnerModal,
-    isPaused,
-    startTime,
-    apiError,
-    onlineRoomClosed,
-    rematchWaiting,
-    incomingRematch,
-    setAborted,
-    setIsPaused,
-    setShowWinnerModal,
-    resetGame,
-    handleCellClick,
-    abortCurrentGame,
-    requestOnlineRematch,
-    respondOnlineRematch,
-    leaveOnlineMatch,
-  } = useGamePlayView(config);
+    const {
+        size,
+        board,
+        currentPlayer,
+        winner,
+        winningCells,
+        aborted,
+        elapsed,
+        aiThinking,
+        showWinnerModal,
+        isPaused,
+        startTime,
+        apiError,
+        setAborted,
+        setIsPaused,
+        setShowWinnerModal,
+        showRoomClosedPopup,
+        roomClosedReason,
+        roomClosedMessage,
+        resetGame,
+        handleCellClick,
+        abortCurrentGame,
+    } = useGamePlayView(config);
 
-  const isOnline = config.gameType === "online";
-  const myRole = config.myRole;
+    const isOnline = config.gameType === "online";
+    const myRole = config.myRole;
 
-  const myPlayerIndex = myRole === "player1" ? 1 : 2;
-  const isMyTurn = currentPlayer === myPlayerIndex && !winner && !aborted;
-  const isOpponentTurn = currentPlayer !== myPlayerIndex && !winner && !aborted;
+    const myPlayerIndex = myRole === "player1" ? 1 : 2;
+    const isMyTurn = currentPlayer === myPlayerIndex && !winner && !aborted;
+    const isOpponentTurn =
+        currentPlayer !== myPlayerIndex && !winner && !aborted;
 
-  const [pauseDialogOpen, setPauseDialogOpen] = useState(false);
-  const [abortDialogOpen, setAbortDialogOpen] = useState(false);
-  const pendingNavRef = useRef(null);
+    const [pauseDialogOpen, setPauseDialogOpen] = useState(false);
+    const [abortDialogOpen, setAbortDialogOpen] = useState(false);
+    const pendingNavRef = useRef(null);
 
-  const gameInProgress = isOnline ? !onlineRoomClosed : !winner && !aborted;
+    const handleRoomClosedRedirect = useCallback(() => {
+        try {
+            socket.disconnect();
+        } catch {
+            // ignore
+        }
+        navigate("/online", { replace: true });
+    }, [navigate]);
 
-  const handleConfirmAbort = useCallback(async () => {
-    setIsPaused(false);
-    setPauseDialogOpen(false);
-    setAbortDialogOpen(false);
+    const gameInProgress = !winner && !aborted;
 
-    if (isOnline) {
-      if (winner || showWinnerModal || rematchWaiting || incomingRematch) {
-        respondOnlineRematch(false);
-      } else {
-        leaveOnlineMatch();
-      }
+    useEffect(() => {
+        let active = true;
 
-      const dest = pendingNavRef.current;
-      pendingNavRef.current = null;
+        getProfile()
+            .then((profile) => {
+                if (!active) return;
+                setProfileAvatarURL(profile?.profile?.avatarURL || "");
+            })
+            .catch(() => {
+                if (active) setProfileAvatarURL("");
+            });
 
-      if (dest === "/logout") {
-        await logout();
-        navigate("/login", { replace: true });
-        return;
-      }
+        return () => {
+            active = false;
+        };
+    }, []);
 
-      navigate(dest || "/online", { replace: true });
-      return;
-    }
+    const onlineCurrentUserAvatarURL =
+        myRole === "player1"
+            ? config.player1AvatarURL || ""
+            : config.player2AvatarURL || "";
+    const currentUserAvatarURL =
+        onlineCurrentUserAvatarURL ||
+        profileAvatarURL ||
+        user?.profile?.avatarURL ||
+        user?.avatarURL ||
+        "";
+    const opponentAvatarURL =
+        myRole === "player1"
+            ? config.player2AvatarURL || ""
+            : config.player1AvatarURL || "";
 
-    await abortCurrentGame();
+    const handleConfirmAbort = useCallback(async () => {
+        setIsPaused(false);
+        setPauseDialogOpen(false);
+        setAbortDialogOpen(false);
 
-    setAborted(true);
+        if (isOnline) {
+            socket.emit("leaveOnlineMatch", {
+                roomCode: config.roomCode,
+                sessionId: config.sessionId,
+            });
+            socket.disconnect();
+            navigate("/dashboard", { replace: true });
+            return;
+        }
 
-    const dest = pendingNavRef.current;
-    pendingNavRef.current = null;
+        await abortCurrentGame();
 
-    if (dest === "/logout") {
-      await logout();
-      navigate("/login", { replace: true });
-      return;
-    }
+        setAborted(true);
 
-    if (dest) navigate(dest);
-  }, [
-    abortCurrentGame,
-    incomingRematch,
-    isOnline,
-    leaveOnlineMatch,
-    logout,
-    navigate,
-    rematchWaiting,
-    respondOnlineRematch,
-    setAborted,
-    setIsPaused,
-    showWinnerModal,
-    winner,
-  ]);
+        const dest = pendingNavRef.current;
+        pendingNavRef.current = null;
 
-  const handleNavIntercept = useCallback(
-    (to) => {
-      if (gameInProgress) {
-        pendingNavRef.current = to;
-        setAbortDialogOpen(true);
-        return true;
-      }
-      return false;
-    },
-    [gameInProgress],
-  );
+        if (dest === "/logout") {
+            await logout();
+            navigate("/login", { replace: true });
+            return;
+        }
 
-  const handlePauseAction = useCallback(() => {
-    if (winner || aborted) return;
-    if (isPaused) {
-      setIsPaused(false);
-      setPauseDialogOpen(false);
-      return;
-    }
-    setIsPaused(true);
-    setPauseDialogOpen(true);
-  }, [winner, aborted, isPaused, setIsPaused]);
+        if (dest) navigate(dest);
+    }, [
+        abortCurrentGame,
+        config.roomCode,
+        config.sessionId,
+        isOnline,
+        logout,
+        navigate,
+        setAborted,
+        setIsPaused,
+    ]);
 
-  useEffect(() => {
-    if (typeof registerNavigationGuard !== "function") return undefined;
+    const handleRestartAction = useCallback(() => {
+        if (isOnline) {
+            socket.disconnect();
+            navigate("/online");
+            return;
+        }
 
-    registerNavigationGuard(handleNavIntercept);
-    return () => {
-      registerNavigationGuard(null);
-    };
-  }, [handleNavIntercept, registerNavigationGuard]);
+        resetGame();
+    }, [isOnline, navigate, resetGame]);
 
+    const handleNavIntercept = useCallback(
+        (to) => {
+            if (gameInProgress) {
+                pendingNavRef.current = to;
+                setAbortDialogOpen(true);
+                return true;
+            }
+            return false;
+        },
+        [gameInProgress],
+    );
 
-  return (
-    <AppLayout>
-      <div className={styles.root}>
-        <GameHeaderBar
-          gameType={config.gameType}
-          boardSize={config.boardSize}
-          aiDifficulty={config.aiDifficulty}
-          elapsed={elapsed}
-          winner={winner}
-          aborted={aborted}
-          isPaused={isPaused}
-          onRestart={resetGame}
-          onTogglePause={handlePauseAction}
-          onAbort={() => setAbortDialogOpen(true)}
-        />
-
-        {aborted ? (
-          <Alert variant="destructive">
-            <AlertDescription>Game aborted. No result recorded.</AlertDescription>
-          </Alert>
-        ) : null}
-
-        {apiError ? (
-          <Alert variant="destructive">
-            <AlertDescription>{apiError}</AlertDescription>
-          </Alert>
-        ) : null}
-
-        <div className={styles.mainLocal}>
-          <div className={styles.centerRow}>
-            {isOnline ? (
-                <>
-                  <div className={styles.onlinePlayerColumn}>
-                    <PlayerStatusCard
-                      name="You"
-                      marker={myRole === "player1" ? config.marker1 : config.marker2}
-                      isActive={isMyTurn}
-                      turnText="Your turn"
-                      avatarContent="Y"
-                    />
-                    <PlayerStatusCard
-                      name="Opponent"
-                      marker={myRole === "player1" ? config.marker2 : config.marker1}
-                      isActive={isOpponentTurn}
-                      turnText="Their turn"
-                      avatarContent="O"
-                    />
-                  </div>
-
-                  <GameBoard
-                    board={board}
-                    size={size}
-                    boardStyle={config.boardStyle}
-                    customBoardImage={config.customBoardImage}
-                    winner={winner}
-                    aborted={aborted}
-                    isPaused={isPaused}
-                    winningCells={winningCells}
-                    marker1={config.marker1}
-                    marker2={config.marker2}
-                    onCellClick={handleCellClick}
-                  />
-                  
-                </>
-              ) : (
-                <>
-                  <PlayerStatusCard
-                    name={config.player1}
-                    marker={config.marker1}
-                    isActive={currentPlayer === 1 && !winner && !aborted}
-                    turnText="Your turn"
-                    avatarContent={config.player1.charAt(0).toUpperCase()}
-                  />
-                  <GameBoard
-                    board={board}
-                    size={size}
-                    boardStyle={config.boardStyle}
-                    customBoardImage={config.customBoardImage}
-                    winner={winner}
-                    aborted={aborted}
-                    isPaused={isPaused}
-                    winningCells={winningCells}
-                    marker1={config.marker1}
-                    marker2={config.marker2}
-                    onCellClick={handleCellClick}
-                  />
-                  <PlayerStatusCard
-                    name={config.player2}
-                    marker={config.marker2}
-                    isActive={(currentPlayer === 2 || aiThinking) && !winner && !aborted}
-                    showTurnText={aiThinking}
-                    turnText={aiThinking ? "Thinking..." : "Their turn"}
-                    avatarContent={
-                      config.gameType === "ai"
-                        ? <Bot className="h-5 w-5" />
-                        : config.player2.charAt(0).toUpperCase()
-                    }
-                  />
-                </>
-              )}
-          </div>
-
-          {isOnline ? (
-            <div className={styles.chatPanel}>
-              <GameChat roomCode={config.roomCode} disabled={!!onlineRoomClosed} />
-            </div>
-          ) : null}
-        </div>
-
-        <p className={styles.startedText}>
-          Started: {new Date(startTime.current).toLocaleTimeString()}
-        </p>
-
-        {isOnline ? (
-          <OnlineMatchResultDialog
-            open={showWinnerModal}
-            winner={winner}
-            result={sessionResult}
-            onPlayAgain={requestOnlineRematch}
-            onLeaveRoom={() => {
-              respondOnlineRematch(false);
-              navigate("/online", { replace: true });
-            }}
-            onHistory={() => {
-              respondOnlineRematch(false);
-              navigate("/profile?tab=history");
-            }}
-          />
-        ) : (
-          <WinnerDialog
-            open={showWinnerModal}
-            winner={winner}
-            onOpenChange={setShowWinnerModal}
-            onHistory={() => navigate("/profile?tab=history")}
-            onPlayAgain={resetGame}
-          />
-        )}
-
-        <RematchWaitingDialog
-          open={!!rematchWaiting}
-          message={rematchWaiting}
-          onLeaveRoom={() => {
-            respondOnlineRematch(false);
-            navigate("/online", { replace: true });
-          }}
-        />
-
-        <RematchRequestDialog
-          open={!!incomingRematch}
-          opponentName={incomingRematch?.requestedByName}
-          onAccept={() => respondOnlineRematch(true)}
-          onDecline={() => {
-            respondOnlineRematch(false);
-            navigate("/online", { replace: true });
-          }}
-        />
-
-        <OnlineRoomClosedDialog
-          open={!!onlineRoomClosed}
-          reason={onlineRoomClosed?.reason}
-          message={onlineRoomClosed?.message}
-          onReturn={() => navigate("/online", { replace: true })}
-        />
-
-        <LeaveGameDialog
-          open={pauseDialogOpen}
-          onClose={() => setPauseDialogOpen(false)}
-          onConfirm={() => {
+    const handlePauseAction = useCallback(() => {
+        if (winner || aborted) return;
+        if (isPaused) {
             setIsPaused(false);
             setPauseDialogOpen(false);
-          }}
-          kicker="Pause"
-          title="Game Paused"
-          description="Take a break. You can resume anytime."
-          cancelText="Close"
-          confirmText="Resume"
-          confirmTone="primary"
-        />
+            return;
+        }
+        setIsPaused(true);
+        setPauseDialogOpen(true);
+    }, [winner, aborted, isPaused, setIsPaused]);
 
-        <LeaveGameDialog
-          open={abortDialogOpen}
-          onClose={() => {
-            setAbortDialogOpen(false);
-            pendingNavRef.current = null;
-          }}
-          onConfirm={handleConfirmAbort}
-          kicker="Confirm action"
-          title={isOnline ? "Leave Online Room?" : "Abort Game?"}
-          description={
-            isOnline
-              ? "This will close the online room for both players."
-              : "This action cannot be undone. No result will be recorded."
-          }
-          cancelText="Cancel"
-          confirmText={isOnline ? "Leave Room" : "Confirm Abort"}
-        />
-      </div>
-    </AppLayout>
-  );
+    useEffect(() => {
+        if (!isOnline) return undefined;
+
+        function handleShareCreated({ path }) {
+            setShareMatchLoading(false);
+            setShareMatchError("");
+            if (!path) return;
+            setShareMatchUrl(`${window.location.origin}${path}`);
+            setShareMatchOpen(true);
+        }
+
+        function handleShareError({ message } = {}) {
+            setShareMatchLoading(false);
+            setShareMatchError(
+                message || "Unable to generate spectator link for this match.",
+            );
+        }
+
+        socket.on("spectatorLinkCreated", handleShareCreated);
+        socket.on("spectatorLinkError", handleShareError);
+
+        return () => {
+            socket.off("spectatorLinkCreated", handleShareCreated);
+            socket.off("spectatorLinkError", handleShareError);
+        };
+    }, [isOnline]);
+
+    const handleShareMatch = useCallback(() => {
+        if (!isOnline || !config.roomCode || !config.sessionId) return;
+        setShareMatchError("");
+        setShareMatchLoading(true);
+        socket.emit("createSpectatorLink", {
+            roomCode: config.roomCode,
+            sessionId: config.sessionId,
+        });
+    }, [config.roomCode, config.sessionId, isOnline]);
+
+    useEffect(() => {
+        if (typeof registerNavigationGuard !== "function") return undefined;
+
+        registerNavigationGuard(handleNavIntercept);
+        return () => {
+            registerNavigationGuard(null);
+        };
+    }, [handleNavIntercept, registerNavigationGuard]);
+
+    return (
+        <AppLayout>
+            <div className={styles.root}>
+                <GameHeaderBar
+                    gameType={config.gameType}
+                    boardSize={config.boardSize}
+                    aiDifficulty={config.aiDifficulty}
+                    elapsed={elapsed}
+                    winner={winner}
+                    aborted={aborted}
+                    isPaused={isPaused}
+                    onRestart={handleRestartAction}
+                    onTogglePause={handlePauseAction}
+                    onAbort={() => setAbortDialogOpen(true)}
+                    showShareMatch={
+                        isOnline &&
+                        !!config.roomCode &&
+                        !!config.sessionId &&
+                        !winner &&
+                        !aborted
+                    }
+                    onShareMatch={handleShareMatch}
+                    shareMatchLoading={shareMatchLoading}
+                />
+
+                {aborted ? (
+                    <Alert variant="destructive">
+                        <AlertDescription>
+                            Game aborted. No result recorded.
+                        </AlertDescription>
+                    </Alert>
+                ) : null}
+
+                {apiError ? (
+                    <Alert variant="destructive">
+                        <AlertDescription>{apiError}</AlertDescription>
+                    </Alert>
+                ) : null}
+
+                {shareMatchError ? (
+                    <Alert variant="destructive">
+                        <AlertDescription>{shareMatchError}</AlertDescription>
+                    </Alert>
+                ) : null}
+
+                <div className={styles.mainLocal}>
+                    <div className={styles.centerRow}>
+                        {isOnline ? (
+                            <>
+                                <div className={styles.onlinePlayerColumn}>
+                                    <PlayerStatusCard
+                                        name="You"
+                                        marker={
+                                            myRole === "player1"
+                                                ? config.marker1
+                                                : config.marker2
+                                        }
+                                        isActive={isMyTurn}
+                                        turnText="Your turn"
+                                        avatarContent="Y"
+                                        avatarSrc={currentUserAvatarURL}
+                                    />
+                                    <PlayerStatusCard
+                                        name="Opponent"
+                                        marker={
+                                            myRole === "player1"
+                                                ? config.marker2
+                                                : config.marker1
+                                        }
+                                        isActive={isOpponentTurn}
+                                        turnText="Their turn"
+                                        avatarContent="O"
+                                        avatarSrc={opponentAvatarURL}
+                                    />
+                                </div>
+
+                                <GameBoard
+                                    board={board}
+                                    size={size}
+                                    boardStyle={config.boardStyle}
+                                    customBoardImage={config.customBoardImage}
+                                    winner={winner}
+                                    aborted={aborted}
+                                    isPaused={isPaused}
+                                    winningCells={winningCells}
+                                    marker1={config.marker1}
+                                    marker2={config.marker2}
+                                    onCellClick={handleCellClick}
+                                />
+                            </>
+                        ) : (
+                            <>
+                                <PlayerStatusCard
+                                    name={config.player1}
+                                    marker={config.marker1}
+                                    isActive={
+                                        currentPlayer === 1 &&
+                                        !winner &&
+                                        !aborted
+                                    }
+                                    turnText="Your turn"
+                                    avatarContent={config.player1
+                                        .charAt(0)
+                                        .toUpperCase()}
+                                    avatarSrc={currentUserAvatarURL}
+                                />
+                                <GameBoard
+                                    board={board}
+                                    size={size}
+                                    boardStyle={config.boardStyle}
+                                    customBoardImage={config.customBoardImage}
+                                    winner={winner}
+                                    aborted={aborted}
+                                    isPaused={isPaused}
+                                    winningCells={winningCells}
+                                    marker1={config.marker1}
+                                    marker2={config.marker2}
+                                    onCellClick={handleCellClick}
+                                />
+                                <PlayerStatusCard
+                                    name={config.player2}
+                                    marker={config.marker2}
+                                    isActive={
+                                        (currentPlayer === 2 || aiThinking) &&
+                                        !winner &&
+                                        !aborted
+                                    }
+                                    showTurnText={aiThinking}
+                                    turnText={
+                                        aiThinking
+                                            ? "Thinking..."
+                                            : "Their turn"
+                                    }
+                                    avatarContent={
+                                        config.gameType === "ai" ? (
+                                            <Bot className="h-5 w-5" />
+                                        ) : (
+                                            config.player2
+                                                .charAt(0)
+                                                .toUpperCase()
+                                        )
+                                    }
+                                />
+                            </>
+                        )}
+                    </div>
+
+                    {isOnline ? (
+                        <div className={styles.chatPanel}>
+                            <GameChat roomCode={config.roomCode} />
+                        </div>
+                    ) : null}
+                </div>
+
+                <p className={styles.startedText}>
+                    Started: {new Date(startTime.current).toLocaleTimeString()}
+                </p>
+
+                <WinnerDialog
+                    open={showWinnerModal}
+                    winner={winner}
+                    onOpenChange={setShowWinnerModal}
+                    onHistory={() => navigate("/profile?tab=history")}
+                    onPlayAgain={
+                        isOnline
+                            ? () => {
+                                  socket.disconnect();
+                                  navigate("/online");
+                              }
+                            : resetGame
+                    }
+                />
+
+                <LeaveGameDialog
+                    open={pauseDialogOpen}
+                    onClose={() => setPauseDialogOpen(false)}
+                    onConfirm={() => {
+                        setIsPaused(false);
+                        setPauseDialogOpen(false);
+                    }}
+                    kicker="Pause"
+                    title="Game Paused"
+                    description="Take a break. You can resume anytime."
+                    cancelText="Close"
+                    confirmText="Resume"
+                    confirmTone="primary"
+                />
+
+                <LeaveGameDialog
+                    open={abortDialogOpen}
+                    onClose={() => {
+                        setAbortDialogOpen(false);
+                        pendingNavRef.current = null;
+                    }}
+                    onConfirm={handleConfirmAbort}
+                    kicker="Confirm action"
+                    title="Abort Game?"
+                    description="This action cannot be undone. No result will be recorded."
+                    cancelText="Cancel"
+                    confirmText="Confirm Abort"
+                />
+
+                <OnlineRoomClosedDialog
+                    open={showRoomClosedPopup}
+                    reason={roomClosedReason}
+                    message={roomClosedMessage}
+                    onReturn={handleRoomClosedRedirect}
+                />
+
+                <ShareMatchModal
+                    open={shareMatchOpen}
+                    url={shareMatchUrl}
+                    onClose={() => setShareMatchOpen(false)}
+                />
+            </div>
+        </AppLayout>
+    );
 }

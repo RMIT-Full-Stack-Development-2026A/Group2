@@ -1,9 +1,10 @@
 const { v4: uuidv4 } = require("uuid");
 const multiplayerService = require("../application/services/multiplayer.service");
-const gameService = require("../../game/application/services/game.service");
+const { createGameInterface } = require("../../game/domain/interfaces/game.interface");
 
 const rooms = new Map();
 const REMATCH_RESPONSE_TIMEOUT_MS = 30000;
+const gameInterface = createGameInterface();
 
 function normalizeRoomCode(roomCode) {
   return String(roomCode || "").trim().toUpperCase();
@@ -84,6 +85,11 @@ function emitRoomClosed(io, roomCode, reason = "closed_by_admin") {
     reason,
   });
 
+  io.of("/spectator").to(normalizedCode).emit("roomClosed", {
+    roomCode: normalizedCode,
+    reason,
+  });
+
   const room = rooms.get(normalizedCode);
   if (room) {
     clearRematchTimer(room);
@@ -104,6 +110,10 @@ async function closeRoomAfterPostMatch(io, roomCode, room, payload) {
     roomCode,
     reason: payload.reason,
     message: payload.message,
+  });
+  io.of("/spectator").to(roomCode).emit("roomClosed", {
+    roomCode,
+    reason: payload.reason,
   });
 
   try {
@@ -145,7 +155,7 @@ async function terminateActiveRoom(io, roomCode, room, actorSocketId, reason) {
   const sessionId = room.sessionId || null;
   if (sessionId) {
     try {
-      await gameService.terminateOnlineSession(sessionId);
+      await gameInterface.terminateOnlineSession(sessionId);
     } catch (error) {
       console.error("Failed to terminate online session:", error.message);
     }
@@ -183,6 +193,17 @@ async function terminateActiveRoom(io, roomCode, room, actorSocketId, reason) {
       sessionId,
       reason: opponentReason,
       message: opponentMessage,
+    });
+  }
+
+  if (reason === "player_disconnected") {
+    io.of("/spectator").to(roomCode).emit("playerDisconnected", {
+      roomCode,
+    });
+  } else {
+    io.of("/spectator").to(roomCode).emit("roomClosed", {
+      roomCode,
+      reason,
     });
   }
 
@@ -267,6 +288,8 @@ async function startRematch(io, oldRoomCode, room) {
       player2SocketId: nextRoom.player2,
       player1Name: nextRoom.player1User.username,
       player2Name: nextRoom.player2User.username,
+      player1AvatarURL: nextRoom.player1User.avatarURL || null,
+      player2AvatarURL: nextRoom.player2User.avatarURL || null,
       sessionId: dto.session.id,
       backendSession: dto,
     },
@@ -352,6 +375,8 @@ function roomSocketHandler(io, socket) {
       marker1: room.marker1,
       player1Name: room.player1User.username,
       player2Name: socket.user.username,
+      player1AvatarURL: room.player1User.avatarURL || null,
+      player2AvatarURL: socket.user.avatarURL || null,
       player2SocketId: socket.id,
     });
 
@@ -377,6 +402,8 @@ function roomSocketHandler(io, socket) {
         marker1: availableRoom.marker1,
         player1Name: availableRoom.player1User.username,
         player2Name: socket.user.username,
+        player1AvatarURL: availableRoom.player1User.avatarURL || null,
+        player2AvatarURL: socket.user.avatarURL || null,
         player2SocketId: socket.id,
       });
 
@@ -448,6 +475,8 @@ function roomSocketHandler(io, socket) {
         player2SocketId: room.player2,
         player1Name: room.player1User.username,
         player2Name: room.player2User.username,
+        player1AvatarURL: room.player1User.avatarURL || null,
+        player2AvatarURL: room.player2User.avatarURL || null,
         sessionId: dto.session.id,
         backendSession: dto,
       });
@@ -474,6 +503,38 @@ function roomSocketHandler(io, socket) {
     }
 
     await terminateActiveRoom(io, normalizedCode, room, socket.id, "player_left");
+  });
+
+  socket.on("createSpectatorLink", async ({ roomCode, sessionId }) => {
+    const normalizedCode = normalizeRoomCode(roomCode);
+    const room = rooms.get(normalizedCode);
+
+    if (
+      !room ||
+      room.status !== "active" ||
+      !room.sessionId ||
+      String(room.sessionId) !== String(sessionId || "") ||
+      !isRoomPlayer(room, socket.id)
+    ) {
+      socket.emit("spectatorLinkError", {
+        message: "Unable to generate spectator link for this match.",
+      });
+      return;
+    }
+
+    try {
+      const share =
+        await multiplayerService.createOrGetSpectatorShareForActiveRoom(
+          socket.user,
+          room,
+          sessionId,
+        );
+      socket.emit("spectatorLinkCreated", share);
+    } catch {
+      socket.emit("spectatorLinkError", {
+        message: "Unable to generate spectator link for this match.",
+      });
+    }
   });
 
   socket.on("requestRematch", ({ roomCode, sessionId }) => {

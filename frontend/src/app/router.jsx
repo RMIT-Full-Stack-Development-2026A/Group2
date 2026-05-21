@@ -21,6 +21,7 @@ import GamePlayPage from "../modules/game/pages/GamePlayPage";
 import AdminDashboardPage from "../modules/admin/pages/AdminDashboardPage";
 import PlayerManagementPage from "../modules/admin/pages/PlayerManagementPage";
 import OnlineRoomsPage from "../modules/admin/pages/OnlineRoomsPage";
+import SpectatorMatchPage from "../modules/game/pages/SpectatorMatchPage";
 
 const router = createBrowserRouter([
     {
@@ -29,6 +30,10 @@ const router = createBrowserRouter([
             {
                 path: "/",
                 element: <DashboardPage />,
+            },
+            {
+                path: "/watch/:token",
+                element: <SpectatorMatchPage />,
             },
         ],
     },

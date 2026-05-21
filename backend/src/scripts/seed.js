@@ -8,8 +8,8 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
 const User = require("../modules/auth/model/user.model");
-const Wallet = require("../modules/wallet/model/wallet.model");
-const Transaction = require("../modules/wallet/model/transaction.model");
+const Profile = require("../modules/profile/profile.model");
+const Transaction = require("../modules/premium/model/transaction.model");
 const SubscriptionPlan = require("../modules/premium/model/subscriptionPlan.model");
 const UserSubscription = require("../modules/premium/model/userSubscription.model");
 const GameSession = require("../modules/game/model/gameSession.model");
@@ -38,14 +38,9 @@ const I = {
   userSub: o("030303030303030303030301"),
   userSubTesterActive: o("030303030303030303030302"),
   userSubTesterExpired: o("030303030303030303030303"),
-  wAlpha: o("040404040404040404040401"),
-  wBeta: o("040404040404040404040402"),
-  wTester: o("040404040404040404040403"),
-  wAdminOps: o("040404040404040404040404"),
   tx1: o("050505050505050505050501"),
   tx2: o("050505050505050505050502"),
   tx3: o("050505050505050505050503"),
-  tx4: o("050505050505050505050504"),
   gs1: o("080808080808080808080801"),
   gs2: o("080808080808080808080802"),
   gs3: o("080808080808080808080803"),
@@ -85,7 +80,6 @@ async function clearAll() {
     MatchLobby,
     GameSession,
     Transaction,
-    Wallet,
     UserSubscription,
     SubscriptionPlan,
     User,
@@ -102,7 +96,7 @@ async function clearAll() {
   }
 }
 
-async function seed() {
+async function connectSeedDb() {
   const uri = process.env.MONGO_URI;
   if (!uri) {
     console.error("Missing MONGO_URI in environment.");
@@ -110,8 +104,9 @@ async function seed() {
   }
 
   await mongoose.connect(uri);
-  console.log("Connected. Clearing collections…");
-  await clearAll();
+  console.log("Connected to seed database.");
+
+}
 
 async function clearAllCollections() {
   await mongoose.connection.db.dropDatabase();
@@ -272,38 +267,10 @@ async function insertSeedData(hashes) {
     },
   ]);
 
-  await Wallet.insertMany([
-    {
-      _id: I.wAlpha,
-      userId: I.userAlpha,
-      balance: 47.5,
-      updatedAt: new Date("2026-03-01T00:06:30.000Z"),
-    },
-    {
-      _id: I.wBeta,
-      userId: I.userBeta,
-      balance: 0.5,
-      updatedAt: new Date("2026-03-20T18:00:00.000Z"),
-    },
-    {
-      _id: I.wTester,
-      userId: I.userTester,
-      balance: 96.75,
-      updatedAt: new Date("2026-04-15T13:45:00.000Z"),
-    },
-    {
-      _id: I.wAdminOps,
-      userId: I.userAdminOps,
-      balance: 250,
-      updatedAt: new Date("2026-04-15T09:00:00.000Z"),
-    },
-  ]);
-
   await Transaction.insertMany([
     {
       _id: I.tx1,
       userID: I.userAlpha,
-      walletID: I.wAlpha,
       userSubscriptionID: I.userSub,
       currency: "USD",
       amount: 10,
@@ -314,7 +281,6 @@ async function insertSeedData(hashes) {
     {
       _id: I.tx2,
       userID: I.userTester,
-      walletID: I.wTester,
       userSubscriptionID: I.userSubTesterExpired,
       currency: "USD",
       amount: 10,
@@ -325,24 +291,12 @@ async function insertSeedData(hashes) {
     {
       _id: I.tx3,
       userID: I.userTester,
-      walletID: I.wTester,
       userSubscriptionID: I.userSubTesterActive,
       currency: "USD",
       amount: 27,
       provider: "stripe",
       paymentDate: new Date("2026-04-01T00:02:00.000Z"),
       status: "success",
-    },
-    {
-      _id: I.tx4,
-      userID: I.userTester,
-      walletID: I.wTester,
-      userSubscriptionID: null,
-      currency: "USD",
-      amount: 5,
-      provider: "wallet_adjustment",
-      paymentDate: new Date("2026-04-10T16:20:00.000Z"),
-      status: "refunded",
     },
   ]);
 

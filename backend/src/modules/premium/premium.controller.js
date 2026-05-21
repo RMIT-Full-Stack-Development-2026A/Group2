@@ -31,15 +31,6 @@ async function getMe(req, res) {
   }
 }
 
-async function payWithWallet(req, res) {
-  try {
-    const result = await premiumService.payWithWallet(String(req.user.id));
-    return res.status(200).json({ status: "success", ...result });
-  } catch (err) {
-    return handleControllerError(res, err);
-  }
-}
-
 async function createCheckoutSession(req, res) {
   const errors = validateCreateCheckoutSessionBody(req.body);
   if (errors.length) {
@@ -135,7 +126,6 @@ async function stripeWebhook(req, res) {
 
 module.exports = {
   getMe,
-  payWithWallet,
   createCheckoutSession,
   createTestCheckoutSession,
   confirmCheckoutSession,

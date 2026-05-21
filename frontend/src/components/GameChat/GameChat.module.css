@@ -1,0 +1,19 @@
+.chatCard {
+  height: 100%;
+}
+
+.chatBody {
+  height: 300px;
+}
+
+.messageList {
+  overflow-y: auto;
+}
+
+.messageBubble {
+  max-width: 75%;
+}
+
+.messageAuthor {
+  font-size: 10px;
+}

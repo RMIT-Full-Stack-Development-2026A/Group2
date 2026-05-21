@@ -12,6 +12,9 @@ export default function GameHeaderBar({
   onRestart,
   onTogglePause,
   onAbort,
+  showShareMatch = false,
+  onShareMatch,
+  shareMatchLoading = false,
 }) {
   const isOnline = gameType === "online";
 
@@ -30,24 +33,36 @@ export default function GameHeaderBar({
         <span>{formatTime(elapsed)}</span>
       </div>
 
-      {!isOnline ? (
       <div className={styles.actions}>
-        <button type="button" className={styles.ghostBtn} onClick={onRestart}>
-          Restart
-        </button>
-        <button
-          type="button"
-          className={styles.secondaryBtn}
-          disabled={!!winner || aborted}
-          onClick={onTogglePause}
-        >
-          {isPaused ? "Resume" : "Pause"}
-        </button>
+        {showShareMatch ? (
+          <button
+            type="button"
+            className={styles.shareBtn}
+            onClick={onShareMatch}
+            disabled={shareMatchLoading}
+          >
+            {shareMatchLoading ? "Preparing..." : "Share Match"}
+          </button>
+        ) : null}
+        {!isOnline ? (
+          <>
+            <button type="button" className={styles.ghostBtn} onClick={onRestart}>
+              Restart
+            </button>
+            <button
+              type="button"
+              className={styles.secondaryBtn}
+              disabled={!!winner || aborted}
+              onClick={onTogglePause}
+            >
+              {isPaused ? "Resume" : "Pause"}
+            </button>
+          </>
+        ) : null}
         <button type="button" className={styles.dangerBtn} onClick={onAbort}>
           Abort
         </button>
       </div>
-      ) : null}
     </div>
   );
 }

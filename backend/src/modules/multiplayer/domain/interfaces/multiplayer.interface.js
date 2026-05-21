@@ -11,6 +11,8 @@ const multiplayerRepo = require("../../infrastructure/repositories/multiplayer.r
  * @property {string} player2SocketId
  * @property {string} player1Name
  * @property {string} player2Name
+ * @property {string | null} player1AvatarURL
+ * @property {string | null} player2AvatarURL
  * @property {string} sessionId
  */
 

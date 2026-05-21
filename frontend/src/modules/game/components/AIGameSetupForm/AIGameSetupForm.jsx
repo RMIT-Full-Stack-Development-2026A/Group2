@@ -127,9 +127,9 @@ export default function AIGameSetupForm() {
               setCustomBoardImage={setCustomBoardImage}
               useCustomBoard={useCustomBoard}
               setUseCustomBoard={setUseCustomBoard}
-              compact
+              compact={false}
               customLabel="Custom"
-              previewSize="sm"
+              previewSize="md"
             />
 
             <div className={styles.markerGrid}>

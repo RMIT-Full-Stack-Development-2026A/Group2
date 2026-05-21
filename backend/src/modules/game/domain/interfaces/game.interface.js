@@ -1,5 +1,6 @@
 const AppError = require("../../../../shared/errors/AppError");
 const gameRepository = require("../../infrastructure/repositories/game.repository");
+const gameService = require("../../application/services/game.service");
 
 function normalizeGameType(gameMode) {
   if (gameMode === "single_player") return "ai";
@@ -168,6 +169,22 @@ function toReplayMoveDto(move) {
 }
 
 function createGameInterface() {
+  async function createOnlineGame(player1User, player2User, payload) {
+    return gameService.createOnlineGame(player1User, player2User, payload);
+  }
+
+  async function makeMove(authUser, sessionId, payload) {
+    return gameService.makeMove(authUser, sessionId, payload);
+  }
+
+  async function terminateOnlineSession(sessionId) {
+    return gameService.terminateOnlineSession(sessionId);
+  }
+
+  async function getSessionState(sessionId) {
+    return gameService.getSessionState(sessionId);
+  }
+
   async function listHistoryForUser(userId, filters = {}) {
     const myParticipants = await gameRepository.findParticipantsByUser(userId);
 
@@ -279,15 +296,43 @@ function createGameInterface() {
     };
   }
 
+  async function abortGameByAdmin(sessionId) {
+    const session = await gameRepository.findSessionById(sessionId);
+
+    if (!session) {
+      throw new AppError("Game session not found.", {
+        code: "GAME_NOT_FOUND",
+        statusCode: 404,
+      });
+    }
+
+    // Minimal admin abort: mark session as aborted in DB.
+    const updatedSession = await gameRepository.updateSession(session._id, {
+      status: "aborted",
+      result: "aborted",
+      endTime: new Date(),
+      currentTurn: null,
+      winnerParticipantID: null,
+      winningLine: [],
+    });
+
+    return updatedSession;
+  }
+
   async function listPlayersInLobby(sessionId) {
       const participants = await gameRepository.findParticipantsBySession(sessionId);
       return participants.map((participant) => participant.userID); // Return only the userID 
   }
 
   return {
+    createOnlineGame,
+    makeMove,
+    terminateOnlineSession,
+    getSessionState,
     listHistoryForUser,
     getReplayForUser,
     listPlayersInLobby,
+    abortGameByAdmin,
   };
 }
 

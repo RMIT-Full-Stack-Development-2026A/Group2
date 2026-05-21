@@ -18,13 +18,11 @@ const PlayerTable = ({
 }) => {
     return (
         <>
-            <table className="w-100 small">
+            <table className="table table-sm align-middle w-100 mb-0">
                 <thead>
                     <tr className="border-bottom">
                         <th className="p-3 fw-500 text-muted">Username</th>
-                        <th className="p-3 fw-500 text-muted d-none d-sm-table-cell">
-                            Email
-                        </th>
+                        <th className="p-3 fw-500 text-muted">Email</th>
                         <th className="p-3 fw-500 text-muted">Premium</th>
                         <th className="p-3 fw-500 text-muted">Status</th>
                         <th className="p-3 fw-500 text-muted">Actions</th>
@@ -40,15 +38,15 @@ const PlayerTable = ({
                                 <td className="p-3 fw-500">
                                     {player.username}
                                 </td>
-                                <td className="p-3 text-muted d-none d-sm-table-cell">
+                                <td className="p-3 text-muted">
                                     {player.email}
                                 </td>
                                 <td className="p-3">
                                     {player.isPremium ? (
                                         <span
-                                            className="badge text-bg-warning text-dark px-2 py-2"
+                                            className="badge text-bg-warning text-dark px-2 py-2 text-nowrap"
                                             style={{
-                                                minWidth: "70px",
+                                                minWidth: "100px",
                                                 textAlign: "center",
                                             }}
                                         >
@@ -56,9 +54,9 @@ const PlayerTable = ({
                                         </span>
                                     ) : (
                                         <span
-                                            className="badge border border-secondary text-dark px-2 py-2"
+                                            className="badge border border-secondary text-dark px-2 py-2 text-nowrap"
                                             style={{
-                                                minWidth: "70px",
+                                                minWidth: "100px",
                                                 textAlign: "center",
                                             }}
                                         >
@@ -70,8 +68,8 @@ const PlayerTable = ({
                                     <span
                                         className={
                                             isActive
-                                                ? "badge bg-success px-2 py-2"
-                                                : "badge bg-danger px-2 py-2"
+                                                ? "badge bg-success px-2 py-2 text-nowrap"
+                                                : "badge bg-danger px-2 py-2 text-nowrap"
                                         }
                                         style={{
                                             minWidth: "100px",
@@ -83,7 +81,7 @@ const PlayerTable = ({
                                 </td>
                                 <td className="p-3">
                                     <button
-                                        className={`btn btn-sm d-flex align-items-center gap-2 ${
+                                        className={`btn btn-sm d-inline-flex align-items-center gap-2 text-nowrap ${
                                             isActive
                                                 ? "btn-danger"
                                                 : "btn-primary"
@@ -98,7 +96,9 @@ const PlayerTable = ({
                                                         height: "12px",
                                                     }}
                                                 />{" "}
-                                                Deactivate
+                                                <span className="d-none d-sm-inline">
+                                                    Deactivate
+                                                </span>
                                             </>
                                         ) : (
                                             <>
@@ -108,7 +108,9 @@ const PlayerTable = ({
                                                         height: "12px",
                                                     }}
                                                 />{" "}
-                                                Reactivate
+                                                <span className="d-none d-sm-inline">
+                                                    Reactivate
+                                                </span>
                                             </>
                                         )}
                                     </button>
