@@ -1,0 +1,302 @@
+/* ── HERO ──────────────────────────────────────────── */
+
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.75rem;
+  padding: 1.75rem 1.25rem;
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(7, 22, 55, 0.36), rgba(7, 22, 55, 0.18)),
+    url("/hero.jpg") right center/cover no-repeat;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  color: #ffffff;
+  max-width: 1180px;
+  margin: 0 auto;
+  min-height: 360px;
+}
+
+.heroText {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 560px;
+}
+
+.heroWelcome {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.heroTitle {
+  margin: 0 0 1rem;
+  font-size: clamp(2.25rem, 5vw, 3rem);
+  font-weight: 800;
+  line-height: 1.05;
+  color: #ffffff;
+}
+
+.heroAccent {
+  color: #ffd166;
+}
+
+.heroSub {
+  margin: 0 0 1.75rem;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 520px;
+  line-height: 1.7;
+}
+
+.heroCtas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.heroImage {
+  flex: 0 0 auto;
+  width: clamp(320px, 44%, 500px);
+  height: auto;
+  align-self: flex-end;
+  border-radius: 22px;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* ── SECTIONS ──────────────────────────────────────── */
+
+.section {
+  padding: 2rem 1rem;
+  border-top: 1px solid #e2e8f0;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.sectionTitle {
+  margin: 0 0 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* ── GAME MODE CARDS ───────────────────────────────── */
+
+.modeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+.modeCard {
+  text-align: left;
+  padding: 1.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 18px;
+  background: #ffffff;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.5rem;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.modeCard:hover,
+.modeCard:focus-visible {
+  border-color: #94a3b8;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+  transform: translateY(-2px);
+  outline: none;
+}
+
+.modeIconWrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.modeBadge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.modeTitle {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.modeDesc {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #52606d;
+  line-height: 1.6;
+  flex: 1;
+}
+
+.modeAction {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  margin-top: 0.75rem;
+}
+
+.modeAction svg {
+  transition: transform 0.18s ease;
+}
+
+.modeCard:hover .modeAction svg {
+  transform: translateX(2px);
+}
+
+/* ── HOW TO PLAY + RULES ───────────────────────────── */
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2.5rem;
+}
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.stepItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  padding: 1rem 1rem 1rem 0.75rem;
+  border-radius: 18px;
+  background: #f8fafc;
+}
+
+.stepNum {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #0f172a;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stepText {
+  font-size: 0.95rem;
+  color: #334155;
+  line-height: 1.7;
+  padding-top: 2px;
+}
+
+.rules {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ruleRow {
+  display: flex;
+  gap: 0.875rem;
+  align-items: flex-start;
+  padding: 1rem;
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+}
+
+.ruleIcon {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: #eef2ff;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ruleTitle {
+  margin: 0 0 0.125rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.ruleText {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+/* ── RESPONSIVE ────────────────────────────────────── */
+
+@media (max-width: 767.98px) {
+  .hero {
+    flex-direction: column-reverse;
+    text-align: center;
+    padding: 1.5rem 1rem;
+    gap: 1.5rem;
+  }
+
+  .heroSub {
+    max-width: none;
+  }
+
+  .heroCtas {
+    justify-content: center;
+  }
+
+  .heroImage {
+    width: 100%;
+    max-width: 420px;
+    align-self: center;
+  }
+
+  .modeGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .infoGrid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .hero {
+    gap: 1.75rem;
+  }
+
+  .heroImage {
+    width: clamp(260px, 60%, 440px);
+    height: auto;
+  }
+
+  .infoGrid {
+    gap: 2rem;
+  }
+}
