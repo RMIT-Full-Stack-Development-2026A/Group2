@@ -25,8 +25,6 @@
 }
 
 .boardWrap {
-  display: flex;
-  justify-content: center;
   min-height: 0;
   max-height: min(52vh, 520px);
   overflow: auto;

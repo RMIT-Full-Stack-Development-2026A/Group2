@@ -27,5 +27,11 @@ Thumbs.db
 *.temp
 .cache/
 
+coverage/
+*.sqlite
+*.sqlite3
+*.pem
+*.key
+
 .next/
 .out/

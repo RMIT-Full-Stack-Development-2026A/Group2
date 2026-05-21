@@ -10,9 +10,9 @@
 }
 
 .boardShellCompact {
-  --cell-size: clamp(1.35rem, calc((min(100vw, 880px) - 5rem) / 11), 2.15rem);
   box-shadow: none;
-  overflow: visible;
+  overflow: auto;
+  margin: 0 auto;
 }
 
 .boardGrid {

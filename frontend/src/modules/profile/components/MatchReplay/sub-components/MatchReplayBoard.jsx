@@ -33,8 +33,11 @@ export default function MatchReplayBoard({
         ? styles.woodBoard
         : styles.classicBoard;
 
-  const cellSize =
-    size === 15
+  // For compact mode, fit the board in the available viewport width.
+  // 8.5rem accounts for page padding, card border, and replay padding.
+  const cellSize = compact
+    ? `clamp(0.85rem, calc((100vw - 8.5rem) / ${size}), 2.15rem)`
+    : size === 15
       ? "clamp(1.7rem, 2.1vw, 2.15rem)"
       : "clamp(2.2rem, 2.8vw, 2.85rem)";
 
@@ -65,7 +68,7 @@ export default function MatchReplayBoard({
   return (
     <div
       className={`${styles.boardShell} ${compact ? styles.boardShellCompact : ""} ${boardStyleClass}`}
-      style={compact ? undefined : { "--cell-size": cellSize }}
+      style={{ "--cell-size": cellSize }}
     >
       <div
         className={styles.boardWithCoordinates}
