@@ -22,15 +22,56 @@ Seeded accounts are available after running the backend seed script.
 | Player | player_beta            | Admin@1234 |
 
 ## Team Contribution Table
+Member Name: Nguyen Viet Ngan Anh
+Github name: stellarrng
+Contribution Score: 5
+Task Completed:
+- Coordinated task distribution across team members and managed overall project workflow throughout the development lifecycle
+- Designed and implemented the database schema and collection structure
+- Developed the user profile management feature including display, editing and avatar upload
+- Built the match history view allowing players to browse past game sessions
+- Implemented the match replay system with playback controls: play, pause, forward, backward
 
-| Member Name          | Task Completed                                             | Contribution Score |
-|----------------------|------------------------------------------------------------|--------------------|
-| Nguyen Viet Ngan Anh | database + profile + match history + match replay          | 5                  |
-| Nguyen Tri Khai      | local game + ai mode + spectator + cloud deployment        | 5                  |
-| Do Minh Thinh        | local game + login + premium                               | 5                  |
-| Phan Xuan Hung       | signup + login + admin                                     | 5                  |
-| Hoang Dam Huy        | online game                                                | 5                  |
+------------------------------------------------------------
 
+Member Name: Nguyen Tri Khai
+Github name: janoyjson
+Contribution Score: 5
+Task Completed:
+- Developed the local two-player game mode
+- Implemented the AI opponent across all three difficulty levels: easy, medium, hard
+- Built the spectator feature including share token generation and live game viewing
+- Handled cloud deployment and production environment configuration
+
+------------------------------------------------------------
+
+Member Name: Do Minh Thinh
+Github name: mty06
+Contribution Score: 5
+Task Completed:
+- Developed the local two-player game mode
+- Implemented the user registration flow including input validation
+- Built the premium subscription feature including wallet top-up and subscription activation
+
+------------------------------------------------------------
+
+Member Name: Phan Xuan Hung
+Github name: pxhung2511
+Contribution Score: 5
+Task Completed:
+- Implemented the login system including session management and JWT authentication
+- Developed the login system including identifier resolution and brute-force protection
+- Built the admin dashboard including player management, statistics, and room management
+
+------------------------------------------------------------
+
+Member Name: Hoang Dam Huy
+Github name: hoang-huy123
+Contribution Score: 5
+Task Completed:
+- Developed the online multiplayer game mode including real-time synchronisation via WebSocket
+- Implemented the online game room arena for lobby creation, discovery, and joining
+- Built the in-game chat feature for communication between players during online matches
 ## Steps to Start and Run the Website
 
 ### 1. Clone the Repository
