@@ -23,13 +23,13 @@ Seeded accounts are available after running the backend seed script.
 
 ## Team Contribution Table
 
-| Member Name         | Task Completed                                              | Contribution Score |
-|---------------------|-------------------------------------------------------------|--------------------|
-| Nguyen Viet Ngan Anh| database + profile + match history + match replay           | 5                  |
-| Nguyen Tri Khai     | local game + ai mode + spectator + cloud deployment         | 5                  |
-| Do Minh Thinh       | local game + login + premium                                | 5                  |
-| Phan Xuan Hung      | signup + login + admin                                      | 5                  |
-| Hoang Dam Huy       | online game                                                 | 5                  |
+| Member Name          | Task Completed                                             | Contribution Score |
+|----------------------|------------------------------------------------------------|--------------------|
+| Nguyen Viet Ngan Anh | database + profile + match history + match replay          | 5                  |
+| Nguyen Tri Khai      | local game + ai mode + spectator + cloud deployment        | 5                  |
+| Do Minh Thinh        | local game + login + premium                               | 5                  |
+| Phan Xuan Hung       | signup + login + admin                                     | 5                  |
+| Hoang Dam Huy        | online game                                                | 5                  |
 
 ## Steps to Start and Run the Website
 
@@ -49,31 +49,9 @@ npm install
 
 ### 3. Configure Backend Environment Variables
 
-Create a `.env` file inside the `backend` folder.
+Create a `.env` file inside the submission folder.
 
-```env
-PORT=3000
-MONGO_URI=mongodb+srv://tictactoang_user:fullstack12%40@tictactoang.x8rhijp.mongodb.net/tictactoang1
-DB_NAME=tictactoang1
-SEED_DB_NAME=tictactoang1
-
-ACCESS_TOKEN_SECRET=6a745750f3b7b9b3240057e1e008cf0b4484999cda127340da55835710f45f0b911d72d9a6a9c8e85139a85c39242cf2a577910a8378352f4abfab72d83d0417
-REFRESH_TOKEN_SECRET=be77158dfea1a08b29d74e9a98c3a84f982ae1b517228b85ced92036fad2c1b12b87299cccc1b7af21b724f121e567ddcf054da18e5b510e87f95cf7b5f54404
-
-CLOUDINARY_CLOUD_NAME=ddfzuu6hz
-CLOUDINARY_API_KEY=255412539248575
-CLOUDINARY_API_SECRET=bZu8Bt1fXcebcAvM8dXrQ7QHYko
-
-CLIENT_URL=http://localhost:5173
-
-STRIPE_SECRET_KEY=sk_test_51TQQPZQskDU4B6SW5gi5S8sOxJrRJzsD5Ktv4SnCx6mMX5lsTtBkasNqEtmgWcVOsIZ25bK5bcWBFJihHQWO0FO70006rVBKAh
-
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=chanlamroi.thinh@gmail.com
-EMAIL_PASS=ubmgecxailszpslw
-EMAIL_FROM=TicTacToang Support <chanlamroi@gmail.com>
-```
+Copy the backend environment variable content from the submission folder and paste it into the `backend/.env` file.
 
 ### 4. Seed the Database
 
@@ -116,6 +94,7 @@ Create a `.env` file inside the `frontend` folder.
 VITE_API_BASE_URL=http://localhost:3000
 VITE_PROXY_API_TARGET=http://localhost:3000
 ```
+
 
 ### 8. Start the Frontend Website
 
