@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const routes = require("./routes");
+const routes = require("./routes/routers");
 const premiumController = require("./modules/premium/premium.controller");
 
 const app = express();
