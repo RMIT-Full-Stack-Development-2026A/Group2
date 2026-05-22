@@ -321,7 +321,8 @@ function createGameInterface() {
 
   async function listPlayersInLobby(sessionId) {
       const participants = await gameRepository.findParticipantsBySession(sessionId);
-      return participants.map((participant) => participant.userID); // Return only the userID 
+      // Return only the userIDs that exist (filter out AI/guest participants with null userID)
+      return participants.map((participant) => participant.userID).filter(Boolean);
   }
 
   return {

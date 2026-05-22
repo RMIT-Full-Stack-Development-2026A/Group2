@@ -10,10 +10,10 @@ export default function useRoomTable() {
         const searchLower = query.toLowerCase();
 
         return rooms.filter((room) => {
-            const roomNum = (room.roomNumber || "").toLowerCase();
-            const player1 = room.players[0].toLowerCase();
-            const player2 =
-                room.players.length == 2 ? room.players[1].toLowerCase() : "";
+                const roomNum = (room.roomNumber || "").toLowerCase();
+                const players = Array.isArray(room.players) ? room.players : [];
+                const player1 = (players[0] || "").toLowerCase();
+                const player2 = players.length === 2 ? (players[1] || "").toLowerCase() : "";
 
             return (
                 roomNum.includes(searchLower) ||

@@ -63,7 +63,7 @@ const RoomTable = ({ filtered, setRooms }) => {
                 </thead>
 
                 <tbody>
-                    {filtered.map((r) => (
+                    {(Array.isArray(filtered) ? filtered : []).map((r) => (
                         <tr key={r.id} className="border-bottom">
                             <td className="p-3 fw-500">{r.roomNumber}</td>
                             <td className="p-3">{r.players?.[0] || "—"}</td>

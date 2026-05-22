@@ -66,12 +66,20 @@ const OnlineRoomsPage = () => {
         getFilteredRooms,
     } = useRoomTable();
 
-    const filtered = getFilteredRooms(rooms);
+    const safeRooms = Array.isArray(rooms) ? rooms : [];
+    const filtered = getFilteredRooms(safeRooms);
 
     useEffect(() => {
         async function fetchLobbies() {
-            const lobbies = await getAllLobbies();
-            setRooms(lobbies);
+            try {
+                const lobbies = await getAllLobbies();
+                setRooms(Array.isArray(lobbies) ? lobbies : []);
+            } catch (err) {
+                // keep rooms as empty array on error
+                setRooms([]);
+                // eslint-disable-next-line no-console
+                console.error("Failed to fetch lobbies:", err?.message || err);
+            }
         }
 
         fetchLobbies();
@@ -79,7 +87,7 @@ const OnlineRoomsPage = () => {
 
     return (
         <>
-            {rooms.length > 0 ? (
+            {Array.isArray(rooms) && rooms.length > 0 ? (
                 <div className="container d-flex flex-column gap-4">
                     <h1 className="fs-3 fw-bold">Room Management</h1>
 
